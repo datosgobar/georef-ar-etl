@@ -5,6 +5,7 @@
     <title>Georef | Datos Argentina</title>
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/poncho.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.min.css' %}">
     <script type="text/javascript" src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
@@ -38,7 +39,8 @@
             <div class="banner-content">
                 <div>
                     <h1>Georef</h1>
-                    <input type="text" value="" placeholder="Ingresá una dirección...">
+                    <input class="form-control search-box" placeholder="Ingresá una dirección para localizar..."
+                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                 </div>
             </div>
         </div>
