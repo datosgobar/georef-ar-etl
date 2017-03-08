@@ -1,11 +1,16 @@
 from django.shortcuts import render
+from search.wrappers import HereWrapper
 
 
 def search(request):
     data = {}
     if request.method == 'POST':
         address = request.POST.get('address', True)
-        data['results'] = 'No se encontró la dirección.'
+        here_wrapper = HereWrapper(
+            url='https://geocoder.cit.api.here.com/6.2/geocode.json',
+            app_code='2KEvGLCDtqH7HLUTNxDu3A&gen=8',
+            app_id='Qop1chzvUyZdOZJatmeG')
+        data['results'] = here_wrapper.search_address(address)
     else:
         data['results'] = None
 

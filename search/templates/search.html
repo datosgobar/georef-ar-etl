@@ -54,7 +54,9 @@
     <div class="pane-content">
         <p style="text-align:center">
             {% if results %}
-                {{ results }}
+                {% for result in results %}
+                    {{ result.Location.Address.Label }}<br>
+                {% endfor %}
             {% else %}
                 Aquí van los resultados...
             {% endif %}
