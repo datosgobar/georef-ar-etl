@@ -39,8 +39,12 @@
             <div class="banner-content">
                 <div>
                     <h1>Georef</h1>
-                    <input class="form-control search-box" placeholder="Ingresá una dirección para localizar..."
+                    <form action="{% url 'search' %}" method="post">
+                        {% csrf_token %}
+                        <input name="address" class="form-control search-box" placeholder="Ingresá una dirección para localizar..."
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                        <button type="submit" class="btn-success">Enviar</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -49,7 +53,11 @@
     <!-- CONTENT -->
     <div class="pane-content">
         <p style="text-align:center">
-            Los resultados van aquí...
+            {% if results %}
+                {{ results }}
+            {% else %}
+                Aquí van los resultados...
+            {% endif %}
         </p>
     </div>
 
