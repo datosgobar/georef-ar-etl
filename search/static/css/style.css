@@ -33,13 +33,13 @@ body {
     margin: 0;
     font-size: 55px;
     font-weight: 400;
-    padding-top: 60px;
+    padding-top: 25px;
     padding-bottom: 10px;
   }
-  .banner-content p, input {
+  .banner-content input {
     font-size: 20px;
     font-weight: 300;
-    margin-bottom: 60px;
+    margin-bottom: 25px;
   }
 
 .panel {
