@@ -18,4 +18,4 @@ class HereAPITest(TestCase):
     def test_search_address(self):
         wrapper = HereWrapper(self.url, self.app_code, self.app_id)
         response = wrapper.search_address(self.search_text)
-        self.assertTrue(response.ok)
+        self.assertIsNot(response, False)

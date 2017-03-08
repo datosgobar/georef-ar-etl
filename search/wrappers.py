@@ -12,7 +12,17 @@ class HereWrapper:
         self.app_id = app_id
 
     def search_address(self, address):
+        """Busca una dirección en el servicio de HERE.
+
+        Returns:
+            list: la lista de resultados encontrados,
+            o False si no hay resultados. 
+        """
         query = '{}?searchtext={}&app_code={}&app_id={}'.format(
             self.url, address, self.app_code, self.app_id)
         response = requests.get(query)
-        return response if response.ok else False
+        try:
+            result = response.json()
+            return result['Response']['View'][0]['Result']
+        except ValueError:
+            return False
