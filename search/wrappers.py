@@ -38,7 +38,7 @@ class NominatimWrapper:
         self.address_details = address_details
 
     def search_address(self, address):
-        query = '{}/search?q={}&format={}&polygon={}&addressdetails={}'.format(
+        query = '{}/search?q={}+Argentina&format={}&polygon={}&addressdetails={}'.format(
             self.url, address, self.format, self.polygon, self.address_details)
         response = requests.get(query)
         try:
