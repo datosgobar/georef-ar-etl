@@ -6,7 +6,6 @@ from django.test import TestCase
 from search.wrappers import HereWrapper, NominatimWrapper
 
 
-
 class HereAPITest(TestCase):
     """Tests para la interfaz con API de HERE."""
 
