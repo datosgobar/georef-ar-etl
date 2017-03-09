@@ -11,11 +11,17 @@ class HereAPITest(TestCase):
 
     def setUp(self):
         self.url = 'https://geocoder.cit.api.here.com/6.2/geocode.json'
-        self.search_text = 'Avenida Presidente Roque Sáenz Peña 788'
         self.app_code = '2KEvGLCDtqH7HLUTNxDu3A&gen=8'
         self.app_id = 'Qop1chzvUyZdOZJatmeG'
 
-    def test_search_address(self):
+    def test_address_with_match(self):
         wrapper = HereWrapper(self.url, self.app_code, self.app_id)
-        response = wrapper.search_address(self.search_text)
-        self.assertIsNot(response, False)
+        address = 'Avenida Roque Sáenz Peña 788, Buenos Aires'
+        response = wrapper.search_address(address)
+        self.assertIsNot(response, None)
+
+    def test_address_without_match(self):
+        wrapper = HereWrapper(self.url, self.app_code, self.app_id)
+        address = 'Avenida Roque Sáenz Peña 788'
+        response = wrapper.search_address(address)
+        self.assertIs(response, None)
