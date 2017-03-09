@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from search.wrappers import HereWrapper
+from search.wrappers import HereWrapper, NominatimWrapper
 
 
 def search(request):
@@ -11,6 +11,15 @@ def search(request):
             app_code='2KEvGLCDtqH7HLUTNxDu3A&gen=8',
             app_id='Qop1chzvUyZdOZJatmeG')
         data['results'] = here_wrapper.search_address(address)
+
+        nominatim_wrapper = NominatimWrapper(
+            url='http://nominatim.openstreetmap.org/',
+            format='json',
+            polygon='1',
+            address_details='1'
+        )
+        data['results_nominatim'] = nominatim_wrapper.search_address(address)
+
     else:
         data['results'] = None
 
