@@ -18,7 +18,7 @@ class HereWrapper:
             list: la lista de resultados encontrados,
             o False si no hay resultados. 
         """
-        query = '{}?searchtext={}&app_code={}&app_id={}'.format(
+        query = '{}?searchtext={}&country=ARG&app_code={}&app_id={}'.format(
             self.url, address, self.app_code, self.app_id)
         response = requests.get(query)
         try:

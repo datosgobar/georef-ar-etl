@@ -10,7 +10,7 @@ def search(request):
             url='https://geocoder.cit.api.here.com/6.2/geocode.json',
             app_code='2KEvGLCDtqH7HLUTNxDu3A&gen=8',
             app_id='Qop1chzvUyZdOZJatmeG')
-        data['results'] = here_wrapper.search_address(address)
+        data['here_data'] = here_wrapper.search_address(address)
 
         nominatim_wrapper = NominatimWrapper(
             url='http://nominatim.openstreetmap.org/',
@@ -18,10 +18,7 @@ def search(request):
             polygon='1',
             address_details='1'
         )
-        data['results_nominatim'] = nominatim_wrapper.search_address(address)
-
-    else:
-        data['results'] = None
+        data['osm_data'] = nominatim_wrapper.search_address(address)
 
     return render(request, 'search.html', data)
 
