@@ -26,3 +26,23 @@ class HereWrapper:
             return response_view[0]['Result'] if response_view else None
         except ValueError:
             return False
+
+
+class NominatimWrapper:
+    """Interfaz para la API REST de Nominatim"""
+
+    def __init__(self, url, format, polygon, address_details):
+        self.url = url
+        self.format = format
+        self.polygon = polygon
+        self.address_details = address_details
+
+    def search_address(self, address):
+        query = '{}/search?q={}&format={}&polygon={}&addressdetails={}'.format(
+            self.url, address, self.format, self.polygon, self.address_details)
+        response = requests.get(query)
+        try:
+            response_view = response.json()
+            return response_view if response_view else None
+        except ValueError:
+            return False
