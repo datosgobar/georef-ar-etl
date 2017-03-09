@@ -70,7 +70,10 @@
                     <h4 style="text-align:center">Open Street Map</h4>
                     {% if osm_data %}
                         {% for result in osm_data %}
-                            <li>{{ result.display_name }}</li>
+                            <li><a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa."target="_blank">
+                                {{ result.display_name }}
+                                </a>
+                            </li>
                         {% endfor %}
                     {% else %}
                         <p style="text-align:center">No hay resultados para mostrar...</p>
