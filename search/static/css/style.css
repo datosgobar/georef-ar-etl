@@ -58,6 +58,16 @@ body {
   padding: 0;
 }
 
+.result {
+  border: 1px solid lightgrey;
+  margin-bottom: 4px;
+  font-size: 16px;
+  text-align: center;
+}
+  .result:hover {
+    background-color: beige;
+  }
+
 .search-box {
   position: relative;
   vertical-align: top;
@@ -106,7 +116,7 @@ body {
     max-width: 750px;
   }
   .pane-content {
-    margin: 60px auto;
+    margin: 40px auto;
     max-width: 750px;
   }
   .restricted-max-width {
@@ -127,7 +137,7 @@ body {
     max-width: 1200px;
   }
   .pane-content {
-    margin: 60px auto;
+    margin: 40px auto;
     max-width: 1200px;
   }
   .restricted-max-width {
