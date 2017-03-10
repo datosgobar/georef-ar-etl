@@ -18,7 +18,7 @@ class HereAPITest(TestCase):
         wrapper = HereWrapper(self.url, self.app_code, self.app_id)
         address = 'Avenida Roque Sáenz Peña 788, Buenos Aires'
         response = wrapper.search_address(address)
-        self.assertIsNot(response, None)
+        self.assertTrue('houseNumber' in response[0]['MatchLevel'])
 
     def test_address_without_match(self):
         wrapper = HereWrapper(self.url, self.app_code, self.app_id)
