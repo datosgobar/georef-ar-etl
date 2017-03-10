@@ -56,8 +56,8 @@
             <div class="col-xs-12 col-sm-6 col-lg-6">
                 <ul>
                     <h4 style="text-align:center">HERE</h4>
-                    {% if here_data %}
-                        {% for result in here_data %}
+                    {% if results.here %}
+                        {% for result in results.here %}
                             <li><a href="https://wego.here.com/search/{{ result.Location.Address.Label }}" title="Ver en el Mapa."target="_blank">
                                     {{ result.Location.Address.Label }}
                                 </a>
@@ -71,8 +71,8 @@
             <div class="col-xs-12 col-sm-6 col-lg-6">
                 <ul>
                     <h4 style="text-align:center">Open Street Map</h4>
-                    {% if osm_data %}
-                        {% for result in osm_data %}
+                    {% if results.osm %}
+                        {% for result in results.osm %}
                             <li><a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa."target="_blank">
                                 {{ result.display_name }}
                                 </a>
