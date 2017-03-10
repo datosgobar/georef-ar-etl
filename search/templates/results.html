@@ -4,7 +4,7 @@
             <h4 style="text-align:center">HERE</h4>
             {% if results.here %}
                 {% for result in results.here %}
-                    <a href="https://wego.here.com/search/{{ result.Location.Address.Label }}" title="Ver en el Mapa."target="_blank">
+                    <a href="https://wego.here.com/search/{{ result.Location.Address.Label }}" title="Ver en el Mapa"target="_blank">
                         <div class="result">
                             <span>{{ result.Location.Address.Label }}</span>
                         </div>
@@ -20,7 +20,7 @@
             <h4 style="text-align:center">Open Street Map</h4>
             {% if results.osm %}
                 {% for result in results.osm %}
-                    <a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa."target="_blank">
+                    <a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa"target="_blank">
                         <div class="result">
                             <span>{{ result.display_name }}</span>
                         </div>
