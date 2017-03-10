@@ -80,6 +80,10 @@ body {
   padding: 10px;
 }
 
+#btn-buscar {
+  border: solid thin white;
+}
+
 #footer {
   position: absolute;
   bottom: 0;
