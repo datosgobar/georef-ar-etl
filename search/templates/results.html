@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-xs-12 col-sm-6 col-lg-6">
-        <div>
-            <h4 style="text-align:center">HERE</h4>
+        <h4 style="text-align:center">HERE</h4>
+        <div class="results">
             {% if results.here %}
                 {% for result in results.here %}
                     <a href="https://wego.here.com/search/{{ result.Location.Address.Label }}" title="Ver en el Mapa"target="_blank">
@@ -16,8 +16,8 @@
         </div>
     </div>
     <div class="col-xs-12 col-sm-6 col-lg-6">
-        <div>
-            <h4 style="text-align:center">Open Street Map</h4>
+        <h4 style="text-align:center">Open Street Map</h4>
+        <div class="results">
             {% if results.osm %}
                 {% for result in results.osm %}
                     <a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa"target="_blank">
