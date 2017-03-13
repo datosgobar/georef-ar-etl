@@ -10,6 +10,8 @@ class Address(models.Model):
     name = models.CharField(max_length=250)
     house_number = models.IntegerField(blank=True, null=True)
     #geom = models.PointField(blank=True, null=True)
+    lat = models.DecimalField(max_digits=65535, decimal_places=65535)
+    lon = models.DecimalField(max_digits=65535, decimal_places=65535)
     type = models.ForeignKey(AddressType)
     district = models.CharField(max_length=100, blank=True, null=True)
     suburb = models.CharField(max_length=100, blank=True, null=True)
