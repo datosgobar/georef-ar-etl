@@ -38,9 +38,7 @@ class NominatimWrapper:
         self.address_details = address_details
 
     def search_address(self, address):
-        if 'argentina' not in address.lower():
-            address += ' argentina'
-        query = '{}/search?q={}&format={}&countrycode={}&addressdetails={}'.format(
+        query = '{}/search?q={}&format={}&countrycodes={}&addressdetails={}'.format(
             self.url, address, self.format, self.country_code, self.address_details)
         response = requests.get(query)
         try:
