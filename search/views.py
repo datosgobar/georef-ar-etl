@@ -15,7 +15,7 @@ def search(request):
         nominatim_wrapper = NominatimWrapper(
             url='http://nominatim.openstreetmap.org/',
             format='json',
-            polygon='1',
+            country_code='ar',
             address_details='1'
         )
         data['results'].update(osm=nominatim_wrapper.search_address(address))

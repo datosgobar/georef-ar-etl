@@ -31,17 +31,17 @@ class HereWrapper:
 class NominatimWrapper:
     """Interfaz para la API REST de Nominatim"""
 
-    def __init__(self, url, format, polygon, address_details):
+    def __init__(self, url, format, country_code, address_details):
         self.url = url
         self.format = format
-        self.polygon = polygon
+        self.country_code = country_code
         self.address_details = address_details
 
     def search_address(self, address):
         if 'argentina' not in address.lower():
             address += ' argentina'
-        query = '{}/search?q={}&format={}&polygon={}&addressdetails={}'.format(
-            self.url, address, self.format, self.polygon, self.address_details)
+        query = '{}/search?q={}&format={}&countrycode={}&addressdetails={}'.format(
+            self.url, address, self.format, self.country_code, self.address_details)
         response = requests.get(query)
         try:
             response_view = response.json()

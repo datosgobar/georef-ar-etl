@@ -33,11 +33,11 @@ class NominatimAPITest(TestCase):
     def setUp(self):
         self.url = 'http://nominatim.openstreetmap.org'
         self.format = 'json'
-        self.polygon = '1'
+        self.country_code = 'ar'
         self.address_details = '1'
 
     def test_address_with_match(self):
-        wrapper = NominatimWrapper(self.url, self.format, self.polygon, self.address_details)
+        wrapper = NominatimWrapper(self.url, self.format, self.country_code, self.address_details)
         address = 'Avenida Roque Sáenz Peña 788, Buenos Aires'
         response = wrapper.search_address(address)
         self.assertIsNot(response, None)
