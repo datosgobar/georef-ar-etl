@@ -3,6 +3,7 @@
 """Tests de la aplicación Search."""
 
 from django.test import TestCase
+from search.models import *
 from search.wrappers import HereWrapper, NominatimWrapper
 
 
@@ -25,6 +26,38 @@ class HereAPITest(TestCase):
         address = 'Avenida Roque Sáenz Peña 788'
         response = wrapper.search_address(address)
         self.assertIs(response, None)
+    
+    def test_convert_result_to_address_model(self):
+        wrapper = HereWrapper(self.url, self.app_code, self.app_id)
+        result = {
+            'Relevance': 1.0,
+            'MatchLevel': 'houseNumber',
+            'MatchQuality': {
+                'Country': 1.0,
+                'City': 1.0,
+                'Street': [1.0],
+                'HouseNumber': 1.0},
+            'MatchType': 'interpolated',
+            'Location': {
+                'LocationId': 'NT_lWBq3p.Bo6htVj-45UZJ9C_3gDO',
+                'LocationType': 'address',
+                'DisplayPosition': {
+                    'Latitude': -34.606124,
+                    'Longitude': -58.3773523},
+                'Address': {
+                    'Label': 'Avenida Presidente Roque Sáenz Peña 788',
+                    'Country': 'ARG',
+                    'State': 'Ciudad Autónoma de Buenos Aires',
+                    'County': 'Ciudad de Buenos Aires',
+                    'City': 'Ciudad de Buenos Aires',
+                    'District': 'San Nicolás',
+                    'Street': 'Avenida Presidente Roque Sáenz Peña',
+                    'HouseNumber': '788',
+                    'PostalCode': '1035',}
+                }
+            }
+        model = wrapper.get_address_from_json(result)
+        self.assertIsInstance(model, Address)
 
 
 class NominatimAPITest(TestCase):
