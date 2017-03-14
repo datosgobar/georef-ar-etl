@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from search.models import *
 import requests
 
 
 class HereWrapper:
     """Interfaz para la API REST de HERE."""
-
     def __init__(self, url, app_code, app_id):
         self.url = url
         self.app_code = app_code
@@ -27,10 +27,31 @@ class HereWrapper:
         except ValueError:
             return False
 
+    def get_address_from_json(self, result):
+        """Procesa una dirección de HERE y retorna un objeto Address."""
+        type = AddressType.objects.get_or_create(name=result['MatchLevel'])[0]
+        latitude = result['Location']['DisplayPosition']['Latitude']
+        longitude = result['Location']['DisplayPosition']['Longitude']
+        result = result['Location']['Address']
+        address = Address(
+            name=result['Label'],
+            house_number=result.get('HouseNumber'),
+            postal_code = result.get('PostalCode'),
+            district=result.get('District'),
+            lat=latitude,
+            lon=longitude,
+            type=type,
+            source='here'
+        )
+        if result.get('City'):
+            address.city = City.objects.get_or_create(name=result['City'])[0]
+        if result.get('State'):
+            address.state = State.objects.get_or_create(name=result['State'])[0]
+        return address
+
 
 class NominatimWrapper:
     """Interfaz para la API REST de Nominatim"""
-
     def __init__(self, url, format, country_code, address_details):
         self.url = url
         self.format = format
