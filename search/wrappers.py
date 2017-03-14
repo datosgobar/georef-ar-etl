@@ -36,16 +36,16 @@ class HereWrapper:
         address = Address(
             name=result['Label'],
             house_number=result.get('HouseNumber'),
-            postal_code = result.get('PostalCode'),
+            postal_code=result.get('PostalCode'),
             district=result.get('District'),
             lat=latitude,
             lon=longitude,
             type=type,
             source='here'
         )
-        if result.get('City'):
+        if 'City' in result:
             address.city = City.objects.get_or_create(name=result['City'])[0]
-        if result.get('State'):
+        if 'State' in result:
             address.state = State.objects.get_or_create(name=result['State'])[0]
         return address
 
@@ -67,3 +67,26 @@ class NominatimWrapper:
             return response_view if response_view else None
         except ValueError:
             return False
+
+    def get_address_from_json(self, result):
+        """Procesa una dirección de OSM y retorna un objeto Address."""
+        type = AddressType.objects.get_or_create(name=result['type'])[0]
+        latitude = result['lat']
+        longitude = result['lon']
+        result = result['address']
+        address = Address(
+            name=result['road'],
+            house_number=result.get('house_number'),
+            postal_code=result.get('postcode'),
+            district=result.get('suburb'),
+            lat=latitude,
+            lon=longitude,
+            type=type,
+            source='osm'
+        )
+        if 'City' in result:
+            address.city = City.objects.get_or_create(name=result['city'])[0]
+        if 'State' in result:
+            address.state = State.objects.get_or_create(name=result['state'])[0]
+        return address
+
