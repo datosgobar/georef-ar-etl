@@ -20,6 +20,9 @@ class City(models.Model):
     def __str__(self):
         return "{}".format(self.name)
 
+    class Meta:
+        verbose_name_plural = 'Cities'
+
 
 class State(models.Model):
     name = models.CharField(max_length=100)
@@ -43,3 +46,6 @@ class Address(models.Model):
 
     def __str__(self):
         return '{} {}'.format(self.name, self.house_number)
+
+    class Meta:
+        verbose_name_plural = 'Addresses'

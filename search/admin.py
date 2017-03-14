@@ -1,3 +1,8 @@
 from django.contrib import admin
+from search.models import *
 
-# Register your models here.
+
+admin.site.register(Address)
+admin.site.register(AddressType)
+admin.site.register(City)
+admin.site.register(State)
