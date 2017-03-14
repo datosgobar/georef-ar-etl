@@ -75,7 +75,7 @@ class NominatimWrapper:
         longitude = result['lon']
         result = result['address']
         address = Address(
-            name=result['road'],
+            name=result['display_name'],
             house_number=result.get('house_number'),
             postal_code=result.get('postcode'),
             district=result.get('suburb'),
