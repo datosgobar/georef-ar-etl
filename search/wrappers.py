@@ -73,9 +73,10 @@ class NominatimWrapper:
         type = AddressType.objects.get_or_create(name=result['type'])[0]
         latitude = result['lat']
         longitude = result['lon']
+        name = result['display_name']
         result = result['address']
         address = Address(
-            name=result['road'],
+            name=name,
             house_number=result.get('house_number'),
             postal_code=result.get('postcode'),
             district=result.get('suburb'),
