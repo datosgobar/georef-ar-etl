@@ -59,9 +59,10 @@ class NominatimWrapper:
         self.address_details = address_details
 
     def search_address(self, address):
-        query = '{}/search?q={}&format={}&countrycodes={}&addressdetails={}'.format(
-            self.url, address, self.format, self.country_code, self.address_details)
-        response = requests.get(query)
+        q = '{}/search?q={}&format={}&countrycodes={}&addressdetails={}'.format(
+            self.url, address, self.format,
+            self.country_code, self.address_details)
+        response = requests.get(q)
         try:
             response_view = response.json()
             return response_view if response_view else None

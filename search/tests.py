@@ -53,7 +53,7 @@ class HereAPITest(TestCase):
                     'District': 'San Nicolás',
                     'Street': 'Avenida Presidente Roque Sáenz Peña',
                     'HouseNumber': '788',
-                    'PostalCode': '1035',}
+                    'PostalCode': '1035'}
                 }
             }
         model = wrapper.get_address_from_json(result)
