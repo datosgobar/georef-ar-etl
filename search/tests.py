@@ -70,16 +70,18 @@ class NominatimAPITest(TestCase):
         self.address_details = '1'
 
     def test_address_with_match(self):
-        wrapper = NominatimWrapper(self.url, self.format, self.country_code, self.address_details)
+        wrapper = NominatimWrapper(
+            self.url, self.format, self.country_code, self.address_details)
         address = 'Avenida Roque Sáenz Peña 788, Buenos Aires'
         response = wrapper.search_address(address)
         self.assertIsNot(response, None)
 
     def test_convert_result_to_address_model(self):
-        wrapper = NominatimWrapper(self.url, self.format, self.country_code, self.address_details)
+        wrapper = NominatimWrapper(
+            self.url, self.format, self.country_code, self.address_details)
         result = {
             "place_id": "18610386",
-            "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright",
+            "licence": "Data © OpenStreetMap contributors",
             "osm_type": "way",
             "osm_id": "208271943",
             "boundingbox": [
@@ -90,7 +92,7 @@ class NominatimAPITest(TestCase):
             ],
             "lat": "-34.6052765265306",
             "lon": "-58.3764610897959",
-            "display_name": "255, Maipú, Microcentro, San Nicolás, Buenos Aires, Comuna 1, Ciudad Autónoma de Buenos Aires, C1006, Argentina",
+            "display_name": "255, Maipú, Microcentro, San Nicolás, Argentina",
             "class": "place",
             "type": "house",
             "importance": 0.611,
