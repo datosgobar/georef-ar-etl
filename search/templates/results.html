@@ -2,33 +2,44 @@
     <div class="col-xs-12 col-sm-6 col-lg-6">
         <h4 style="text-align:center">HERE</h4>
         <div class="results">
-            {% if results.here %}
-                {% for result in results.here %}
+            {% for result in results.here %}
+                <div class="result">
                     <a href="https://wego.here.com/search/{{ result.Location.Address.Label }}" title="Ver en el Mapa"target="_blank">
-                        <div class="result">
-                            <span>{{ result.Location.Address.Label }}</span>
-                        </div>
+                        <div><span>{{ result.Location.Address.Label }}</span></div>
                     </a>
-                {% endfor %}
-            {% else %}
+                    <div class="details" hidden>
+                        <button class="btn btn-default btn-sm">Guardar</button>
+                        <span><strong>Tipo de resultado:</strong> {{ result.MatchLevel }}</span><br>
+                    </div>
+                </div>
+            {% empty %}
                 <p style="text-align:center">No hay resultados para mostrar...</p>
-            {% endif %}
+            {% endfor %}
         </div>
     </div>
     <div class="col-xs-12 col-sm-6 col-lg-6">
         <h4 style="text-align:center">Open Street Map</h4>
         <div class="results">
-            {% if results.osm %}
-                {% for result in results.osm %}
-                    <a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa"target="_blank">
-                        <div class="result">
-                            <span>{{ result.display_name }}</span>
-                        </div>
-                    </a>
-                {% endfor %}
-            {% else %}
-                <p style="text-align:center">No hay resultados para mostrar...</p>
-            {% endif %}
+        {% for result in results.osm %}
+            <div class="result">
+                <a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa"target="_blank">
+                    <div><span>{{ result.display_name }}</span></div>
+                </a>
+                <div class="details" hidden>
+                    <button class="btn btn-default btn-sm">Guardar</button>
+                    <span><strong>Tipo de resultado:</strong> {{ result.type }}</span><br>
+                </div>
+            </div>
+        {% empty %}
+            <p style="text-align:center">No hay resultados para mostrar...</p>
+        {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+    $(".result a").click(function(e){
+        e.preventDefault();
+        $(this).siblings(".details").toggle("fast");
+    });
+</script>

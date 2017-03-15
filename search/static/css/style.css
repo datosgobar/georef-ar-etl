@@ -42,6 +42,17 @@ body {
     margin-bottom: 25px;
   }
 
+.details {
+  font-size: 14px;
+  text-align: left;
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
+.details span {
+  float: right;
+  padding-right: 10px;
+}
 .panel {
   margin-bottom: 0;
 }
