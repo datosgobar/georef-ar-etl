@@ -34,8 +34,8 @@ class State(models.Model):
 class Address(models.Model):
     name = models.CharField(max_length=250)
     house_number = models.IntegerField(blank=True, null=True)
-    lat = models.DecimalField(max_digits=65535, decimal_places=65535)
-    lon = models.DecimalField(max_digits=65535, decimal_places=65535)
+    lat = models.DecimalField(max_digits=65535, decimal_places=10)
+    lon = models.DecimalField(max_digits=65535, decimal_places=10)
     type = models.ForeignKey(AddressType)
     district = models.CharField(max_length=100, blank=True, null=True)
     suburb = models.CharField(max_length=100, blank=True, null=True)
