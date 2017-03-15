@@ -1,4 +1,5 @@
 import json
+from django.http import HttpResponse
 from django.shortcuts import render
 from search.wrappers import HereWrapper, NominatimWrapper
 
@@ -28,13 +29,13 @@ def save_address(request):
     data = {'results': {}}
     if request.method == 'POST':
         result = request.POST.get('result', True)
+        result = json.loads(result.replace('\'','"'))
         if result['source'] == 'osm':
             wrapper = NominatimWrapper(
                 url=None, format=None, country_code=None, address_details=None)
         else:
             wrapper = HereWrapper(
                 url=None, app_code=None, app_id=None)
-        result = json.loads(result['address'])
         address = wrapper.get_address_from_json(result['address'])
         address.save()
-    return render(request, 'search.html', data)
+    return HttpResponse('Se guardó la dirección correctamente.')

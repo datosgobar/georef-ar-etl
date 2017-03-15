@@ -93,15 +93,24 @@
 </html>
 
 <script>
+    NProgress.configure({ showSpinner: false });
+    
     $("#btn-buscar").click(function(e) {
         e.preventDefault();
         if ($("#searchbox").val() === "") {
             alert("Ingresar una dirección para buscar.");
         }
         else {
-            NProgress.configure({ showSpinner: false });
             NProgress.start();
             $("form").submit();
         }
     })
+
+    $(document).ajaxStart(function(){
+        NProgress.start();
+    });
+    
+    $(document).ajaxStop(function(){
+        NProgress.done();
+    });
 </script>
