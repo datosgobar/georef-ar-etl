@@ -55,6 +55,7 @@
             attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
             L.marker([lat, lon]).addTo(map);
+            setTimeout(function(){ map.invalidateSize()}, 250);
         }
         $(this).siblings(".details").toggle("fast");
     });
