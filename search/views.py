@@ -1,6 +1,6 @@
 import json
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from search.wrappers import HereWrapper, NominatimWrapper
 
 
@@ -37,4 +37,5 @@ def save_address(request):
                 url=None, app_code=None, app_id=None)
         address = wrapper.get_address_from(result['address'])
         address.save()
-    return HttpResponse('Se guardó la dirección correctamente.')
+        return HttpResponse('Se guardó la dirección correctamente.')
+    return redirect('search')
