@@ -26,7 +26,6 @@ def search(request):
 
 
 def save_address(request):
-    data = {'results': {}}
     if request.method == 'POST':
         result = request.POST.get('result', True)
         result = json.loads(result.replace('\'','"'))
@@ -36,6 +35,6 @@ def save_address(request):
         else:
             wrapper = HereWrapper(
                 url=None, app_code=None, app_id=None)
-        address = wrapper.get_address_from_json(result['address'])
+        address = wrapper.get_address_from(result['address'])
         address.save()
     return HttpResponse('Se guardó la dirección correctamente.')

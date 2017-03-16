@@ -56,8 +56,10 @@ class HereAPITest(TestCase):
                     'PostalCode': '1035'}
                 }
             }
-        model = wrapper.get_address_from_json(result)
-        self.assertIsInstance(model, Address)
+        model = wrapper.get_address_from(result)
+        model.save()
+        model = Address.objects.all()[0]
+        self.assertIsNotNone(model.id)
 
 
 class NominatimAPITest(TestCase):
@@ -109,6 +111,8 @@ class NominatimAPITest(TestCase):
               "country_code": "ar"
             }
         }
-        model = wrapper.get_address_from_json(result)
-        self.assertIsInstance(model, Address)
+        model = wrapper.get_address_from(result)
+        model.save()
+        model = Address.objects.all()[0]
+        self.assertIsNotNone(model.id)
 

@@ -27,7 +27,7 @@ class HereWrapper:
         except ValueError:
             return False
 
-    def get_address_from_json(self, result):
+    def get_address_from(self, result):
         """Procesa una dirección de HERE y retorna un objeto Address."""
         type = AddressType.objects.get_or_create(name=result['MatchLevel'])[0]
         latitude = result['Location']['DisplayPosition']['Latitude']
@@ -69,7 +69,7 @@ class NominatimWrapper:
         except ValueError:
             return False
 
-    def get_address_from_json(self, result):
+    def get_address_from(self, result):
         """Procesa una dirección de OSM y retorna un objeto Address."""
         type = AddressType.objects.get_or_create(name=result['type'])[0]
         latitude = result['lat']
