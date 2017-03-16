@@ -4,7 +4,7 @@
         <div class="results">
             {% for result in results.here %}
                 <div class="result">
-                    <a data-lat="{{ result.Location.DisplayPosition.Latitude|floatformat }}" data-lon="{{ result.Location.DisplayPosition.Longitude }}" href="/">
+                    <a data-lat="{{ result.Location.DisplayPosition.Latitude }}" data-lon="{{ result.Location.DisplayPosition.Longitude }}" href="/">
                         <div><span>{{ result.Location.Address.Label }}</span></div>
                     </a>
                     <div class="details" hidden>
