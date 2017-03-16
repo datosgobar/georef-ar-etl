@@ -4,12 +4,13 @@
         <div class="results">
             {% for result in results.here %}
                 <div class="result">
-                    <a href="https://wego.here.com/search/{{ result.Location.Address.Label }}" title="Ver en el Mapa"target="_blank">
+                    <a data-lat="{{ result.Location.DisplayPosition.Latitude|floatformat }}" data-lon="{{ result.Location.DisplayPosition.Longitude }}" href="/">
                         <div><span>{{ result.Location.Address.Label }}</span></div>
                     </a>
                     <div class="details" hidden>
                         <button class="btn btn-default btn-sm" data-result="{'source': 'here', 'address': {{ result }}}">Guardar</button>
                         <span><strong>Tipo de resultado:</strong> {{ result.MatchLevel }}</span><br>
+                        <div id="map-here-{{ forloop.counter0 }}" class="map"></div>
                     </div>
                 </div>
             {% empty %}
@@ -22,12 +23,13 @@
         <div class="results">
         {% for result in results.osm %}
             <div class="result">
-                <a href="http://nominatim.openstreetmap.org/reverse.php?lat={{ result.lat }}&lon={{ result.lon }}&zoom=18&format=html" title="Ver en el Mapa"target="_blank">
+                <a data-lat="{{ result.lat }}" data-lon="{{ result.lon }}" href="/">
                     <div><span>{{ result.display_name }}</span></div>
                 </a>
                 <div class="details" hidden>
                     <button class="btn btn-default btn-sm" data-result="{'source': 'osm', 'address': {{ result }}}">Guardar</button>
                     <span><strong>Tipo de resultado:</strong> {{ result.type }}</span><br>
+                    <div id="map-osm-{{ forloop.counter0 }}" class="map"></div>
                 </div>
             </div>
         {% empty %}
@@ -40,6 +42,20 @@
 <script>
     $(".result a").click(function(e){
         e.preventDefault();
+        var lat = $(this).data("lat");
+        var lon = $(this).data("lon");
+        if (typeof(lat) === "string") {
+            lat = parseFloat(lat.replace(",", "."));
+            lon = parseFloat(lon.replace(",", "."));
+        }
+        var mapDiv = $(this).siblings('.details').find('.map');
+        if (!mapDiv.html()) {
+            var map = L.map(mapDiv.attr("id")).setView([lat, lon], 15);
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            L.marker([lat, lon]).addTo(map);
+        }
         $(this).siblings(".details").toggle("fast");
     });
     $(".details button").click(function(){

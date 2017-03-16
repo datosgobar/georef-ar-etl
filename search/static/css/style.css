@@ -46,13 +46,20 @@ body {
   font-size: 14px;
   text-align: left;
   padding-left: 10px;
-  padding-top: 10px;
+  padding: 10px;
 }
 
 .details span {
   float: right;
   padding-right: 10px;
 }
+
+.map {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
 .panel {
   margin-bottom: 0;
 }
