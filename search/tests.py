@@ -87,10 +87,10 @@ class NominatimAPITest(TestCase):
             "osm_type": "way",
             "osm_id": "208271943",
             "boundingbox": [
-              "-34.605326526531",
-              "-34.605226526531",
-              "-58.376511089796",
-              "-58.376411089796"
+                "-34.605326526531",
+                "-34.605226526531",
+                "-58.376511089796",
+                "-58.376411089796"
             ],
             "lat": "-34.6052765265306",
             "lon": "-58.3764610897959",
@@ -99,19 +99,20 @@ class NominatimAPITest(TestCase):
             "type": "house",
             "importance": 0.611,
             "address": {
-              "house_number": "255",
-              "road": "Maipú",
-              "neighbourhood": "Microcentro",
-              "suburb": "San Nicolás",
-              "city": "Buenos Aires",
-              "state_district": "Comuna 1",
-              "state": "Ciudad Autónoma de Buenos Aires",
-              "postcode": "C1006",
-              "country": "Argentina",
-              "country_code": "ar"
+                "house_number": "255",
+                "road": "Maipú",
+                "neighbourhood": "Microcentro",
+                "suburb": "San Nicolás",
+                "city": "Buenos Aires",
+                "state_district": "Comuna 1",
+                "state": "Ciudad Autónoma de Buenos Aires",
+                "postcode": "C1006",
+                "country": "Argentina",
+                "country_code": "ar"
             }
         }
         model = wrapper.get_address_from(result)
         model.save()
         model = Address.objects.all()[0]
         self.assertIsNotNone(model.id)
+
