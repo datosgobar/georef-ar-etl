@@ -26,7 +26,7 @@ class HereAPITest(TestCase):
         address = 'Avenida Roque Sáenz Peña 788'
         response = wrapper.search_address(address)
         self.assertIs(response, None)
-    
+
     def test_convert_result_to_address_model(self):
         wrapper = HereWrapper(self.url, self.app_code, self.app_id)
         result = {
@@ -115,4 +115,3 @@ class NominatimAPITest(TestCase):
         model.save()
         model = Address.objects.all()[0]
         self.assertIsNotNone(model.id)
-
