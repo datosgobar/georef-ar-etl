@@ -27,13 +27,14 @@ class HereWrapper:
         except ValueError:
             return False
 
-    def get_address_from(self, result):
+    def get_address_from(self, search_text, result):
         """Procesa una dirección de HERE y retorna un objeto Address."""
         type = AddressType.objects.get_or_create(name=result['MatchLevel'])[0]
         latitude = result['Location']['DisplayPosition']['Latitude']
         longitude = result['Location']['DisplayPosition']['Longitude']
         result = result['Location']['Address']
         address = Address(
+            search_text=search_text,
             name=result['Label'],
             house_number=result.get('HouseNumber'),
             postal_code=result.get('PostalCode'),
@@ -69,7 +70,7 @@ class NominatimWrapper:
         except ValueError:
             return False
 
-    def get_address_from(self, result):
+    def get_address_from(self, search_text, result):
         """Procesa una dirección de OSM y retorna un objeto Address."""
         type = AddressType.objects.get_or_create(name=result['type'])[0]
         latitude = result['lat']
@@ -77,6 +78,7 @@ class NominatimWrapper:
         name = result['display_name']
         result = result['address']
         address = Address(
+            search_text=search_text,
             name=name,
             house_number=result.get('house_number'),
             postal_code=result.get('postcode'),

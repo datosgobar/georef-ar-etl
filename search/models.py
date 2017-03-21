@@ -32,6 +32,7 @@ class State(models.Model):
 
 
 class Address(models.Model):
+    search_text = models.CharField(max_length=250, null=True)
     name = models.CharField(max_length=250)
     house_number = models.IntegerField(blank=True, null=True)
     lat = models.DecimalField(max_digits=65535, decimal_places=10)

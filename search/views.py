@@ -27,15 +27,16 @@ def search(request):
 
 def save_address(request):
     if request.method == 'POST':
+        search_text = request.POST.get('search_text', True)
         result = request.POST.get('result', True)
-        result = json.loads(result.replace('\'','"'))
+        result = json.loads(result.replace('\'', '"'))
         if result['source'] == 'osm':
             wrapper = NominatimWrapper(
                 url=None, format=None, country_code=None, address_details=None)
         else:
             wrapper = HereWrapper(
                 url=None, app_code=None, app_id=None)
-        address = wrapper.get_address_from(result['address'])
+        address = wrapper.get_address_from(search_text, result['address'])
         address.save()
         return HttpResponse('Se guardó la dirección correctamente.')
     return redirect('search')

@@ -61,8 +61,9 @@
     
     $(".details button").click(function(){
         var result = $(this).data("result");
+        var search_text = $('#searchbox').attr('placeholder');
         $.post('save_address',
-            { result: result, csrfmiddlewaretoken: '{{ csrf_token }}'},
+            { search_text: search_text, result: result, csrfmiddlewaretoken: '{{ csrf_token }}'},
             function(data) { alert(data); }
         );
     });

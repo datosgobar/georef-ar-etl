@@ -29,6 +29,7 @@ class HereAPITest(TestCase):
 
     def test_convert_result_to_address_model(self):
         wrapper = HereWrapper(self.url, self.app_code, self.app_id)
+        search_text = 'Maipú 255, Ciudad autónoma de Buenos Aires'
         result = {
             'Relevance': 1.0,
             'MatchLevel': 'houseNumber',
@@ -56,7 +57,7 @@ class HereAPITest(TestCase):
                     'PostalCode': '1035'}
                 }
             }
-        model = wrapper.get_address_from(result)
+        model = wrapper.get_address_from(search_text, result)
         model.save()
         model = Address.objects.all()[0]
         self.assertIsNotNone(model.id)
@@ -81,6 +82,7 @@ class NominatimAPITest(TestCase):
     def test_convert_result_to_address_model(self):
         wrapper = NominatimWrapper(
             self.url, self.format, self.country_code, self.address_details)
+        search_text = 'Maipú 255, Ciudad autónoma de Buenos Aires'
         result = {
             "place_id": "18610386",
             "licence": "Data © OpenStreetMap contributors",
@@ -111,7 +113,7 @@ class NominatimAPITest(TestCase):
                 "country_code": "ar"
             }
         }
-        model = wrapper.get_address_from(result)
+        model = wrapper.get_address_from(search_text, result)
         model.save()
         model = Address.objects.all()[0]
         self.assertIsNotNone(model.id)
