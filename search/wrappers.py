@@ -36,6 +36,7 @@ class HereWrapper:
         address = Address(
             search_text=search_text,
             name=result['Label'],
+            street=result.get('Street'),
             house_number=result.get('HouseNumber'),
             postal_code=result.get('PostalCode'),
             district=result.get('District'),
@@ -80,6 +81,7 @@ class NominatimWrapper:
         address = Address(
             search_text=search_text,
             name=name,
+            street=result.get('road'),
             house_number=result.get('house_number'),
             postal_code=result.get('postcode'),
             district=result.get('suburb'),
@@ -88,9 +90,9 @@ class NominatimWrapper:
             type=type,
             source='osm'
         )
-        if 'City' in result:
+        if 'city' in result:
             address.city = City.objects.get_or_create(name=result['city'])[0]
-        if 'State' in result:
+        if 'state' in result:
             address.state = State.objects.get_or_create(name=result['state'])[0]
         return address
 
