@@ -19,11 +19,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'k3jneu6o!cb$qnqm8=t2dxvd@-t-)y-*43=ul42a@^l48jf#h_'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('DJANGO_ENVIRONMENT', 'dev') == 'dev':
+    SECRET_KEY = 'k3jneu6o!cb$qnqm8=t2dxvd@-t-)y-*43=ul42a@^l48jf#h_'
+    DEBUG = True
+else:
+    SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+    DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -74,11 +75,23 @@ WSGI_APPLICATION = 'georef.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+POSTGRES = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'georef',
+        'USER': 'django',
+        'PASSWORD': os.environ.get('DJANGO_POSTGRES_PASS'),
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+
+SQLITE = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+
+DATABASES = {
+    'default': SQLITE if os.environ.get('DJANGO_ENVIRONMENT', 'dev') == 'dev'
+        else POSTGRES
 }
 
 
