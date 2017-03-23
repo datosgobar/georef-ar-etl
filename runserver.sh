@@ -1,5 +1,5 @@
 #!/bin/bash
 
-. secrets.sh
+. environment.sh
 
 $PYTHON manage.py runserver 0.0.0.0:80
