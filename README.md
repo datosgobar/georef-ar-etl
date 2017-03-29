@@ -98,4 +98,5 @@ Al levantar la aplicación y acceder a la URL (localhost:8000, por ejemplo), se 
 Se muestran resultados si los hubiera y, por cada uno de éstos, puede expandirse el cuadro para ver detalles y el mapa correspondiente.
 
 ## Contacto
-Te invitamos a [crearnos un issue](https://github.com/datosgobar/MODIFICAR POR NOMBRE DEL REPO/issues/new?title=Encontre un bug en nombre-del-repo) en caso de que encuentres algún bug o tengas comentarios de alguna parte de `georef`. Para todo lo demás, podés mandarnos tu sugerencia o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).
+Te invitamos a [crearnos un
+issue](https://github.com/datosgobar/georef/issues/new?title=Encontre-un-bug-en-georef) en caso de que encuentres algún bug o tengas comentarios de alguna parte de `georef`. Para todo lo demás, podés mandarnos tu sugerencia o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).
