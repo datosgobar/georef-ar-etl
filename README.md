@@ -13,13 +13,13 @@ El objetivo a mediano plazo es extender y usar esta aplicación como herramienta
 
 * Clonar el repositorio.
 * Crear un entorno virtual con `Python3.6`.
-* Instalar dependencias: `pip install -r requirements.txt`.
-* Crear DB (SQLite o [PostgreSQL](#instalación-postgresql)): `python manage.py migrate`.
-* Correr tests: `python manage.py test`.
-* Correr app localmente: `python manage.py runserver`.
+* Instalar dependencias: `pip install -r requirements.txt`
+* Crear DB (SQLite o [PostgreSQL](#instalación-postgresql)): `python manage.py migrate`
+* Correr tests: `python manage.py test`
+* Correr app localmente: `python manage.py runserver`
 * Para el servidor de desarrollo:
-    * Declarar variables de entorno y *Python PATH* en `environment.sh`.
-    * Correr el script de ejecución: `sudo ./runserver.sh`.
+    * Declarar variables de entorno y *Python PATH* en `environment.sh`
+    * Correr el script de ejecución: `sudo ./runserver.sh`
 
 ### Instalación PostgreSQL
 
