@@ -1,11 +1,20 @@
-# Prototipo Georef
+# georef
+Prototipo para probar APIs de servicios de geolocalización.
 
-## Configuración de ambientes de desarrollo
+Este repositorio contiene código de una aplicación Django que presenta una interfaz para buscar direcciones en distintos servicios de geolocalización, y ver los resultados de cada uno en mapas embebidos.
+El objetivo a mediano plazo es extender y usar esta aplicación como herramienta de pruebas y punto de referencia para comparar resultados de varios servicios de geolocalización.
+
+## Índice 
+* [Instalación](#instalación)
+* [Uso de georef](#uso-de-georef)
+* [Contacto](#contacto)
+
+## Instalación
 
 * Clonar el repositorio.
 * Crear un entorno virtual con `Python3.6`.
 * Instalar dependencias: `pip install -r requirements.txt`.
-* Crear DB (ver [instalación PostgreSQL](#instalación-postgresql)): `python manage.py migrate`.
+* Crear DB (SQLite o [PostgreSQL](#instalación-postgresql)): `python manage.py migrate`.
 * Correr tests: `python manage.py test`.
 * Correr app localmente: `python manage.py runserver`.
 * Para el servidor de desarrollo:
@@ -83,3 +92,10 @@
 * Finalmente, probar la conexión:
 
     `$ psql -U django -d georef`
+
+## Uso de georef
+Al levantar la aplicación y acceder a la URL (localhost:8000, por ejemplo), se verá un campo para ingresar direcciones y un botón para ejecutar la búsqueda, también posible usando la tecla *Enter*.
+Se muestran resultados si los hubiera y, por cada uno de éstos, puede expandirse el cuadro para ver detalles y el mapa correspondiente.
+
+## Contacto
+Te invitamos a [crearnos un issue](https://github.com/datosgobar/MODIFICAR POR NOMBRE DEL REPO/issues/new?title=Encontre un bug en nombre-del-repo) en caso de que encuentres algún bug o tengas comentarios de alguna parte de `georef`. Para todo lo demás, podés mandarnos tu sugerencia o consulta a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar).
