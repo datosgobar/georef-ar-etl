@@ -46,12 +46,14 @@ BEGIN
     raise notice '% addressString: %', clock_timestamp(), addressString;
   END IF;
 
-  -- Procesa código postal. (Extender para caso alfanumérico.)  
-  zipString := substring(rawInput from ws || E'([0-9]{4})$');
+  -- Procesa el código postal buscando 4 dígitos o formato alfanumérico.
+  zipString := COALESCE(substring(rawInput from ws || E'([0-9]{4})'), -- Considerar tomar la segunda ocurrencia.
+    substring(rawInput from ws || E'([a-zA-Z][0-9]{4}[a-zA-Z]{3})'));
   IF zipString IS NULL THEN
-    -- Check if all we got was a zipcode
-    zipString := substring(rawInput from '^([0-9]{4})$');
-    -- If it was only a zipcode, then just return it.
+    -- Controla que lo único que haya sea un código postal.
+    zipString := COALESCE(substring(rawInput from '^([0-9]{4})$'),
+      substring(rawInput from ws || E'^([a-zA-Z][0-9]{4}[a-zA-Z]{3})$'));
+    -- Si sólo se tiene un código postal, se retorna.
     IF zipString IS NOT NULL THEN
       result.zip := zipString;
       result.parsed := TRUE;
