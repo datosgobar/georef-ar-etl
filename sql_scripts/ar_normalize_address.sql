@@ -80,7 +80,7 @@ BEGIN
 
   -- FIXME: state_extract should probably be returning a record so we can
   -- avoid having to parse the result from it.
-  tempString := state_extract(fullStreet);
+  tempString := ar_state_extract(fullStreet);
   IF tempString IS NOT NULL THEN
     state := split_part(tempString, ':', 1);
     result.stateAbbrev := split_part(tempString, ':', 2);
@@ -126,7 +126,7 @@ BEGIN
   END IF;
 
   -- Pull out the full street information, defined as everything between the
-  -- address and the state.  This includes the location.
+  -- address and the state. This includes the location.
   -- This doesn't need to be done if location has already been found.
   IF result.location IS NULL THEN
     IF addressString IS NOT NULL THEN
@@ -179,6 +179,7 @@ BEGIN
   -- Determine if any internal address is included, such as apartment
   -- or suite number.
   -- this count is surprisingly slow by itself but much faster if you add an ILIKE AND clause
+  /*
   SELECT INTO tempInt count(*) FROM secondary_unit_lookup
       WHERE fullStreet ILIKE '%' || name || '%' AND texticregexeq(fullStreet, '(?i)' || ws || name || '('
           || ws || '|$)');
@@ -209,6 +210,7 @@ BEGIN
   IF debug_flag THEN
     raise notice 'internal: %', result.internal;
   END IF;
+  */
 
   IF result.location IS NULL THEN
     -- If the internal address is given, the location is everything after it.
@@ -619,7 +621,7 @@ BEGIN
           IF result.location IS NOT NULL THEN
             -- The location may still be in the fullStreet, or may
             -- have been removed already
-            result.streetName := substring(fullStreet, '^(.*?)(' || ws
+            result.streetName := substring(fullStreet, '^(.*?)(' || ws  -- fullStreet queda vacío cuando la altura está al final.
                        || '+' || result.location || '|$)');
           ELSE
             result.streetName := fullStreet;
