@@ -52,7 +52,7 @@ BEGIN
   IF zipString IS NULL THEN
     -- Controla que lo único que haya sea un código postal.
     zipString := COALESCE(substring(rawInput from '^([0-9]{4})$'),
-      substring(rawInput from ws || E'^([a-zA-Z][0-9]{4}[a-zA-Z]{3})$'));
+      substring(rawInput from E'^([a-zA-Z][0-9]{4}[a-zA-Z]{3})$'));
     -- Si sólo se tiene un código postal, se retorna.
     IF zipString IS NOT NULL THEN
       result.zip := zipString;
@@ -631,9 +631,9 @@ BEGIN
     END IF;
   END IF;
 
- -- For address number only put numbers and stop if reach a non-number e.g. 123-456 will return 123
+  -- For address number only put numbers and stop if reach a non-number e.g. 123-456 will return 123
   result.address := to_number(substring(addressString, '[0-9]+'), '99999999999');
-   --get rid of extraneous spaces before we return
+  -- get rid of extraneous spaces before we return
   result.zip := trim(zipString);
   result.streetName := trim(result.streetName);
   result.location := trim(result.location);
