@@ -112,11 +112,9 @@ BEGIN
         result.location := tempString;
     END IF;
     IF addressString IS NOT NULL THEN
-      fullStreet := substring(fullStreet, '(?i)' || addressString || ws ||
-          '+(.*),' || ws || '+' || result.location);
+      fullStreet := trim(substring(fullStreet, '(?i)(.*)' || addressString || ws || '+' || result.location));
     ELSE
-      fullStreet := substring(fullStreet, '(?i)(.*),' || ws || '+' ||
-          result.location);
+      fullStreet := trim(substring(fullStreet, '(?i)(.*),' || ws || '+' || result.location));
     END IF;
   END IF;
 
