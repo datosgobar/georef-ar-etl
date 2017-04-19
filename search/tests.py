@@ -4,7 +4,7 @@
 
 from django.test import TestCase
 from search.models import *
-from search.wrappers import HereWrapper, NominatimWrapper
+from search.wrappers import HereWrapper, NominatimWrapper, PostgresWrapper
 
 
 class HereAPITest(TestCase):
@@ -118,3 +118,11 @@ class NominatimAPITest(TestCase):
         model = Address.objects.all()[0]
         self.assertIsNotNone(model.id)
 
+
+class PostgresWrapperTest(TestCase):
+    def test_search_address(self):
+        wrapper = PostgresWrapper()
+        address = 'diagonal'
+        response = wrapper.search_address(address)
+        print(response)
+        self.assertIsNotNone(response)

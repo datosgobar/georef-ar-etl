@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from search.models import *
+import json
+import psycopg2
 import requests
 
 
@@ -96,3 +98,18 @@ class NominatimWrapper:
             address.state = State.objects.get_or_create(name=result['state'])[0]
         return address
 
+
+class PostgresWrapper:
+    def search_address(self, address):
+        connection = psycopg2.connect(
+            dbname="georef", user="postgres", password="postgres")
+        with connection.cursor() as cursor:
+            query = "SELECT nombre_completo, localidad, provincia \
+                    FROM nombre_calles \
+                    WHERE nombre_completo ILIKE '%%%(address)s%%' \
+                    OR localidad ILIKE '%%%(address)s%%'" % {'address': address}
+            cursor.execute(query)
+            columns = [col[0] for col in cursor.description]
+            results = cursor.fetchall()
+        
+        return json.dumps([dict(zip(columns, row)) for row in results])
