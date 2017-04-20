@@ -104,10 +104,12 @@ class PostgresWrapper:
         connection = psycopg2.connect(
             dbname="georef", user="postgres", password="postgres")
         with connection.cursor() as cursor:
-            query = "SELECT nombre_completo, localidad, provincia \
+            query = "SELECT tipo_camino || ' ' || nombre_completo || ', ' \
+                    || localidad || ', ' || provincia AS addr \
                     FROM nombre_calles \
-                    WHERE nombre_completo ILIKE '%%%(address)s%%' \
-                    OR localidad ILIKE '%%%(address)s%%'" % {'address': address}
+                    WHERE nombre_completo ILIKE '%(address)s%%' \
+                    OR localidad ILIKE '%(address)s%%' \
+                    LIMIT 10" % {'address': address}
             cursor.execute(query)
             columns = [col[0] for col in cursor.description]
             results = cursor.fetchall()

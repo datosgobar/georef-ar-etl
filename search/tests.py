@@ -124,5 +124,4 @@ class PostgresWrapperTest(TestCase):
         wrapper = PostgresWrapper()
         address = 'diagonal'
         response = wrapper.search_address(address)
-        print(response)
-        self.assertIsNotNone(response)
+        self.assertTrue('diagonal norte' in response.lower())
