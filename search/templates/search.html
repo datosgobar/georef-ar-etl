@@ -50,7 +50,7 @@
                         <input id="searchbox" name="address" class="form-control search-box"
                         placeholder="{{ request.POST.address|default:"Ingresá una dirección para localizar..." }}"
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                        <button id="btn-buscar" type="submit" class="btn btn-primary">Buscar</button>
+                        <button id="btn-buscar" type="submit" class="btn btn-primary" style="visibility: hidden">Buscar</button>
                     </form>
                 </div>
             </div>
@@ -118,33 +118,8 @@
         NProgress.done();
     });
 
-    var availableTags = [
-      "ActionScript",
-      "AppleScript",
-      "Asp",
-      "BASIC",
-      "C",
-      "C++",
-      "Clojure",
-      "COBOL",
-      "ColdFusion",
-      "Erlang",
-      "Fortran",
-      "Groovy",
-      "Haskell",
-      "Java",
-      "JavaScript",
-      "Lisp",
-      "Perl",
-      "PHP",
-      "Python",
-      "Ruby",
-      "Scala",
-      "Scheme"
-    ]
-
     $( "#searchbox" ).autocomplete({
-        source: availableTags,
+        source: '/',
         minLength: 3
     });
 

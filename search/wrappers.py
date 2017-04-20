@@ -18,7 +18,6 @@ class PostgresWrapper:
                     OR localidad ILIKE '%(address)s%%' \
                     LIMIT 10" % {'address': address}
             cursor.execute(query)
-            columns = [col[0] for col in cursor.description]
             results = cursor.fetchall()
         
-        return json.dumps([dict(zip(columns, row)) for row in results])
+        return json.dumps([row[0] for row in results])
