@@ -115,4 +115,18 @@
         minLength: 3
     });
 
+    $.extend($.ui.autocomplete.prototype, {
+        _renderItem: function (ul, item) {
+            var searchMask = this.element.val();
+            var regEx = new RegExp(searchMask, "ig");
+            var replaceMask = "<b style=\"font-weight: bold;\">$&</b>";
+            var html = item.label.replace(regEx, replaceMask);
+
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append($("<div></div>").html(html))
+                .appendTo(ul);
+        }
+    });
+
 </script>
