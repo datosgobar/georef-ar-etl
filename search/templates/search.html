@@ -117,10 +117,15 @@
 
     $.extend($.ui.autocomplete.prototype, {
         _renderItem: function (ul, item) {
-            var searchMask = this.element.val();
-            var regEx = new RegExp(searchMask, "ig");
-            var replaceMask = "<b style=\"font-weight: bold;\">$&</b>";
-            var html = item.label.replace(regEx, replaceMask);
+            var searchMasks = this.element.val().split(",");
+            var replaceMask = "<strong>$&</strong>";
+            var html = item.label;
+            $(searchMasks).each(function() {
+                if (this.trim() != "") {
+                    var regEx = new RegExp(this.trim(), "ig");
+                    html = html.replace(regEx, replaceMask);
+                }
+            });
 
             return $("<li></li>")
                 .data("item.autocomplete", item)
