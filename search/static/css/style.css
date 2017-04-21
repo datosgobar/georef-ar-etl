@@ -106,9 +106,9 @@ body {
 
 .ui-autocomplete div {
   font-size: 14px;
-  white-space: nowrap !important;
-  text-overflow: ellipsis !important;
-  overflow: hidden !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .viz-card {
   padding: 10px;
