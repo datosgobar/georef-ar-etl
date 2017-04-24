@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from search.models import *
+from georef.settings import DATABASES
 import json
-import os
 import psycopg2
 import requests
 
 
 class PostgresWrapper:
     def search_address(self, address):
+        db = DATABASES['default']
         connection = psycopg2.connect(
-            dbname="calles", user="django",
-            password=os.environ.get('DJANGO_POSTGRES_PASS'))
+            dbname=db['NAME'],
+            user=db['USER'],
+            password=db['PASSWORD'])
         parts = address.split(',')
         with connection.cursor() as cursor:
             query = "SELECT tipo_camino || ' ' || nombre_completo || ', ' \
