@@ -2,6 +2,7 @@
 
 from search.models import *
 import json
+import os
 import psycopg2
 import requests
 
@@ -9,7 +10,8 @@ import requests
 class PostgresWrapper:
     def search_address(self, address):
         connection = psycopg2.connect(
-            dbname="georef", user="postgres", password="postgres")
+            dbname="calles", user="django",
+            password=os.environ.get('DJANGO_POSTGRES_PASS'))
         parts = address.split(',')
         with connection.cursor() as cursor:
             query = "SELECT tipo_camino || ' ' || nombre_completo || ', ' \
