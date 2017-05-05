@@ -37,21 +37,21 @@ $$ LANGUAGE plpgsql;
 -- Descripción: Función que inserta las ciudades candidatas al la cual puede pertenecer un registro geoespacial de red vial
 -- Parámetros: Id de registro de red vial (Integer)
 -- Retorna: Filas afectadas (Jsonb)
-CREATE OR REPLACE FUNCTION insertar_ciudad_data(_id_red_vial INTEGER) RETURNS INTEGER AS $$
-DECLARE
-    result INTEGER;
+CREATE OR REPLACE FUNCTION insertar_ciudad_data(_id_red_vial INTEGER) RETURNS VOID AS $$
 BEGIN
   UPDATE geocode.red_vial
     SET ciudad_data = (SELECT get_candidatos($1))
   WHERE gid = $1;
-  GET DIAGNOSTICS result = ROW_COUNT;
-  RETURN result;
 END;
 $$ LANGUAGE plpgsql;
 
 
 -- Descripción: Ejemplo de uso
 -- Parámetros: Id de registro de red vial (Integer)
+-- Notas: Primero pasar a mayúscula el nombre de departamento
+UPDATE geocode.red_vial
+SET departamento_nom = upper(departamento_nom);
+
 SELECT insertar_ciudad_data(gid)
 FROM geocode.red_vial
 WHERE red_vial.ciudad_data ISNULL
