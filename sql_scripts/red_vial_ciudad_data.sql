@@ -52,6 +52,7 @@ $$ LANGUAGE plpgsql;
 
 -- Descripción: Ejemplo de uso
 -- Parámetros: Id de registro de red vial (Integer)
-SELECT insertar_ciudad_data_lafe(gid)
+SELECT insertar_ciudad_data(gid)
 FROM geocode.red_vial
-WHERE red_vial.ciudad_data ISNULL;
+WHERE red_vial.ciudad_data ISNULL
+LIMIT 10000;
