@@ -3,26 +3,25 @@
 --
 
 
--- Agrego la columna provincia_id a red_vial
+-- Descripción: Agrego la columna provincia_id a red_vial
 ALTER TABLE geocode.red_vial
   ADD COLUMN provincia_id integer;
 
 
--- Creando indices sobre la tabla demarcacion.provincias
+-- Descripción: Creando índices sobre la tabla demarcacion.provincias
 CREATE INDEX provincias_geom_idx
     ON demarcacion.provincias
     USING GIST (geom);
 
 
--- Optimizando los indices
+-- Optimizando los índices
 VACUUM ANALYZE geocode.red_vial;
 VACUUM ANALYZE demarcacion.provincias;
 
 
---
--- Función para actualizar el id de provincia
--- Parámetro: límite de transiciones
--- Retorna: número de filas actualizadas
+-- Descripción: Función para actualizar el id de provincia
+-- Parámetros: Límite de transiciones (Integer)
+-- Retorna: número de filas actualizadas (Integer)
 CREATE OR REPLACE FUNCTION agregar_id_provincia(_limit INTEGER) RETURNS INTEGER AS $$
 DECLARE
     result INTEGER;
@@ -41,21 +40,21 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Ejemplo de uso
--- Envio por parametro el límite
+-- Descripción: Ejemplo de uso
+-- Parámetros: Límite de transiciones (Integer)
 SELECT agregar_id_provincia(10000);
 
 
--- Contador de la cantidad de calles sin asignarle el id de provincia
--- El valor es probable que se deba al desfasaje que existe entre las provincias y el callejero
+-- Descripción: Contador de la cantidad de calles sin asignarle el id de provincia
+-- Nota: El valor es probable que se deba al desfasaje que existe entre las provincias y el callejero
 SELECT count(*)
 FROM geocode.red_vial
 WHERE provincia_id ISNULL;
 
 
--- Función para setear el nombre de provincia
--- Parámetro: límite de transiciones
--- Retorna: número de filas actualizadas
+-- Descripción: Función para setear el nombre de provincia
+-- Parámetro: Límite de transiciones (Integer)
+-- Retorna: Número de filas actualizadas (Integer)
 CREATE OR REPLACE FUNCTION agregar_nombre_provincia(_limit INTEGER) RETURNS INTEGER AS $$
 DECLARE
     result INTEGER;
@@ -75,6 +74,7 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
--- Ejemplo de uso
--- Envio por parametro el límite
+
+-- Descripción: Ejemplo de uso
+-- Parámetros: Límite de transiciones (Integer)
 SELECT agregar_nombre_provincia(1000);

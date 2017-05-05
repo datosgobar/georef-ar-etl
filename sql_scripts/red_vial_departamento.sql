@@ -3,34 +3,34 @@
 --
 
 
--- Agrego la columna departamento_id
+-- Descripción: Agrego la columna departamento_id
 ALTER TABLE geocode.red_vial
   ADD COLUMN departamento_id integer;
 
 
--- Agrego la columna provincia_nom a red vial
+-- Descripción: Agrego la columna provincia_nom a red vial
 ALTER TABLE ign.geocode.red_vial
   ADD COLUMN provincia_nom VARCHAR(100);
 
 
--- Agrego la columna departamento nombre a red vial
+-- Descripción: Agrego la columna departamento nombre a red vial
 ALTER TABLE ign.geocode.red_vial
   ADD COLUMN departamento_nom VARCHAR(100);
 
 
--- Agrego un índice a la tabla departamento
+-- Descripción: Agrego un índice a la tabla departamento
 CREATE INDEX departamento_geom_idx
     ON demarcacion.departamento
     USING GIST (geom);
 
 
--- Optimizacion de indices y estadisticias
+-- Descripción: Optimización de índices y estadísticas
 VACUUM ANALYZE demarcacion.departamento;
 
 
--- Función para agregar id de departamento
--- Parámetro: límite de transiciones
--- Retorna: número de filas actualizadas
+-- Descripción: Función para agregar id de departamento
+-- Parámetros: Límite de transiciones (Integer)
+-- Retorna: número de filas actualizadas (Integer)
 CREATE OR REPLACE FUNCTION agregar_id_departamento(_limit INTEGER) RETURNS INTEGER AS $$
 DECLARE
     result INTEGER;
@@ -49,20 +49,21 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Ejemplo de uso
--- Envio por parametro el límite
+-- Descripción: Ejemplo de uso
+-- Parámetros: Límite de transiciones (Integer)
 SELECT agregar_id_departamento(1000);
 
--- Contador de la cantidad de calles sin asignarle el id de departamento
--- El valor es probable que se deba al desfasaje que existe entre los departamentos y el callejero
+
+-- Descripción: Contador de la cantidad de calles sin asignarle el id de departamento
+-- Nota: El valor es probable que se deba al desfasaje que existe entre los departamentos y el callejero
 SELECT count(*)
 FROM geocode.red_vial
 WHERE departamento_id ISNULL;
 
 
--- Función para agregar nombre de departamento
--- Parámetro: límite de transiciones
--- Retorna: número de filas actualizadas
+-- Descripción: Función para agregar nombre de departamento
+-- Parámetros: Límite de transiciones (Integer)
+-- Retorna: número de filas actualizadas (Integer)
 CREATE OR REPLACE FUNCTION agregar_nombre_departamento(_limit INTEGER) RETURNS INTEGER AS $$
 DECLARE
     result INTEGER;
@@ -83,6 +84,6 @@ END
 $$ LANGUAGE plpgsql;
 
 
--- Ejemplo de uso
--- Envio por parametro el límite
+-- Descripción: Ejemplo de uso
+-- Parámetros: Límite de transiciones (Integer)
 SELECT agregar_nombre_departamento(1000);
