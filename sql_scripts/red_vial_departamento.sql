@@ -2,6 +2,12 @@
 -- Trabajando sobre los datos de la base de IGN
 --
 
+-- La tabla de departamento tiene los nombre de los mismos con acento.
+-- Para cruzar luego las tabla, primero se las tengo que quitar
+-- Á É Í Ó Ú
+UPDATE demarcacion.departamento
+    SET fna = replace(fna,'Á','A');
+
 
 -- Descripción: Agrego la columna departamento_id
 ALTER TABLE geocode.red_vial

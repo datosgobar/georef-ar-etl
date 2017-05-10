@@ -15,15 +15,15 @@ CREATE OR REPLACE FUNCTION get_candidatos(_id_red_vial INTEGER) RETURNS jsonb AS
 DECLARE
   jeyson jsonb;
 BEGIN
-  SELECT json_agg(DISTINCT upper(t.nom_bahra)) into jeyson
+  SELECT json_agg(DISTINCT t.nombre) into jeyson
   FROM (
-    SELECT t2.nom_bahra, st_distance(t1.geom, t2.geom) distancia, t2.nom_depto, t2.nom_prov
+    SELECT t2.nombre, st_distance(t1.geom, t2.geom) distancia, t2.nom_depto, t2.nom_prov
     FROM (
           SELECT (st_dumppoints(geom)).geom, departamento_nom, provincia_nom
           FROM geocode.red_vial
           WHERE gid = $1
          ) t1,
-         (SELECT gid, geom, nom_bahra, nom_depto, nom_prov
+         (SELECT gid, geom, nombre, nom_depto, nom_prov
            FROM demarcacion.bahra) t2
     WHERE t1.departamento_nom = t2.nom_depto
       AND t1.provincia_nom = t2.nom_prov
@@ -51,6 +51,8 @@ $$ LANGUAGE plpgsql;
 -- Notas: Primero pasar a mayúscula el nombre de departamento
 UPDATE geocode.red_vial
 SET departamento_nom = upper(departamento_nom);
+
+
 
 SELECT insertar_ciudad_data(gid)
 FROM geocode.red_vial

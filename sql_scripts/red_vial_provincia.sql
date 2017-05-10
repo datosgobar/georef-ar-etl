@@ -2,10 +2,14 @@
 -- Trabajando sobre los datos de la base de IGN
 --
 
-
--- Descripción: Agrego la columna provincia_id a red_vial
+-- Descripción: Agrego la columna provincia_id a red vial
 ALTER TABLE geocode.red_vial
-  ADD COLUMN provincia_id integer;
+  ADD COLUMN provincia_id INTEGER;
+
+
+-- Descripción: Agrego la columna provincia_nombre a red vial
+ALTER TABLE geocode.red_vial
+  ADD COLUMN provincia_nombre VARCHAR(100);
 
 
 -- Descripción: Creando índices sobre la tabla demarcacion.provincias
