@@ -120,29 +120,38 @@
                     var suggestions = $.map(addresses, function (address) {
                         return { label: address.descripcion };
                     });
-                    response(suggestions);
+                    response(suggestions.slice(0,5));
                 },
                 error: function () { response([]); }
             });
         },
-        minLength: 3
+        minLength: 3,
+        max: 5
     });
 
     $.extend($.ui.autocomplete.prototype, {
         _renderItem: function (ul, item) {
             var searchMasks = this.element.val().split(",");
             var replaceMask = "<strong>$&</strong>";
-            var html = item.label;
+            var parts = item.label.split(",");
+            var address = parts[0];
+            var locality = parts[1];
+            var state = parts[2];
             $(searchMasks).each(function() {
                 if (this.trim() != "") {
                     var regEx = new RegExp(this.trim(), "ig");
-                    html = html.replace(regEx, replaceMask);
+                    address = address.replace(regEx, replaceMask);
+                    locality = locality.replace(regEx, replaceMask);
                 }
             });
 
+            var suggestion = '<span class="address">' + address + '</span><br>'
+                + '<span class="locality">' + locality + '</span>, '
+                + '<span class="state">' + state + '</span>';
+
             return $("<li></li>")
                 .data("item.autocomplete", item)
-                .append($("<div></div>").html(html))
+                .append($("<div></div>").html(suggestion))
                 .appendTo(ul);
         }
     });

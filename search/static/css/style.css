@@ -105,10 +105,18 @@ body {
 }
 
 .ui-autocomplete div {
-  font-size: 14px;
+  font-size: 16px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.locality {
+  font-size: 12px;
+}
+.state {
+  font-size: 12px;
+  color: gray;
 }
 .viz-card {
   padding: 10px;
