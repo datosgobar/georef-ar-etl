@@ -72,6 +72,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'georef.wsgi.application'
 
 
+API_URL = os.environ.get('GEOREF_API_URL')
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 

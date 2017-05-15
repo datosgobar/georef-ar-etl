@@ -111,7 +111,20 @@
     })
 
     $( "#searchbox" ).autocomplete({
-        source: '/',
+        source: function(request, response) {
+            $.ajax({
+                url: "/",
+                data: { term: encodeURIComponent(request.term) },
+                success: function (data) {
+                    var addresses = JSON.parse(data).direcciones;
+                    var suggestions = $.map(addresses, function (address) {
+                        return { label: address.descripcion };
+                    });
+                    response(suggestions);
+                },
+                error: function () { response([]); }
+            });
+        },
         minLength: 3
     });
 
