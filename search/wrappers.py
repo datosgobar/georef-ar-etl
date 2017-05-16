@@ -1,14 +1,24 @@
 # -*- coding: utf-8 -*-
 from search.models import *
 from georef.settings import API_URL
-import urllib.request
+from urllib import parse, request
 import requests
 
 
 class GeorefWrapper:
-    def search_address(self, address):
-        api_url = API_URL + 'normalizador?direccion='
-        return urllib.request.urlopen(api_url + address).read()
+    def search_address(self, address, locality=None, state=None):
+        resource = API_URL + 'normalizador?'
+        if not locality and not state:
+            query = 'direccion=' + address
+        else:
+            query = { 'direccion': address }
+            if locality:
+                query.update(localidad=locality)
+            if state:
+                query.update(provincia=state)
+            query = parse.urlencode(query)
+        resource += query
+        return request.urlopen(resource).read()
 
 
 class HereWrapper:

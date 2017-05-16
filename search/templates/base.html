@@ -31,11 +31,11 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-7 no-padding header-links">
-                    <a class="header-link" href="/">
+                    <a class="header-link" href="{% url 'search' %}">
                         Búsqueda
                     </a>
-                    <a class="header-link" href="#">
-                        Formulario
+                    <a class="header-link" href="{% url 'normalize' %}">
+                        Normalización
                     </a>
                     <a class="header-link" href="{% url 'compare' %}">
                         Comparar servicios

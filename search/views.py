@@ -7,10 +7,21 @@ import json
 def search(request):
     data = {'results': {}}
     if request.is_ajax():
-        address = request.GET.get('term', True)
+        address = request.GET.get('term')
         data = GeorefWrapper().search_address(address)
         return HttpResponse(data)
     return render(request, 'search.html', data)
+
+
+def normalize(request):
+    data = {'results': None}
+    if request.method == 'POST':
+        address = request.POST.get('address')
+        locality = request.POST.get('locality')
+        state = request.POST.get('state')
+        data['results'] = json.loads(
+            GeorefWrapper().search_address(address, locality, state))
+    return render(request, 'normalize.html', data)
 
 
 def compare(request):
@@ -30,7 +41,6 @@ def compare(request):
             address_details='1'
         )
         data['results'].update(osm=nominatim_wrapper.search_address(address))
-
     return render(request, 'compare.html', data)
 
 

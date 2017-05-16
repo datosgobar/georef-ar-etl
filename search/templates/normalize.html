@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block banner %}
+<div id="banner" class="container-fluid blue-gradient">
+    <div class="restricted-max-width">
+        <div class="banner-content">
+            <div>
+                <h1 style="visibility: hidden">Georef</h1>
+                <form action="{% url 'normalize' %}" method="post">
+                    {% csrf_token %}
+                    <input id="searchbox" name="address" class="form-control search-box"
+                        placeholder="{{ request.POST.address|default:"Dirección" }}"
+                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    <input name="locality" class="form-control search-box"
+                        placeholder="{{ request.POST.locality|default:"Localidad" }}"
+                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    <input name="state" class="form-control search-box"
+                        placeholder="{{ request.POST.state|default:"Provincia" }}"
+                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    <button id="btn-buscar" type="submit" class="btn btn-primary">Normalizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="pane-content">
+    {% if results %}
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-lg-12">
+            <div class="results">
+                {% for address in results.direcciones %}
+                    <div class="result">
+                        <a href="/">
+                            <div><span>{{ address.descripcion }}</span></div>
+                        </a>
+                        <div class="details" hidden>
+                            <span><strong>Nomenclatura:</strong> {{ address.descripcion }}</span><br>
+                            <span><strong>Tipo de camino:</strong> {{ address.tipo }}</span>
+                            <span><strong>Nombre completo:</strong> {{ address.nombre }}</span><br>
+                            <span><strong>Localidad:</strong> {{ address.localidad }}</span>
+                            <span><strong>Provincia:</strong> {{ address.provincia }}</span><br>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="text-align:center">No hay resultados para mostrar...</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    NProgress.configure({ showSpinner: false });
+    
+    $("#btn-buscar").click(function(e) {
+        e.preventDefault();
+        if ($("#searchbox").val() === "") {
+            alert("Ingresar una dirección para normalizar.");
+        }
+        else {
+            NProgress.start();
+            $("form").submit();
+        }
+    })
+
+    $(".result a").click(function(e){
+        e.preventDefault();
+        $(this).siblings(".details").toggle("fast");
+    });
+</script>
+{% endblock %}
