@@ -98,6 +98,26 @@ body {
   margin-right: auto;
 }
 
+.ui-autocomplete {
+  top: 221px;
+  left: 425.5px;
+  max-width: 500px;
+}
+
+.ui-autocomplete div {
+  font-size: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.locality {
+  font-size: 12px;
+}
+.state {
+  font-size: 12px;
+  color: gray;
+}
 .viz-card {
   padding: 10px;
 }

@@ -10,10 +10,12 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/nprogress.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/jquery-ui.css' %}">
     <script type="text/javascript" src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/nprogress.js' %}"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script type="text/javascript" src="{% static 'js/jquery-ui.js' %}"></script>
   </head>
   <body>
 
@@ -42,13 +44,13 @@
         <div class="restricted-max-width">
             <div class="banner-content">
                 <div>
-                    <h1>Georef</h1>
+                    <h1 style="visibility: hidden">Georef</h1>
                     <form action="{% url 'search' %}" method="post">
                         {% csrf_token %}
                         <input id="searchbox" name="address" class="form-control search-box"
-                        placeholder="{{ request.POST.address|default:"Ingresá una dirección para localizar..." }}"
+                        placeholder="{{ request.POST.address|default:"Ingresá una dirección..." }}"
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                        <button id="btn-buscar" type="submit" class="btn btn-primary">Buscar</button>
+                        <button id="btn-buscar" type="submit" class="btn btn-primary" style="visibility: hidden">Buscar</button>
                     </form>
                 </div>
             </div>
@@ -108,11 +110,50 @@
         }
     })
 
-    $(document).ajaxStart(function(){
-        NProgress.start();
+    $( "#searchbox" ).autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "/",
+                data: { term: encodeURIComponent(request.term) },
+                success: function (data) {
+                    var addresses = JSON.parse(data).direcciones;
+                    var suggestions = $.map(addresses, function (address) {
+                        return { label: address.descripcion };
+                    });
+                    response(suggestions.slice(0,5));
+                },
+                error: function () { response([]); }
+            });
+        },
+        minLength: 3,
+        max: 5
     });
-    
-    $(document).ajaxStop(function(){
-        NProgress.done();
+
+    $.extend($.ui.autocomplete.prototype, {
+        _renderItem: function (ul, item) {
+            var searchMasks = this.element.val().split(",");
+            var replaceMask = "<strong>$&</strong>";
+            var parts = item.label.split(",");
+            var address = parts[0];
+            var locality = parts[1];
+            var state = parts[2];
+            $(searchMasks).each(function() {
+                if (this.trim() != "") {
+                    var regEx = new RegExp(this.trim(), "ig");
+                    address = address.replace(regEx, replaceMask);
+                    locality = locality.replace(regEx, replaceMask);
+                }
+            });
+
+            var suggestion = '<span class="address">' + address + '</span><br>'
+                + '<span class="locality">' + locality + '</span>, '
+                + '<span class="state">' + state + '</span>';
+
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append($("<div></div>").html(suggestion))
+                .appendTo(ul);
+        }
     });
+
 </script>
