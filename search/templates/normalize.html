@@ -38,6 +38,9 @@
                         </a>
                         <div class="details" hidden>
                             <span><strong>Nomenclatura:</strong> {{ address.descripcion }}</span><br>
+                            {% if address.altura_inicial and address.altura_final %}
+                            <span><strong>Numeración: </strong> {{ address.altura_inicial }} - {{ address.altura_final }}</span>
+                            {% endif %}
                             <span><strong>Tipo de camino:</strong> {{ address.tipo }}</span>
                             <span><strong>Nombre completo:</strong> {{ address.nombre }}</span><br>
                             <span><strong>Localidad:</strong> {{ address.localidad }}</span>
