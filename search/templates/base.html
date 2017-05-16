@@ -37,7 +37,7 @@
                     <a class="header-link" href="#">
                         Formulario
                     </a>
-                    <a class="header-link" href="#">
+                    <a class="header-link" href="{% url 'compare' %}">
                         Comparar servicios
                     </a>
                     <a class="header-link" href="http://datos.gob.ar">
@@ -87,18 +87,4 @@
 </html>
 
 {% block scripts %}
-<script>
-    NProgress.configure({ showSpinner: false });
-    
-    $("#btn-buscar").click(function(e) {
-        e.preventDefault();
-        if ($("#searchbox").val() === "") {
-            alert("Ingresar una dirección para buscar.");
-        }
-        else {
-            NProgress.start();
-            $("form").submit();
-        }
-    })
-</script>
 {% endblock %}

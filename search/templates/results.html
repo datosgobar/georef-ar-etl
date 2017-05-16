@@ -1,5 +1,24 @@
 <div class="row">
-    <div class="col-xs-12 col-sm-6 col-lg-6">
+    <div class="col-xs-12 col-sm-4 col-lg-4">
+        <h4 style="text-align:center">georef</h4>
+        <div class="results">
+            {% for result in results.georef %}
+                <div class="result">
+                    <a data-lat="{{ result.Location.DisplayPosition.Latitude }}" data-lon="{{ result.Location.DisplayPosition.Longitude }}" href="/">
+                        <div><span>{{ result.Location.Address.Label }}</span></div>
+                    </a>
+                    <div class="details" hidden>
+                        <button class="btn btn-default btn-sm" data-result="{'source': 'here', 'address': {{ result }}}">Guardar</button>
+                        <span><strong>Tipo de resultado:</strong> {{ result.MatchLevel }}</span><br>
+                        <div id="map-here-{{ forloop.counter0 }}" class="map"></div>
+                    </div>
+                </div>
+            {% empty %}
+                <p style="text-align:center">No hay resultados para mostrar...</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-4 col-lg-4">
         <h4 style="text-align:center">HERE</h4>
         <div class="results">
             {% for result in results.here %}
@@ -18,7 +37,7 @@
             {% endfor %}
         </div>
     </div>
-    <div class="col-xs-12 col-sm-6 col-lg-6">
+    <div class="col-xs-12 col-sm-4 col-lg-4">
         <h4 style="text-align:center">Open Street Map</h4>
         <div class="results">
         {% for result in results.osm %}
@@ -39,6 +58,7 @@
     </div>
 </div>
 
+{% block scripts %}
 <script>
     $(".result a").click(function(e){
         e.preventDefault();
@@ -68,3 +88,4 @@
         );
     });
 </script>
+{% endblock %}
