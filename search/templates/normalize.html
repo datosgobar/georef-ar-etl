@@ -9,13 +9,13 @@
                 <form action="{% url 'normalize' %}" method="post">
                     {% csrf_token %}
                     <input id="searchbox" name="address" class="form-control search-box"
-                        placeholder="{{ request.POST.address|default:"Dirección" }}"
+                        value="{{ request.POST.address|default:"" }}" placeholder="Dirección"
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     <input name="locality" class="form-control search-box"
-                        placeholder="{{ request.POST.locality|default:"Localidad" }}"
+                        value="{{ request.POST.locality|default:"" }}" placeholder="Localidad"
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     <input name="state" class="form-control search-box"
-                        placeholder="{{ request.POST.state|default:"Provincia" }}"
+                        value="{{ request.POST.state|default:"" }}" placeholder="Provincia"
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     <button id="btn-buscar" type="submit" class="btn btn-primary">Normalizar</button>
                 </form>
