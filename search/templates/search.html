@@ -25,11 +25,11 @@
         source: function(request, response) {
             $.ajax({
                 url: "/",
-                data: { term: encodeURIComponent(request.term) },
+                data: { term: request.term },
                 success: function (data) {
                     var addresses = JSON.parse(data).direcciones;
                     var suggestions = $.map(addresses, function (address) {
-                        return { label: address.descripcion };
+                        return { label: address.nomenclatura };
                     });
                     response(suggestions.slice(0,5));
                 },

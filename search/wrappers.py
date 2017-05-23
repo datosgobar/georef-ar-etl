@@ -8,16 +8,12 @@ import requests
 class GeorefWrapper:
     def search_address(self, address, locality=None, state=None):
         resource = API_URL + 'normalizador?'
-        if not locality and not state:
-            query = 'direccion=' + address
-        else:
-            query = { 'direccion': address }
-            if locality:
-                query.update(localidad=locality)
-            if state:
-                query.update(provincia=state)
-            query = parse.urlencode(query)
-        resource += query
+        query = { 'direccion': address }
+        if locality:
+            query.update(localidad=locality)
+        if state:
+            query.update(provincia=state)
+        resource += parse.urlencode(query)
         return request.urlopen(resource).read()
 
 

@@ -34,10 +34,10 @@
                 {% for address in results.direcciones %}
                     <div class="result">
                         <a href="/">
-                            <div><span>{{ address.descripcion }}</span></div>
+                            <div><span>{{ address.nomenclatura }}</span></div>
                         </a>
                         <div class="details" hidden>
-                            <span><strong>Nomenclatura:</strong> {{ address.descripcion }}</span><br>
+                            <span><strong>Nomenclatura:</strong> {{ address.nomenclatura }}</span><br>
                             <span><strong>Numeración: </strong> 
                                 {% if address.altura_inicial and address.altura_final %}
                                     {{ address.altura_inicial }} - {{ address.altura_final }}
