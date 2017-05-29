@@ -38,7 +38,7 @@ class HereWrapper:
             response_view = response.json()['Response']['View']
             return response_view[0]['Result'] if response_view else None
         except ValueError:
-            return False
+            return None
 
     def get_address_from(self, search_text, result):
         """Procesa una dirección de HERE y retorna un objeto Address."""
@@ -82,7 +82,7 @@ class NominatimWrapper:
             response_view = response.json()
             return response_view if response_view else None
         except ValueError:
-            return False
+            return None
 
     def get_address_from(self, search_text, result):
         """Procesa una dirección de OSM y retorna un objeto Address."""
