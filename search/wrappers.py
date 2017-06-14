@@ -7,7 +7,7 @@ import requests
 
 class GeorefWrapper:
     def search_address(self, address, locality=None, state=None):
-        resource = API_URL + 'normalizador?'
+        resource = API_URL + 'direcciones?'
         query = { 'direccion': address }
         if locality:
             query.update(localidad=locality)
