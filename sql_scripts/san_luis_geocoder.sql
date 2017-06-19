@@ -48,3 +48,46 @@ $$ LANGUAGE 'plpgsql';
 
 -- Ejemplo de uso
 SELECT geocodificar('JUAN B JUSTO', 452);
+
+
+/*
+  Función que devuelve el punto inicial de una calle
+  Parametros: Nombre de calle (text)
+  Retorna: Latitud, Logitud (text)
+*/
+CREATE OR REPLACE FUNCTION get_punto_inicial(IN nombre TEXT, OUT result TEXT)
+AS $$
+DECLARE
+  _id INTEGER;
+  lat TEXT;
+  lng TEXT;
+BEGIN
+  IF (nombre = '') IS NOT FALSE
+  THEN
+    RAISE EXCEPTION 'El nombre de la calle es requerido.';
+  ELSE
+    SELECT DISTINCT ON (j.nombre)
+      id,
+      least(alt_ini_i, alt_ini_d, alt_fin_i, alt_fin_d)
+    INTO _id
+    FROM san_luis.justo_daract_callejero j
+    WHERE j.nombre ILIKE '%' || $1 || '%'
+          AND alt_ini_i <> 0
+          AND alt_ini_d <> 0
+          AND alt_fin_i <> 0
+          AND alt_fin_d <> 0;
+
+    SELECT
+      st_y(st_startpoint(st_linemerge(geom))),
+      st_x(st_startpoint(st_linemerge(geom)))
+    INTO lat, lng
+    FROM san_luis.justo_daract_callejero j
+    WHERE j.id = _id;
+
+    result := lat || ', ' || lng;
+  END IF;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Ejemplo de uso
+SELECT get_punto_inicial('LOS ANDES');
