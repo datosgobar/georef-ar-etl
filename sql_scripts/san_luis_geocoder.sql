@@ -9,13 +9,20 @@ DECLARE
   lat TEXT;
   lng TEXT;
 BEGIN
-  IF (calle = '') IS NOT FALSE THEN
+  IF (calle = '') IS NOT FALSE
+  THEN
     RAISE EXCEPTION 'El nombre de la calle es requerido.';
   ELSE
     SELECT st_astext(ST_Line_Interpolate_Point(
                          st_geomfromtext(
                              REPLACE(REPLACE(REPLACE(st_astext(geom), 'MULTI', ''), '((', '('), '))', ')'), 4326),
-                             (($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT)
+                         CASE
+                         WHEN ((272 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT) > 1
+                           THEN 1
+                         WHEN ((272 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT) < 0
+                           THEN 0
+                         ELSE ((272 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT)
+                         END
                      ))
     INTO result
     FROM san_luis.justo_daract_callejero
