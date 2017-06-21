@@ -15,13 +15,7 @@ BEGIN
     SELECT st_astext(ST_Line_Interpolate_Point(
                          st_geomfromtext(
                              REPLACE(REPLACE(REPLACE(st_astext(geom), 'MULTI', ''), '((', '('), '))', ')'), 4326),
-                         CASE
-                         WHEN (($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT) > 1
-                           THEN 1
-                         WHEN (($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT) < 0
-                           THEN 0
-                         ELSE (($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT)
-                         END
+                             (($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT)
                      ))
     INTO result
     FROM san_luis.justo_daract_callejero
