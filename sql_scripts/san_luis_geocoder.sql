@@ -27,8 +27,8 @@ BEGIN
     INTO result
     FROM san_luis.justo_daract_callejero
     WHERE nombre ILIKE '%' || $1 || '%'
-          AND ($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT >= 0
-          AND ($2 - alt_ini_d) / (alt_fin_i - alt_ini_d) :: FLOAT <= 1
+          AND ($2 - alt_ini_i) / (alt_fin_i - alt_ini_d) :: FLOAT >= 0
+          AND ($2 - alt_ini_i) / (alt_fin_i - alt_ini_d) :: FLOAT <= 1
           AND alt_ini_i <> 0
           AND alt_ini_d <> 0
           AND alt_fin_i <> 0
