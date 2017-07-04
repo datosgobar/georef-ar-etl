@@ -41,6 +41,9 @@ def compare(request):
             address_details='1'
         )
         data['results'].update(osm=nominatim_wrapper.search_address(address))
+        georef_data = json.loads(
+            GeorefWrapper().search_address(address).decode('utf-8'))
+        data['results'].update(georef=georef_data)
     return render(request, 'compare.html', data)
 
 
