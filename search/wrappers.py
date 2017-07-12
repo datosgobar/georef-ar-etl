@@ -6,6 +6,7 @@ import requests
 
 
 class GeorefWrapper:
+    """Interfaz para la API REST de Georef."""
     def search_address(self, address, locality=None, state=None):
         resource = API_URL + 'direcciones?'
         query = { 'direccion': address }

@@ -8,15 +8,21 @@
                 <h1 style="visibility: hidden">Georef</h1>
                 <form action="{% url 'normalize' %}" method="post">
                     {% csrf_token %}
-                    <input id="searchbox" name="address" class="form-control search-box"
-                        value="{{ request.POST.address|default:"" }}" placeholder="Dirección"
-                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                    <input name="locality" class="form-control search-box"
-                        value="{{ request.POST.locality|default:"" }}" placeholder="Localidad"
-                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                    <input name="state" class="form-control search-box"
-                        value="{{ request.POST.state|default:"" }}" placeholder="Provincia"
-                        autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    <div class="col-xs-12 col-sm-12 col-lg-12">
+                        <input id="searchbox" name="address" class="form-control search-box"
+                            value="{{ request.POST.address|default:"" }}" placeholder="Dirección (ejemplo: Diagonal Norte 788)"
+                            autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-lg-6">
+                        <input name="locality" class="form-control search-box"
+                            value="{{ request.POST.locality|default:"" }}" placeholder="Localidad"
+                            autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-lg-6">
+                        <input name="state" class="form-control search-box"
+                            value="{{ request.POST.state|default:"" }}" placeholder="Provincia"
+                            autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    </div>
                     <button id="btn-buscar" type="submit" class="btn btn-primary">Normalizar</button>
                 </form>
             </div>
@@ -38,18 +44,15 @@
                         </a>
                         <div class="details" hidden>
                             <span><strong>Nomenclatura:</strong> {{ address.nomenclatura }}</span><br>
-                            <span><strong>Numeración: </strong> 
-                                {% if address.altura_inicial and address.altura_final %}
-                                    {{ address.altura_inicial }} - {{ address.altura_final }}
-                                {% else %}
-                                    No hay datos
-                                {% endif %}
-                            </span>
+                            <span><strong>Numeración: </strong> {{ address.altura|default:'No hay datos' }}</span>
                             <span><strong>Tipo de camino:</strong> {{ address.tipo }}</span>
                             <span><strong>Nombre completo:</strong> {{ address.nombre }}</span><br>
                             <span><strong>Localidad:</strong> {{ address.localidad }}</span>
                             <span><strong>Provincia:</strong> {{ address.provincia }}</span><br>
-                            <span><strong>Observaciones:</strong> {{ address.observaciones }}</span><br>
+                            {% if address.ubicacion %}
+                            <span><strong>Coordenadas geográficas:</strong> {{ address.ubicacion.lat }}, {{ address.ubicacion.lon }}</span><br>
+                            {% endif %}
+                            <span><strong>Observaciones:</strong> fuente {{ address.observaciones.fuente }}. {{ address.observaciones.info }}</span><br>
                         </div>
                     </div>
                 {% empty %}

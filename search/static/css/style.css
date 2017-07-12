@@ -93,7 +93,7 @@ body {
 .search-box {
   position: relative;
   vertical-align: top;
-  max-width: 500px;
+  /*max-width: 500px;*/
   margin-left: auto;
   margin-right: auto;
 }
