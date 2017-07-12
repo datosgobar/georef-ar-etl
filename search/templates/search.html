@@ -8,7 +8,7 @@
                 <h1 style="visibility: hidden">Georef</h1>
                 <form action="{% url 'search' %}" method="post">
                     {% csrf_token %}
-                    <input id="searchbox" name="address" class="form-control search-box"
+                    <input id="searchbox" name="address" class="form-control search-box" style="max-width: 500"
                     placeholder="{{ request.POST.address|default:"Ejemplo: Diagonal Norte, Buenos Aires" }}"
                     autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     <button id="btn-buscar" type="submit" class="btn btn-primary" style="visibility: hidden">Buscar</button>
