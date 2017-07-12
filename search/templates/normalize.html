@@ -18,12 +18,22 @@
                             value="{{ request.POST.locality|default:"" }}" placeholder="Localidad"
                             autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     </div>
-                    <div class="col-xs-12 col-sm-6 col-lg-6">
+                    <!--<div class="col-xs-12 col-sm-6 col-lg-6">
                         <input name="state" class="form-control search-box"
                             value="{{ request.POST.state|default:"" }}" placeholder="Provincia"
                             autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
+                    </div>-->
+                    <div class="col-xs-12 col-sm-6 col-lg-6">
+                        <select name="state" class="form-control">
+                            <option value="" disabled selected>Provincia</option>
+                            {% for state in states.provincias|dictsort:"nombre" %}
+                                <option value="{{ state.nombre }}">{{ state.nombre }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <button id="btn-buscar" type="submit" class="btn btn-primary">Normalizar</button>
+                    <div class="col-xs-12 col-sm-12 col-lg-12">
+                        <button id="btn-buscar" type="submit" class="btn btn-primary">Normalizar</button>
+                    </div>
                 </form>
             </div>
         </div>

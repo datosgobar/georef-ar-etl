@@ -9,7 +9,7 @@
                 <form action="{% url 'compare' %}" method="post">
                     {% csrf_token %}
                     <input id="searchbox" name="address" class="form-control search-box"
-                        value="{{ request.POST.address|default:"" }}"
+                        value="{{ request.POST.address|default:"" }}" style="max-width: 500"
                         placeholder="Ingresar una dirección para localizar..."
                         autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     <button id="btn-buscar" type="submit" class="btn btn-primary">Buscar</button>

@@ -15,12 +15,14 @@ def search(request):
 
 def normalize(request):
     data = {'results': None}
+    wrapper = GeorefWrapper()
     if request.method == 'POST':
         address = request.POST.get('address')
         locality = request.POST.get('locality')
         state = request.POST.get('state')
         data['results'] = json.loads(
-            GeorefWrapper().search_address(address, locality, state))
+            wrapper.search_address(address, locality, state))
+    data['states'] = json.loads(wrapper.get_states())
     return render(request, 'normalize.html', data)
 
 

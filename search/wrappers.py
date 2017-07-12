@@ -16,6 +16,10 @@ class GeorefWrapper:
             query.update(provincia=state)
         resource += parse.urlencode(query)
         return request.urlopen(resource).read()
+    
+    def get_states(self):
+        resource = API_URL + 'provincias'
+        return request.urlopen(resource).read()
 
 
 class HereWrapper:
