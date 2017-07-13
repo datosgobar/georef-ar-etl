@@ -54,7 +54,9 @@ def save_address(request):
         search_text = request.POST.get('search_text', True)
         result = request.POST.get('result', True)
         result = json.loads(result.replace('\'', '"'))
-        if result['source'] == 'osm':
+        if result['source'] == 'georef':
+            wrapper = GeorefWrapper()
+        elif result['source'] == 'osm':
             wrapper = NominatimWrapper(
                 url=None, format=None, country_code=None, address_details=None)
         else:

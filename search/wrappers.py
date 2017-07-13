@@ -17,6 +17,28 @@ class GeorefWrapper:
         resource += parse.urlencode(query)
         return request.urlopen(resource).read()
     
+    def get_address_from(self, search_text, result):
+        """Procesa una dirección de HERE y retorna un objeto Address."""
+        type = AddressType.objects.get_or_create(name=result['tipo'])[0]
+        if result.get('ubicacion'):
+            latitude = result['ubicacion']['lat']
+            longitude = result['ubicacion']['lon']
+        address = Address(
+            search_text=search_text,
+            name=result['nomenclatura'],
+            street=result['nombre'],
+            house_number=result.get('altura'),
+            lat=latitude,
+            lon=longitude,
+            type=type,
+            source='georef'
+        )
+        if 'localidad' in result:
+            address.city = City.objects.get_or_create(name=result['localidad'])[0]
+        if 'provincia' in result:
+            address.state = State.objects.get_or_create(name=result['provincia'])[0]
+        return address
+    
     def get_states(self):
         resource = API_URL + 'provincias'
         return request.urlopen(resource).read()

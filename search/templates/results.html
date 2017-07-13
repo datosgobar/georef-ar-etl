@@ -8,7 +8,7 @@
                         <div><span>{{ result.nomenclatura }}</span></div>
                     </a>
                     <div class="details" hidden>
-                        <button class="btn btn-default btn-sm" data-result="{'source': 'here', 'address': {{ result }}}">Guardar</button>
+                        <button class="btn btn-default btn-sm" data-result="{'source': 'georef', 'address': {{ result }}}">Guardar</button>
                         <span><strong>Tipo de resultado:</strong> {{ result.MatchLevel }}</span><br>
                         <div id="map-here-{{ forloop.counter0 }}" class="map"></div>
                     </div>
