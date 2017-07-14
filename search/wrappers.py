@@ -18,18 +18,15 @@ class GeorefWrapper:
         return request.urlopen(resource).read()
     
     def get_address_from(self, search_text, result):
-        """Procesa una dirección de HERE y retorna un objeto Address."""
+        """Procesa una dirección de Georef y retorna un objeto Address."""
         type = AddressType.objects.get_or_create(name=result['tipo'])[0]
-        if result.get('ubicacion'):
-            latitude = result['ubicacion']['lat']
-            longitude = result['ubicacion']['lon']
         address = Address(
             search_text=search_text,
             name=result['nomenclatura'],
             street=result['nombre'],
             house_number=result.get('altura'),
-            lat=latitude,
-            lon=longitude,
+            lat=result.get('ubicacion', {}).get('lat') or 0,
+            lon=result.get('ubicacion', {}).get('lon') or 0,
             type=type,
             source='georef'
         )
