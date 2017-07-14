@@ -1,8 +1,6 @@
-/*
- Función de geocodificación
- Parámetros: Nombre de calle (text), Altura (integer)
- Retorna: Latitud, Logitud (text)
-*/
+-- Función de geocodificación
+-- Parámetros: Nombre de calle (text), Altura (integer)
+-- Retorna: Latitud, Logitud (text)
 CREATE OR REPLACE FUNCTION geocodificar(IN calle TEXT, IN altura INTEGER, OUT result TEXT)
 AS $$
 DECLARE
@@ -50,11 +48,10 @@ $$ LANGUAGE 'plpgsql';
 SELECT geocodificar('JUAN B JUSTO', 452);
 
 
-/*
-  Función que devuelve el punto inicial de una calle
-  Parámetros: Nombre de calle (text)
-  Retorna: Latitud, Logitud (text)
-*/
+
+-- Función que devuelve el punto inicial de una calle
+-- Parámetros: Nombre de calle (text)
+-- Retorna: Latitud, Logitud (text)
 CREATE OR REPLACE FUNCTION get_punto_inicial(IN nombre TEXT, OUT result TEXT)
 AS $$
 DECLARE
@@ -93,11 +90,9 @@ $$ LANGUAGE 'plpgsql';
 SELECT get_punto_inicial('LOS ANDES');
 
 
-/*
-  Función que devuelve el centroide de una calle
-  Parámetros: Nombre de calle (text)
-  Retorna: Latitud, Logitud (text)
-*/
+-- Función que devuelve el centroide de una calle
+-- Parámetros: Nombre de calle (text)
+-- Retorna: Latitud, Logitud (text)
 CREATE OR REPLACE FUNCTION get_centroide(IN calle TEXT, OUT lat_lng TEXT)
 AS $$
 DECLARE
