@@ -18,11 +18,11 @@ class AddressType(models.Model):
 class City(models.Model):
     name = models.CharField(max_length=100)
 
-    def __str__(self):
-        return "{}".format(self.name)
-
     class Meta:
         verbose_name_plural = 'Cities'
+
+    def __str__(self):
+        return "{}".format(self.name)
 
 
 class State(models.Model):
@@ -45,10 +45,27 @@ class Address(models.Model):
     city = models.ForeignKey(City, blank=True, null=True)
     state = models.ForeignKey(State, blank=True, null=True)
     postal_code = models.CharField(max_length=8, blank=True, null=True)
-    source = models.CharField(max_length=4, choices=SOURCES)
+    source = models.CharField(max_length=6, choices=SOURCES)
+
+    class Meta:
+        verbose_name_plural = 'Addresses'
 
     def __str__(self):
         return '{} {}'.format(self.name, self.house_number)
 
+
+class Search(models.Model):
+    text = models.CharField(max_length=250)
+    road_name = models.CharField(max_length=100, blank=True, null=True)
+    road_type = models.CharField(max_length=25, blank=True, null=True)
+    door_number = models.IntegerField(blank=True, null=True)
+    postal_code = models.CharField(max_length=8, blank=True, null=True)
+    locality = models.ForeignKey(City, blank=True, null=True)
+    state = models.ForeignKey(State, blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
     class Meta:
-        verbose_name_plural = 'Addresses'
+        verbose_name_plural = 'Searches'
+
+    def __str__(self):
+        return self.text
