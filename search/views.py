@@ -1,5 +1,6 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 from search.wrappers import GeorefWrapper, HereWrapper, NominatimWrapper
 import json
 
@@ -66,3 +67,11 @@ def save_address(request):
         address.save()
         return HttpResponse('Se guardó la dirección correctamente.')
     return redirect('compare')
+
+
+@csrf_exempt
+def save_address_search(request):
+    if request.method == 'POST':
+        GeorefWrapper().save_address_search(request.POST)
+        return HttpResponse('Se guardó la búsqueda correctamente.', status=201)
+    return HttpResponse('El recurso no existe.', status=400)
