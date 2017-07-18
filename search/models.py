@@ -2,6 +2,7 @@ from django.db import models
 
 
 SOURCES = (
+    ('georef', 'Georef'),
     ('here', 'HERE'),
     ('osm', 'OpenStreetMap')
 )
