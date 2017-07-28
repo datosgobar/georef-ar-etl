@@ -14,25 +14,25 @@
                             autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
                     </div>
                     <div class="col-xs-12 col-sm-6 col-lg-6">
-                        <input name="locality" class="form-control search-box"
-                            value="{{ request.POST.locality|default:"" }}" placeholder="Localidad"
-                            autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                    </div>
-                    <!--<div class="col-xs-12 col-sm-6 col-lg-6">
-                        <input name="state" class="form-control search-box"
-                            value="{{ request.POST.state|default:"" }}" placeholder="Provincia"
-                            autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                    </div>-->
-                    <div class="col-xs-12 col-sm-6 col-lg-6">
-                        <select name="state" class="form-control">
+                        <select id="state-select" name="state" class="form-control">
                             <option value="" disabled selected>Provincia</option>
                             {% for state in states.provincias|dictsort:"nombre" %}
                                 <option value="{{ state.nombre }}">{{ state.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="col-xs-12 col-sm-6 col-lg-6">
+                        <select id="locality-select" name="lacality" class="form-control" disabled>
+                            <option value="" disabled selected>Localidad</option>
+                            {% for locality in localities.localidades|dictsort:"nombre" %}
+                                <option value="{{ locality.nombre }}" data-state="{{ locality.provincia.nombre }}" hidden>
+                                    {{ locality.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="col-xs-12 col-sm-12 col-lg-12">
-                        <button id="btn-buscar" type="submit" class="btn btn-primary">Normalizar</button>
+                        <button id="btn-buscar" type="submit" class="btn btn-primary" style="margin-top:25px">Normalizar</button>
                     </div>
                 </form>
             </div>
@@ -93,6 +93,14 @@
     $(".result a").click(function(e){
         e.preventDefault();
         $(this).siblings(".details").toggle("fast");
+    });
+
+    $("#state-select").change(function (e) {
+        var state = e.target.value;
+        $("#locality-select option").hide();
+        $("#locality-select option[data-state='" + state + "']").show();
+        $("#locality-select").val($("#locality-select option:first").val());
+        $("#locality-select").removeAttr("disabled");
     });
 </script>
 {% endblock %}

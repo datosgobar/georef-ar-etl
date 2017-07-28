@@ -24,6 +24,7 @@ def normalize(request):
         data['results'] = json.loads(
             wrapper.search_address(address, locality, state))
     data['states'] = json.loads(wrapper.get_states())
+    data['localities'] = json.loads(wrapper.get_localities())
     return render(request, 'normalize.html', data)
 
 

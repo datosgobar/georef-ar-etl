@@ -56,6 +56,10 @@ class GeorefWrapper:
         resource = API_URL + 'provincias'
         return request.urlopen(resource).read()
 
+    def get_localities(self):
+        resource = API_URL + 'localidades?max=4000'
+        return request.urlopen(resource).read()
+
 
 class HereWrapper:
     """Interfaz para la API REST de HERE."""
