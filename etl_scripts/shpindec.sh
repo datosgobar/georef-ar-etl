@@ -18,6 +18,9 @@ dbname=test
 pass=postgres
 
 # Importacion
+
+export SHAPE_ENCODING="LATIN1"
+
 ogr2ogr --config PGCLIENTENCODING LATIN1 -append -f "PostgreSQL" PG:"host=$host user=$user dbname=$dbname password=$pass" vias/vias.shp -nln indec_vias -nlt MULTILINESTRING -lco GEOMETRY_NAME=geom
 
 # Genero un archivo log
