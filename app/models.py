@@ -2,12 +2,12 @@ from django.db import models
 
 
 class State(models.Model):
-    code = models.CharField(max_length=8, blank=True, null=True)
+    code = models.CharField(max_length=2, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
 
 
 class Department(models.Model):
-    code = models.CharField(max_length=8, blank=True, null=True)
+    code = models.CharField(max_length=5, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     state = models.ForeignKey(State, blank=True, null=True)
 
@@ -24,7 +24,7 @@ class Locality(models.Model):
 
 
 class Road(models.Model):
-    code = models.CharField(max_length=8)
+    code = models.CharField(max_length=13)
     name = models.CharField(max_length=5)
     road_type = models.CharField(max_length=25, blank=True, null=True)
     start_left = models.IntegerField(blank=True, null=True)
