@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'analytics',
-    'app',
     'benchmark',
+    'geo_admin',
 ]
 
 MIDDLEWARE = [
