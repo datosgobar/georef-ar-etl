@@ -1,5 +1,5 @@
 from django.db import models
-from app.models import Locality, State
+from geo_admin.models import Locality, State
 
 
 class Search(models.Model):

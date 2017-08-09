@@ -1,5 +1,5 @@
 from django.contrib import admin
-from search.models import *
+from benchmark.models import *
 
 
 admin.site.register(Address)

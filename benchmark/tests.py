@@ -3,8 +3,8 @@
 """Tests de la aplicación Search."""
 
 from django.test import TestCase
-from search.models import *
-from search.wrappers import HereWrapper, NominatimWrapper
+from benchmark.models import *
+from benchmark.wrappers import HereWrapper, NominatimWrapper
 
 
 class HereAPITest(TestCase):

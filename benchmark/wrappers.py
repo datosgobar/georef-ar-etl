@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from search.models import *
+from benchmark.models import *
 from georef.settings import API_URL
 from urllib import parse, request
 import requests
