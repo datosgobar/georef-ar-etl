@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'analytics',
     'app',
-    'search',
+    'benchmark',
 ]
 
 MIDDLEWARE = [
