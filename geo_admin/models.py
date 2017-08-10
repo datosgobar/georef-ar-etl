@@ -8,6 +8,9 @@ class State(models.Model):
     class Meta:
         verbose_name = 'provincia'
 
+    def __str__(self):
+        return self.name
+
 
 class Department(models.Model):
     code = models.CharField(max_length=5, blank=True, null=True, verbose_name='código')
@@ -16,6 +19,9 @@ class Department(models.Model):
 
     class Meta:
         verbose_name = 'departamento'
+
+    def __str__(self):
+        return self.name
 
 
 class Locality(models.Model):
@@ -29,6 +35,8 @@ class Locality(models.Model):
         verbose_name = 'localidad'
         verbose_name_plural = 'localidades'
 
+    def __str__(self):
+        return self.name
 
 class Road(models.Model):
     code = models.CharField(max_length=13, verbose_name='código')
@@ -46,3 +54,6 @@ class Road(models.Model):
 
     class Meta:
         verbose_name = 'calle'
+
+    def __str__(self):
+        return self.name
