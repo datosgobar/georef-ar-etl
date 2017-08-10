@@ -1,0 +1,526 @@
+departamento_id,departamento_nombre,provincia_id
+02001,Comuna 1,02
+02004,Comuna 4,02
+02013,Comuna 13,02
+02014,Comuna 14,02
+02006,Comuna 6,02
+02005,Comuna 5,02
+02002,Comuna 2,02
+02003,Comuna 3,02
+02007,Comuna 7,02
+02008,Comuna 8,02
+02009,Comuna 9,02
+02010,Comuna 10,02
+02011,Comuna 11,02
+02012,Comuna 12,02
+02015,Comuna 15,02
+06091,Berazategui,06
+06168,Castelli,06
+06028,Almirante Brown,06
+06035,Avellaneda,06
+06568,Morón,06
+06049,Azul,06
+06070,Baradero,06
+06126,Campana,06
+06134,Cañuelas,06
+06515,Malvinas Argentinas,06
+06217,Chascomús,06
+06224,Chivilcoy,06
+06525,Marcos Paz,06
+06270,Ezeiza,06
+06274,Florencio Varela,06
+06280,General Alvarado,06
+06287,General Alvear,06
+06357,General Pueyrredón,06
+06364,General Rodríguez,06
+06371,General San Martín,06
+06408,Hurlingham,06
+06410,Ituzaingó,06
+06412,José C. Paz,06
+06413,Junín,06
+06427,La Matanza,06
+06434,Lanús,06
+06441,La Plata,06
+06476,Lobería,06
+06539,Merlo,06
+06547,Monte,06
+06505,Magdalena,06
+06623,Pergamino,06
+06581,Necochea,06
+06644,Pinamar,06
+06602,Patagones,06
+06693,Roque Pérez,06
+06638,Pilar,06
+06655,Punta Indio,06
+06658,Quilmes,06
+06707,Saladillo,06
+06735,San Antonio de Areco,06
+06742,San Cayetano,06
+06749,San Fernando,06
+06756,San Isidro,06
+06791,Tandil,06
+06819,Tornquist,06
+06805,Tigre,06
+06833,Tres Arroyos,06
+06840,Tres de Febrero,06
+06854,25 de Mayo,06
+06861,Vicente López,06
+06875,Villarino,06
+06882,Zárate,06
+06147,Carlos Casares,06
+06189,Coronel Dorrego,06
+06294,General Arenales,06
+06301,General Belgrano,06
+06665,Ramallo,06
+06672,Rauch,06
+06760,San Miguel,06
+06763,San Nicolás,06
+06847,Tres Lomas,06
+06826,Trenque Lauquen,06
+06868,Villa Gesell,06
+06469,Lincoln,06
+06196,Coronel Pringles,06
+06532,Mercedes,06
+06609,Pehuajó,06
+06679,Rivadavia,06
+06154,Carlos Tejedor,06
+06161,Carmen de Areco,06
+06007,Adolfo Alsina,06
+06014,Adolfo Gonzales Chaves,06
+06553,Monte Hermoso,06
+06560,Moreno,06
+06021,Alberti,06
+06308,General Guido,06
+06042,Ayacucho,06
+06056,Bahía Blanca,06
+06063,Balcarce,06
+06077,Arrecifes,06
+06084,Benito Juárez,06
+06098,Berisso,06
+06385,General Viamonte,06
+06105,Bolívar,06
+06462,Leandro N. Alem,06
+06112,Bragado,06
+06119,Brandsen,06
+06511,Maipú,06
+06140,Capitán Sarmiento,06
+06175,Colón,06
+06182,Coronel de Marina Leonardo Rosales,06
+06203,Coronel Suárez,06
+06518,Mar Chiquita,06
+06210,Chacabuco,06
+06231,Daireaux,06
+06238,Dolores,06
+06245,Ensenada,06
+06252,Escobar,06
+06260,Esteban Echeverría,06
+06266,Exaltación de la Cruz,06
+06277,Florentino Ameghino,06
+06315,General Juan Madariaga,06
+06392,General Villegas,06
+06322,General La Madrid,06
+06588,9 de Julio,06
+06329,General Las Heras,06
+06448,Laprida,06
+06455,Las Flores,06
+06336,General Lavalle,06
+06343,General Paz,06
+06351,General Pinto,06
+06399,Guaminí,06
+06406,Hipólito Yrigoyen,06
+06420,La Costa,06
+06595,Olavarría,06
+06651,Puán,06
+06483,Lobos,06
+06490,Lomas de Zamora,06
+06616,Pellegrini,06
+06497,Luján,06
+06574,Navarro,06
+06630,Pila,06
+06648,Presidente Perón,06
+06686,Rojas,06
+06700,Saavedra,06
+06714,Salto,06
+06721,Salliqueló,06
+06728,San Andrés de Giles,06
+06770,San Pedro,06
+06778,San Vicente,06
+06784,Suipacha,06
+06812,Tordillo,06
+06798,Tapalqué,06
+10007,Ambato,10
+10035,Belén,10
+10056,El Alto,10
+10077,Paclín,10
+10084,Pomán,10
+10105,Tinogasta,10
+10063,Fray Mamerto Esquiú,10
+10014,Ancasti,10
+10021,Andalgalá,10
+10049,Capital,10
+10028,Antofagasta de la Sierra,10
+10042,Capayán,10
+10070,La Paz,10
+10091,Santa María,10
+10098,Santa Rosa,10
+10112,Valle Viejo,10
+14063,Marcos Juárez,14
+14007,Calamuchita,14
+14021,Colón,14
+14028,Cruz del Eje,14
+14112,Río Seco,14
+14119,Río Segundo,14
+14126,San Alberto,14
+14133,San Javier,14
+14168,Totoral,14
+14175,Tulumba,14
+14035,General Roca,14
+14091,Punilla,14
+14140,San Justo,14
+14147,Santa María,14
+14182,Unión,14
+14098,Río Cuarto,14
+14070,Minas,14
+14077,Pocho,14
+14014,Capital,14
+14042,General San Martín,14
+14049,Ischilín,14
+14056,Juárez Celman,14
+14084,Presidente Roque Sáenz Peña,14
+14105,Río Primero,14
+14154,Sobremonte,14
+14161,Tercero Arriba,14
+18105,Mercedes,18
+18112,Monte Caseros,18
+18007,Bella Vista,18
+18028,Concepción,18
+18119,Paso de los Libres,18
+18126,Saladas,18
+18133,San Cosme,18
+18140,San Luis del Palmar,18
+18035,Curuzú Cuatiá,18
+18147,San Martín,18
+18154,San Miguel,18
+18161,San Roque,18
+18168,Santo Tomé,18
+18175,Sauce,18
+18014,Berón de Astrada,18
+18021,Capital,18
+18042,Empedrado,18
+18049,Esquina,18
+18056,General Alvear,18
+18063,General Paz,18
+18070,Goya,18
+18077,Itatí,18
+18084,Ituzaingó,18
+18091,Lavalle,18
+18098,Mburucuyá,18
+22014,Bermejo,22
+22084,Libertador General San Martín,22
+22147,San Lorenzo,22
+22154,Sargento Cabral,22
+22077,Libertad,22
+22091,Maipú,22
+22098,Mayor Luis J. Fontana,22
+22105,9 de Julio,22
+22112,O'Higgins,22
+22028,Chacabuco,22
+22126,1º de Mayo,22
+22133,Quitilipi,22
+22168,25 de Mayo,22
+22140,San Fernando,22
+22161,Tapenagá,22
+22007,Almirante Brown,22
+22021,Comandante Fernández,22
+22036,12 de Octubre,22
+22039,2 de Abril,22
+22043,Fray Justo Santa María de Oro,22
+22049,General Belgrano,22
+22056,General Donovan,22
+22063,General Güemes,22
+22070,Independencia,22
+22119,Presidencia de la Plaza,22
+26098,Tehuelches,26
+26063,Mártires,26
+26077,Rawson,26
+26084,Río Senguer,26
+26091,Sarmiento,26
+26042,Gaiman,26
+26014,Cushamen,26
+26021,Escalante,26
+26028,Florentino Ameghino,26
+26035,Futaleufú,26
+26105,Telsen,26
+26070,Paso de Indios,26
+26056,Languiñeo,26
+26007,Biedma,26
+26049,Gastre,26
+30056,Gualeguaychú,30
+30063,Islas del Ibicuy,30
+30070,La Paz,30
+30008,Colón,30
+30015,Concordia,30
+30021,Diamante,30
+30077,Nogoyá,30
+30084,Paraná,30
+30088,San Salvador,30
+30091,Tala,30
+30098,Uruguay,30
+30105,Victoria,30
+30113,Villaguay,30
+30028,Federación,30
+30035,Federal,30
+30042,Feliciano,30
+30049,Gualeguay,30
+34049,Pilcomayo,34
+34056,Pirané,34
+34007,Bermejo,34
+34014,Formosa,34
+34021,Laishi,34
+34028,Matacos,34
+34035,Patiño,34
+34042,Pilagás,34
+34063,Ramón Lista,34
+38035,Ledesma,38
+38070,Santa Bárbara,38
+38007,Cochinoca,38
+38014,El Carmen,38
+38021,Dr. Manuel Belgrano,38
+38028,Humahuaca,38
+38042,Palpalá,38
+38049,Rinconada,38
+38056,San Antonio,38
+38063,San Pedro,38
+38077,Santa Catalina,38
+38084,Susques,38
+38094,Tilcara,38
+38098,Tumbaya,38
+38105,Valle Grande,38
+38112,Yavi,38
+42042,Curacó,42
+42084,Lihuel Calel,42
+42112,Puelén,42
+42014,Caleu Caleu,42
+42126,Rancul,42
+42133,Realicó,42
+42140,Toay,42
+42154,Utracán,42
+42119,Quemú Quemú,42
+42021,Capital,42
+42028,Catriló,42
+42147,Trenel,42
+42035,Conhelo,42
+42049,Chalileo,42
+42056,Chapaleufú,42
+42063,Chical Co,42
+42070,Guatraché,42
+42077,Hucal,42
+42091,Limay Mahuida,42
+42098,Loventué,42
+42105,Maracó,42
+42007,Atreucó,42
+46098,Vinchina,46
+46084,General Ocampo,46
+46077,General Lamadrid,46
+46007,Arauco,46
+46091,General San Martín,46
+46014,Capital,46
+46021,Castro Barros,46
+46035,Chamical,46
+46028,Coronel Felipe Varela,46
+46042,Chilecito,46
+46049,Famatina,46
+46056,General Angel V. Peñaloza,46
+46063,General Belgrano,46
+46070,General Juan F. Quiroga,46
+46105,Independencia,46
+46112,Rosario Vera Peñaloza,46
+46119,San Blas de los Sauces,46
+46126,Sanagasta,46
+50014,General Alvear,50
+50105,San Rafael,50
+50077,Malargüe,50
+50091,San Carlos,50
+50042,La Paz,50
+50049,Las Heras,50
+50028,Guaymallén,50
+50021,Godoy Cruz,50
+50007,Capital,50
+50098,San Martín,50
+50035,Junín,50
+50056,Lavalle,50
+50063,Luján de Cuyo,50
+50070,Maipú,50
+50084,Rivadavia,50
+50112,Santa Rosa,50
+50119,Tunuyán,50
+50126,Tupungato,50
+54007,Apóstoles,54
+54014,Cainguás,54
+54021,Candelaria,54
+54028,Capital,54
+54035,Concepción,54
+54042,Eldorado,54
+54049,General Manuel Belgrano,54
+54056,Guaraní,54
+54077,Libertador General San Martín,54
+54084,Montecarlo,54
+54091,Oberá,54
+54098,San Ignacio,54
+54105,San Javier,54
+54112,San Pedro,54
+54119,25 de Mayo,54
+54063,Iguazú,54
+54070,Leandro N. Alem,54
+58007,Aluminé,58
+58014,Añelo,58
+58021,Catán Lil,58
+58028,Collón Curá,58
+58035,Confluencia,58
+58042,Chos Malal,58
+58049,Huiliches,58
+58056,Lácar,58
+58063,Loncopué,58
+58070,Los Lagos,58
+58077,Minas,58
+58084,Ñorquín,58
+58091,Pehuenches,58
+58098,Picún Leufú,58
+58105,Picunches,58
+58112,Zapala,58
+62091,25 de Mayo,62
+62049,9 de julio,62
+62056,Ñorquinco,62
+62063,Pichi Mahuida,62
+62070,Pilcaniyeu,62
+62077,San Antonio,62
+62084,Valcheta,62
+62007,Adolfo Alsina,62
+62014,Avellaneda,62
+62021,Bariloche,62
+62028,Conesa,62
+62035,El Cuy,62
+62042,General Roca,62
+66007,Anta,66
+66112,Metán,66
+66084,La Candelaria,66
+66126,Orán,66
+66140,Rosario de la Frontera,66
+66147,Rosario de Lerma,66
+66161,Santa Victoria,66
+66028,Capital,66
+66049,General Güemes,66
+66056,General José de San Martín,66
+66014,Cachi,66
+66021,Cafayate,66
+66035,Cerrillos,66
+66042,Chicoana,66
+66063,Guachipas,66
+66070,Iruya,66
+66077,La Caldera,66
+66091,La Poma,66
+66098,La Viña,66
+66105,Los Andes,66
+66119,Molinos,66
+66133,Rivadavia,66
+66154,San Carlos,66
+70056,Jáchal,70
+70063,9 de Julio,70
+70077,Rawson,70
+70091,San Martín,70
+70105,Sarmiento,70
+70007,Albardón,70
+70112,Ullum,70
+70119,Valle Fértil,70
+70126,25 de Mayo,70
+70133,Zonda,70
+70049,Iglesia,70
+70014,Angaco,70
+70021,Calingasta,70
+70028,Capital,70
+70035,Caucete,70
+70042,Chimbas,70
+70070,Pocito,70
+70084,Rivadavia,70
+70098,Santa Lucía,70
+74056,La Capital,74
+74014,Belgrano,74
+74021,Coronel Pringles,74
+74035,General Pedernera,74
+74042,Gobernador Dupuy,74
+74007,Ayacucho,74
+74028,Chacabuco,74
+74049,Junín,74
+74063,Libertador General San Martín,74
+78007,Corpen Aike,78
+78014,Deseado,78
+78021,Güer Aike,78
+78035,Lago Buenos Aires,78
+78042,Magallanes,78
+78049,Río Chico,78
+78028,Lago Argentino,78
+82007,Belgrano,82
+82014,Caseros,82
+82028,Constitución,82
+82035,Garay,82
+82049,General Obligado,82
+82056,Iriondo,82
+82063,La Capital,82
+82070,Las Colonias,82
+82077,9 de Julio,82
+82084,Rosario,82
+82091,San Cristóbal,82
+82098,San Javier,82
+82105,San Jerónimo,82
+82112,San Justo,82
+82119,San Lorenzo,82
+82133,Vera,82
+82021,Castellanos,82
+82042,General López,82
+82126,San Martín,82
+86091,Jiménez,86
+86098,Juan F. Ibarra,86
+86154,Rivadavia,86
+86007,Aguirre,86
+86042,Belgrano,86
+86056,Copo,86
+86077,General Taboada,86
+86112,Mitre,86
+86133,Pellegrini,86
+86140,Quebrachos,86
+86182,Sarmiento,86
+86028,Avellaneda,86
+86168,Salavina,86
+86014,Alberdi,86
+86021,Atamisqui,86
+86147,Río Hondo,86
+86084,Guasayán,86
+86189,Silípica,86
+86035,Banda,86
+86049,Capital,86
+86161,Robles,86
+86063,Choya,86
+86070,Figueroa,86
+86105,Loreto,86
+86119,Moreno,86
+86126,Ojo de Agua,86
+86175,San Martín,86
+90028,Famaillá,90
+90035,Graneros,90
+90042,Juan B. Alberdi,90
+90049,La Cocha,90
+90056,Leales,90
+90063,Lules,90
+90070,Monteros,90
+90077,Río Chico,90
+90091,Simoca,90
+90098,Tafí del Valle,90
+90105,Tafí Viejo,90
+90112,Trancas,90
+90007,Burruyacú,90
+90014,Cruz Alta,90
+90021,Chicligasta,90
+90084,Capital,90
+90119,Yerba Buena,90
+94007,Río Grande,94
+94014,Ushuaia,94
