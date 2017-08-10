@@ -2,7 +2,7 @@ from django.db import models
 
 
 class State(models.Model):
-    code = models.CharField(max_length=2, blank=True, null=True, verbose_name='código')
+    code = models.CharField(max_length=2, blank=True, null=True, unique=True, verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
 
     class Meta:
@@ -13,7 +13,7 @@ class State(models.Model):
 
 
 class Department(models.Model):
-    code = models.CharField(max_length=5, blank=True, null=True, verbose_name='código')
+    code = models.CharField(max_length=5, blank=True, null=True, unique=True,  verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
     state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
 
@@ -25,7 +25,7 @@ class Department(models.Model):
 
 
 class Locality(models.Model):
-    code = models.CharField(max_length=8, blank=True, null=True, verbose_name='código')
+    code = models.CharField(max_length=8, blank=True, null=True, unique=True, verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
     agglomerate = models.CharField(max_length=4, blank=True, null=True,verbose_name='aglomerado')
     department = models.ForeignKey(Department, blank=True, null=True, verbose_name='departamento')
