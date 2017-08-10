@@ -12,6 +12,8 @@ MESSAGES = {
 def run():
     state_ids = {state.code: state.id for state in State.objects.all()}
     if state_ids:
+        caba = State.objects.get(code='02')
+        Department.objects.create(name=caba.name, code='02000', state=caba)
         departments = []
         try:
             file_path = BASE_DIR + '/data/departamentos.csv'
