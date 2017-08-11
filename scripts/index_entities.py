@@ -25,14 +25,14 @@ def index_states():
 def index_departments():
     print('-- Creando índice de Departamentos.')
     data = []
-    states = {state.id: state.name for state in State.objects.all()}
+    states = {state.id: (state.code, state.name) for state in State.objects.all()}
     for dept in Department.objects.all():
         document = {
             'id': dept.code,
             'nombre': dept.name,
             'provincia': {
-                'id': dept.state_id,
-                'nombre': states[dept.state_id]
+                'id': states[dept.state_id][0],
+                'nombre': states[dept.state_id][1]
             }
         }
         data.append({'index': {'_id': dept.id}})
@@ -44,19 +44,19 @@ def index_departments():
 def index_localities():
     print('-- Creando índice de Localidades.')
     data = []
-    states = {state.id: state.name for state in State.objects.all()}
-    departments = {dept.id: dept.name for dept in Department.objects.all()}
+    states = {state.id: (state.code, state.name) for state in State.objects.all()}
+    departments = {dept.id: (dept.code, dept.name) for dept in Department.objects.all()}
     for locality in Locality.objects.all():
         document = {
             'id': locality.code,
             'nombre': locality.name,
             'departamento': {
-                'id': locality.department_id,
-                'nombre': departments[locality.department_id]
+                'id': departments[locality.department_id][0],
+                'nombre': departments[locality.department_id][1]
             },
             'provincia': {
-                'id': locality.state_id,
-                'nombre': states[locality.state_id]
+                'id': states[locality.state_id][0],
+                'nombre': states[locality.state_id][1]
             }
         }
         data.append({'index': {'_id': locality.id}})
