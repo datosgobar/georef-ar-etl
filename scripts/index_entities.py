@@ -4,25 +4,31 @@ from geo_admin.models import Department, Locality, State
 
 def run():
     try:
-        index_states()
-        index_departments()
-        index_localities()
+        es = Elasticsearch()
+        index_states(es)
+        index_departments(es)
+        index_localities(es)
     except Exception as e:
         print(e)
-    print('-- Se crearon los índices exitosamente.')
 
 
-def index_states():
+def index_states(es):
+    if es.indices.exists(index='provincias'):
+        print('-- Ya existe el índice de Provincias.')
+        return
     print('-- Creando índice de Provincias.')
     data = []
     for state in State.objects.all():
         data.append({'index': {'_id': state.id}})
         data.append({'id': state.code, 'nombre': state.name})
-    es = Elasticsearch()
     es.bulk(index='provincias', doc_type='provincia', body=data, refresh=True)
+    print('-- Se creó el índice de Provincias exitosamente.')
 
 
-def index_departments():
+def index_departments(es):
+    if es.indices.exists(index='departamentos'):
+        print('-- Ya existe el índice de Departamentos.')
+        return
     print('-- Creando índice de Departamentos.')
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
@@ -37,11 +43,14 @@ def index_departments():
         }
         data.append({'index': {'_id': dept.id}})
         data.append(document)
-    es = Elasticsearch()
     es.bulk(index='departamentos', doc_type='departamento', body=data, refresh=True)
+    print('-- Se creó el índice de Departamentos exitosamente.')
 
 
-def index_localities():
+def index_localities(es):
+    if es.indices.exists(index='localidades'):
+        print('-- Ya existe el índice de Localidades.')
+        return
     print('-- Creando índice de Localidades.')
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
@@ -61,5 +70,5 @@ def index_localities():
         }
         data.append({'index': {'_id': locality.id}})
         data.append(document)
-    es = Elasticsearch()
     es.bulk(index='localidades', doc_type='localidad', body=data, refresh=True)
+    print('-- Se creó el índice de Localidades exitosamente.')
