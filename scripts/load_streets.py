@@ -1,5 +1,6 @@
 from geo_admin.models import Road, Locality
 import psycopg2
+import json
 
 
 def get_db_connection():
@@ -33,10 +34,12 @@ def run_query():
 
 def run():
     roads = []
+    failed_rows = []
     localities = {locality.code: (locality.id, locality.state_id)
                   for locality in Locality.objects.all()}
     try:
         streets = run_query()
+        print('-- Procesando vías --')
         for row in streets:
             code, name, road_type, start_left, start_right, end_left, \
             end_right, geom, codloc = row
@@ -56,6 +59,14 @@ def run():
                     locality_id=locality_id if locality_id else None,
                     state_id=state_id if state_id else None,
                 ))
+            else:
+                failed_rows.append({'nombre': name, 'codloc': codloc, 'nomencla': code})
+        print('-- Insertando vías --')
         Road.objects.bulk_create(roads)
+        if failed_rows:
+            print('-- Generando log de errores --')
+            with open('failed_roads.json', 'w') as f:
+                json.dump(failed_rows, f)
+        print('-- Proceso completo --')
     except Exception as e:
         print(e)
