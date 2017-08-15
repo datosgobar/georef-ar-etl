@@ -43,7 +43,7 @@ def run():
         for row in streets:
             code, name, road_type, start_left, start_right, end_left, \
             end_right, geom, codloc = row
-            if codloc in localities:
+            if codloc in localities and localities[codloc][1]:
                 # codloc = '02000010' if '02000000' < codloc < '03000000' else codloc
                 locality_id = localities[codloc][0]
                 state_id = localities[codloc][1]
@@ -66,7 +66,7 @@ def run():
         if failed_rows:
             print('-- Generando log de errores --')
             with open('failed_roads.json', 'w') as f:
-                json.dump(failed_rows, f)
+                json.dump(failed_rows, f, indent=4)
         print('-- Proceso completo --')
     except Exception as e:
         print(e)

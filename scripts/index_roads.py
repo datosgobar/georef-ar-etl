@@ -16,7 +16,7 @@ def index_roads():
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
         if es.indices.exists(index='calles'):
-            print('-- Ya existe el índice "%s".') % index_name
+            print('-- Ya existe el índice "%s".' % index_name)
             continue
         data = []
         for road in Road.objects.filter(state_id=state.id):
@@ -36,5 +36,6 @@ def index_roads():
             }
             data.append({'index': {'_id': road.id}})
             data.append(document)
-        es.bulk(index=index_name, doc_type='calle', body=data, refresh=True)
-        print('-- Se creó el índice "%s".') % index_name
+        if data:
+            es.bulk(index=index_name, doc_type='calle', body=data, refresh=True)
+        print('-- Se creó el índice "%s".' % index_name)
