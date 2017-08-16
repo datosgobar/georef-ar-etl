@@ -38,6 +38,7 @@ class Locality(models.Model):
     def __str__(self):
         return self.name
 
+
 class Road(models.Model):
     code = models.CharField(max_length=13, verbose_name='código')
     name = models.CharField(max_length=5, verbose_name='nombre')
@@ -50,7 +51,6 @@ class Road(models.Model):
     postal_code = models.CharField(max_length=8, blank=True, null=True, verbose_name='código postal')
     locality = models.ForeignKey(Locality, blank=True, null=True, verbose_name='localidad')
     state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
-    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'calle'
