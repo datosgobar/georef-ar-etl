@@ -1,13 +1,15 @@
 from geo_admin.models import Road, Locality
 import psycopg2
 import json
+import os
 
 
 def get_db_connection():
     return psycopg2.connect(
-        dbname='indec_geodata',
-        user='postgres',
-        password='postgres')
+        host=os.environ.get('POSTGRES_HOST'),
+        dbname=os.environ.get('POSTGRES_DBNAME'),
+        user=os.environ.get('POSTGRES_USER'),
+        password=os.environ.get('POSTGRES_PASSWORD'))
 
 
 def run_query():

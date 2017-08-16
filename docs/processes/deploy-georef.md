@@ -30,7 +30,7 @@ export POSTGRES_PASSWORD=<password>
 
     `$ cd ./manage.py migrate`
 
--  Cargar datos de entidades y calles
+-  Cargar datos de entidades y vías
 
     `$ cd ./manage.py runscript load_states`
 
@@ -38,7 +38,7 @@ export POSTGRES_PASSWORD=<password>
 
     `$ cd ./manage.py runscript load_localities`
 
-    `$ cd ./manage.py runscript load_streets`
+    `$ cd ./manage.py runscript load_roads`
 
 - Correr tests
 
