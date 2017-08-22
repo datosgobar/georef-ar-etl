@@ -15,13 +15,13 @@ def index_roads():
     localities = {loc.id: loc.name for loc in Locality.objects.all()}
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
-        if es.indices.exists(index='calles'):
+        if es.indices.exists(index=index_name):
             print('-- Ya existe el índice "%s".' % index_name)
             continue
         data = []
         for road in Road.objects.filter(state_id=state.id):
             document = {
-                'nomenclatura': road.name,
+                'nomenclatura': ', '.join([road.name, localities[road.locality_id], state.name]),
                 'codigo': road.code,
                 'nombre': road.name,
                 'tipo': road.road_type,
@@ -38,4 +38,4 @@ def index_roads():
             data.append(document)
         if data:
             es.bulk(index=index_name, doc_type='calle', body=data, refresh=True)
-        print('-- Se creó el índice "%s".' % index_name)
+            print('-- Se creó el índice "%s".' % index_name)
