@@ -31,6 +31,6 @@ then
   ogrinfo -ro -so vias/vias.shp -al >> indec.log
   echo "Listo"
   else
-   echo "La conexiónno tuvo �xito.";
+   echo "La conexión tuvo éxito.";
   fi
 fi
