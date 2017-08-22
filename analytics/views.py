@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from analytics.models import Search
+from geo_admin.models import Locality, State
 
 
 @csrf_exempt
@@ -16,7 +17,7 @@ def save_address_search(request):
             postal_code=post_data.get('postal_code'),
         )
         if post_data.get('locality'):
-            search.locality = City.objects.get_or_create(
+            search.locality = Locality.objects.get_or_create(
                 name=post_data['locality'].upper())[0]
         if post_data.get('state'):
             search.state = State.objects.get_or_create(
