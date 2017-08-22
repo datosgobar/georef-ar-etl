@@ -5,6 +5,9 @@ set -o nounset
 
 if [ -n ${POSTGRES_HOST} ] && [ -n ${POSTGRES_USER} ] && [ -n ${POSTGRES_DBNAME} ] && [ -n ${POSTGRES_PASSWORD} ] 
 then
+
+ # Verifica la conexión
+
  # Geoserver INDEC
  URL='http://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:vias&outputFormat=SHAPE-ZIP'
  FILE='vias.zip'
