@@ -21,7 +21,7 @@ class Department(models.Model):
         verbose_name = 'departamento'
 
     def __str__(self):
-        return self.name
+        return ', '.join([self.name, self.state.name])
 
 
 class Locality(models.Model):
@@ -36,7 +36,7 @@ class Locality(models.Model):
         verbose_name_plural = 'localidades'
 
     def __str__(self):
-        return self.name
+        return ', '.join([self.name, self.state.name])
 
 
 class Road(models.Model):
@@ -56,4 +56,4 @@ class Road(models.Model):
         verbose_name = 'calle'
 
     def __str__(self):
-        return self.name
+        return ', '.join([self.name, self.locality.name, self.state.name])
