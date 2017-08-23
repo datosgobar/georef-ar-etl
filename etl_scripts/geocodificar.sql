@@ -5,9 +5,8 @@ DECLARE
   lat TEXT;
   lng TEXT;
 BEGIN
-  SELECT st_astext(ST_Line_Interpolate_Point(
-                       st_geomfromtext(
-                           REPLACE(REPLACE(REPLACE(st_astext($1), 'MULTI', ''), '((', '('), '))', ')'), 4326),
+  SELECT st_astext(st_line_interpolate_point(
+                       st_makeline(st_linemerge($1)),
                        CASE
                        WHEN (($2 - $3) / ($4 - $3) :: FLOAT) > 1
                          THEN 1
