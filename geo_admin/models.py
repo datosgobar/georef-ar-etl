@@ -41,13 +41,13 @@ class Locality(models.Model):
 
 class Road(models.Model):
     code = models.CharField(max_length=13, verbose_name='código')
-    name = models.CharField(max_length=5, verbose_name='nombre')
+    name = models.CharField(max_length=100, verbose_name='nombre')
     road_type = models.CharField(max_length=25, blank=True, null=True, verbose_name='tipo de camino')
     start_left = models.IntegerField(blank=True, null=True, verbose_name='inicio izquierda')
     start_right = models.IntegerField(blank=True, null=True, verbose_name='inicio derecha')
     end_left = models.IntegerField(blank=True, null=True, verbose_name='fin izquierda')
     end_right = models.IntegerField(blank=True, null=True, verbose_name='fin derecha')
-    geom = models.CharField(max_length=100, blank=True, null=True, verbose_name='geometría')
+    geom = models.TextField(blank=True, null=True, verbose_name='geometría')
     postal_code = models.CharField(max_length=8, blank=True, null=True, verbose_name='código postal')
     locality = models.ForeignKey(Locality, blank=True, null=True, verbose_name='localidad')
     state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
