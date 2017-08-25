@@ -81,9 +81,9 @@ API_URL = os.environ.get('GEOREF_API_URL')
 
 POSTGRES = {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'calles',
-        'USER': 'django',
-        'PASSWORD': os.environ.get('DJANGO_POSTGRES_PASS'),
+        'NAME': 'georef',
+        'USER': os.environ.get('GEOREF_DB_USER'),
+        'PASSWORD': os.environ.get('GEOREF_DB_PASS'),
         'HOST': 'localhost',
         'PORT': '5432',
     }

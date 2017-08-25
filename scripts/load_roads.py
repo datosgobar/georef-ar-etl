@@ -23,7 +23,8 @@ def run_query():
                           hastad as end_right, \
                           geom, \
                           codloc as locality \
-                    FROM  indec_vias; 
+                    FROM  indec_vias \
+                    WHERE tipo <> 'OTRO';
                 """
         with get_db_connection().cursor() as cursor:
             cursor.execute(query)
