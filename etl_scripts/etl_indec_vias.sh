@@ -3,7 +3,13 @@
 set -o errexit
 set -o nounset
 
-# Valida que las variables esten decladaras
+echo '-- Verificando paquetes requeridos --\n'
+if  ogr2ogr --version; then echo "---"; fi
+if  psql --version; then echo "---"; fi
+if  wget --version | grep 'GNU Wget' ; then echo "---"; fi
+if  unzip -v | grep Info-ZIP ; then echo "---"; else exit 1; fi
+
+# Valida que las variables estén decladaras
 if [ -n ${POSTGRES_HOST} ] && [ -n ${POSTGRES_USER} ] && [ -n ${POSTGRES_DBNAME} ] && [ -n ${POSTGRES_PASSWORD} ]
 then
  # Valida la conexión a la base de datos
@@ -22,15 +28,13 @@ then
   # Carga la capa Vías a PostgreSQL
   export SHAPE_ENCODING="LATIN1"
 
-  ogr2ogr -append -f "PostgreSQL" \
+  ogr2ogr -overwrite -progress -f "PostgreSQL" \
      PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
      vias/vias.shp -nln indec_vias -nlt MULTILINESTRING -lco GEOMETRY_NAME=geom
 
   # Genera log de actividad
   echo "--------------------------------------------------------------------------- $(date)" >> indec.log
   ogrinfo -ro -so vias/vias.shp -al >> indec.log
-  echo "Listo"
-  else
-   echo "La conexión tuvo éxito.";
+  echo "Terminado!"
   fi
 fi
