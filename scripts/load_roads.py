@@ -1,4 +1,5 @@
 from geo_admin.models import Road, Locality
+from datetime import datetime
 import psycopg2
 import json
 import os
@@ -18,10 +19,10 @@ def run():
             process_street(row)
         print('-- Insertando vías --')
         Road.objects.bulk_create(roads)
-        generate_reports()
+        print('-- Proceso completo --')
+        generate_report()
     except Exception as e:
         print(e)
-    print('-- Proceso completo --')
 
 
 def get_db_connection():
@@ -54,11 +55,26 @@ def run_query():
         print(e)
 
 
-def generate_reports():
+def generate_report():
+    timestamp = datetime.now().strftime('%d-%m-%Y a las %H:%M:%S')
+    heading = 'Proceso de ETL de datos INDEC ejecutado el %s.\n' % timestamp
+    ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
+    failed_roads_msg = '-- Calles con errores: %s' % len(failed_roads)
+
+    with open('report.txt', 'a') as report:
+        print('-- Generando reporte --')
+        report.write(heading)
+        report.write(ok_roads_msg + '\n')
+        report.write(failed_roads_msg + '\n\n')
+
     if failed_roads:
         print('-- Generando log de errores --')
-        with open('failed_roads.json', 'w') as f:
-            json.dump(failed_roads, f, indent=2)
+        with open('failed_roads.json', 'w') as report:
+            json.dump(failed_roads, report, indent=2)
+
+    print('** Resultado del proceso **')
+    print(ok_roads_msg)
+    print(failed_roads_msg)
 
 
 def process_street(row):
