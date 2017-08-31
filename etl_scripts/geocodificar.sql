@@ -1,27 +1,40 @@
-CREATE OR REPLACE FUNCTION geocodificar(IN  geom   TEXT, IN altura INTEGER, IN alt_ini INTEGER, IN alt_fin INTEGER,
-                                        OUT result TEXT)
+CREATE OR REPLACE FUNCTION geocodificar(geom TEXT, altura INTEGER, alt_ini INTEGER, alt_fin INTEGER, OUT result JSON)
+  RETURNS JSON
+LANGUAGE plpgsql
 AS $$
 DECLARE
-  lat TEXT;
-  lng TEXT;
+  interpolation TEXT;
+  line_merge    TEXT;
+  ret           VARCHAR;
+  code          INTEGER;
 BEGIN
-    SELECT st_astext(st_line_interpolate_point(
-                         st_makeline(st_linemerge($1)),
-                         CASE
-                           WHEN (($2 - $3) / ($4 - $3) :: FLOAT) > 1
+  SELECT st_linemerge(geom)
+  INTO line_merge;
+  CASE
+    WHEN (SELECT st_numgeometries(line_merge)) = 1
+    THEN
+      SELECT st_astext(st_line_interpolate_point(
+                           st_makeline(line_merge),
+                           CASE
+                           WHEN ((altura - alt_ini) / (alt_fin - alt_ini) :: FLOAT) > 1
                              THEN 1
-                           WHEN (($2 - $3) / ($4 - $3) :: FLOAT) < 0
+                           WHEN ((altura - alt_ini) / (alt_fin - alt_ini) :: FLOAT) < 0
                              THEN 0
-                           ELSE (($2 - $3) / ($4 - $3) :: FLOAT)
-                         END
-                     ))
-    INTO result;
-    SELECT st_y(result)
-    INTO lat;
-    SELECT st_x(result)
-    INTO lng;
-    result := lat || ',' || lng;
-EXCEPTION WHEN DIVISION_BY_ZERO THEN
-    result:= NULL ;
-END
-$$ LANGUAGE 'plpgsql';
+                           ELSE ((altura - alt_ini) / (alt_fin - alt_ini) :: FLOAT)
+                           END
+                       ))
+      INTO interpolation;
+      SELECT st_y(interpolation) || ',' || st_x(interpolation)
+      INTO ret;
+      code := 1;
+  ELSE
+    ret := 'Líneas discontinuas';
+    code := 0;
+  END CASE;
+  result:=json_build_object('code', code, 'result', ret);
+  EXCEPTION
+  WHEN OTHERS
+    THEN
+      result:=json_build_object('code', 2, 'result', SQLERRM);
+END;
+$$;
