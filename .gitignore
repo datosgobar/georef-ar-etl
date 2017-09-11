@@ -57,6 +57,6 @@ ENV/
 .DS_Store
 db.sqlite3
 .idea/
-./vscode
+.vscode/
 
 environment.sh
