@@ -6,13 +6,21 @@
 
     `$ pip install -r requirements.txt`
 
+## Sesión tmux
+
+`$ tmux new -s georef`  para crear la sesión.
+
+`$ tmux attach -t georef` para ingresar a la sesión.
+
+`$ Ctrl + B, D` para salir de la sesión sin terminarla.
+
 ## Variables de entorno
 
-- Archivo `environment.sh`
+- Copiar archivo `environment.example.sh` a `environment.sh` y completar los valores:
 
 ```
-export GEOREF_API_URL=http://localhost:5000/api/v1.0/
-export POSTGRES_HOST=localhost
+export GEOREF_API_URL=<URL>
+export POSTGRES_HOST=<host>
 export POSTGRES_DBNAME=<database>
 export POSTGRES_USER=<user>
 export POSTGRES_PASSWORD=<password>

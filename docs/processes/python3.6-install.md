@@ -20,10 +20,12 @@
 
   `# make altinstall`
 
-- Instalación de pip
+- Pip
 
-  `$ sudo apt install python-pip`
+  `$ sudo apt install python-pip` o `python3-pip`
 
   `$ pip install --upgrade pip`
 
-Add Comment
+- Virtualenvwrapper
+
+  `$ pip install virtualenvwrapper`
