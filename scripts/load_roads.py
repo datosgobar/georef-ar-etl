@@ -82,10 +82,12 @@ def process_street(row):
     end_left, end_right, geom, locality) = row
     
     obs = {}
-    if name == 'CALLE S N': obs['nombre'] = 'Sin registro'
+    if name == 'CALLE S N':
+        obs['nombre'] = 'Sin registro'
     flagged_boundaries = validate_boundaries(
         start_left, start_right, end_left, end_right)
-    if flagged_boundaries: obs['alturas'] = flagged_boundaries
+    if flagged_boundaries:
+        obs['alturas'] = flagged_boundaries
 
     if locality in localities:
         locality_id = localities[locality][0]
