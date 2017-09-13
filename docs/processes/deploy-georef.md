@@ -1,44 +1,70 @@
 # Deploy Georef
 
-## Python y Virtualenv
+## Dependencias
 
-- Ver guía de instalación de Python3.6.
+- [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
+- [Gedal](http://www.gdal.org/index.html)
+- [PostgreSQL 9.6](https://www.postgresql.org/download/)
+- [PostGis 2.3](http://postgis.net/install/)
+- [Python >=3.5.x](https://www.python.org/downloads/)
+- [Pip](https://pip.pypa.io/en/stable/installing/)
+- Unzip
+- Unicorn
+- Wget
+
+## Base de datos
+
+Crear una base de datos en PostgreSQL con la extensión Postgis
+
+Ejemplo:
+
+```plsql
+  -- Creando una base de datos
+  CREATE DATABASE dbname;
+  
+  -- Agregando Postgis a la base de datos creada
+  CREATE EXTENSION postgis;
+```
+
+## Instalación
+
+1. Clonar repositorio
+
+    `$ git clone https://github.com/datosgobar/georef.git`
+
+2. Instalar dependencias con pip
 
     `$ pip install -r requirements.txt`
 
-## Sesión tmux
+3. Copiar las variables de entorno
 
-`$ tmux new -s georef`  para crear la sesión.
+    `$ cp environment.example.sh environment.sh`
 
-`$ tmux attach -t georef` para ingresar a la sesión.
+4. Completar los valores con los datos correspondientes
 
-`$ Ctrl + B, D` para salir de la sesión sin terminarla.
+    ```
+      export GEOREF_API_URL='<URL>'
+      export POSTGRES_HOST=<host>
+      export POSTGRES_DBNAME=<database>
+      export POSTGRES_USER=<user>
+      export POSTGRES_PASSWORD=<password>
+    ```
+5. Exportar las variables de entorno
 
-## Variables de entorno
+    `$ source environment.sh`
 
-- Copiar archivo `environment.example.sh` a `environment.sh` y completar los valores:
+6. Ejercutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
 
-```
-export GEOREF_API_URL=<URL>
-export POSTGRES_HOST=<host>
-export POSTGRES_DBNAME=<database>
-export POSTGRES_USER=<user>
-export POSTGRES_PASSWORD=<password>
-```
+    ```bash
+      cd etl_scripts/
+      sh etl_indec_vias.sh
+    ```
 
--  Bajar datos de INDEC y crear base de datos intermedia.
-
-    `sh etl_scripts/etl_indec_vias.sh`
-
-## Django app
-
-- Crear base de datos
-
-    `$./manage.py makemigrations`
+7. Sincronizar la base de datos
 
     `$./manage.py migrate`
 
--  Cargar datos de entidades y vías
+8. Cargar datos de entidades y vías
 
     `$./manage.py runscript load_states`
 
@@ -48,26 +74,25 @@ export POSTGRES_PASSWORD=<password>
 
     `$./manage.py runscript load_roads`
 
-- Correr tests
-
-    `$./manage.py test`
-
-- Correr app
-
-    `$./manage.py runserver`
 
 ## ElasticSearch
 
-- Levantar el servicio de ElasticSearch
+1. Levantar el servicio de ElasticSearch
 
     `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
     
-- Crear índices
+2. Crear índices
 
     `$ ./manage.py runscript index_entities`
 
     `$ ./manage.py runscript index_roads`
 
-- Listar índices
+3. Verificar índices
 
     `$ curl localhost:9200/_cat/indices?v`
+
+## Correr App
+
+- Levantar servidor
+
+    `$./manage.py runserver`
