@@ -6,7 +6,7 @@ import os
 
 
 roads = []
-failed_roads = []
+flagged_roads = []
 localities = {locality.code: (locality.id, locality.state_id)
                 for locality in Locality.objects.all()}
 
@@ -57,9 +57,9 @@ def run_query():
 
 def generate_report():
     timestamp = datetime.now().strftime('%d-%m-%Y a las %H:%M:%S')
-    heading = 'Proceso de ETL de datos INDEC ejecutado el %s.\n' % timestamp
+    heading = 'Proceso ETL de datos INDEC ejecutado el %s.\n' % timestamp
     ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
-    failed_roads_msg = '-- Calles con errores: %s' % len(failed_roads)
+    failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
 
     with open('report.txt', 'a') as report:
         print('-- Generando reporte --')
@@ -67,10 +67,10 @@ def generate_report():
         report.write(ok_roads_msg + '\n')
         report.write(failed_roads_msg + '\n\n')
 
-    if failed_roads:
+    if flagged_roads:
         print('-- Generando log de errores --')
-        with open('failed_roads.json', 'w') as report:
-            json.dump(failed_roads, report, indent=2)
+        with open('flagged_roads.json', 'w') as report:
+            json.dump(flagged_roads, report, indent=2)
 
     print('** Resultado del proceso **')
     print(ok_roads_msg)
@@ -80,6 +80,13 @@ def generate_report():
 def process_street(row):
     (code, name, road_type, start_left, start_right,
     end_left, end_right, geom, locality) = row
+    
+    obs = {}
+    if name == 'CALLE S N': obs['nombre'] = 'Sin registro'
+    flagged_boundaries = validate_boundaries(
+        start_left, start_right, end_left, end_right)
+    if flagged_boundaries: obs['alturas'] = flagged_boundaries
+
     if locality in localities:
         locality_id = localities[locality][0]
         state_id = localities[locality][1]
@@ -88,5 +95,20 @@ def process_street(row):
                     end_left=end_left, end_right=end_right, geom=geom,
                     locality_id=locality_id, state_id=state_id)
         roads.append(road)
-    else:
-        failed_roads.append({'nombre': name, 'codloc': locality, 'nomencla': code})
+
+    if obs or locality not in localities:
+        flagged_roads.append({
+            'nombre': name, 'codloc': locality, 'nomencla': code, 'obs': obs})
+
+
+def validate_boundaries(start_left, start_right, end_left, end_right):
+    obs = []
+    if start_left == start_right:
+        obs.append('Derecha e izquierda iniciales coinciden: %s' % start_left)
+    if end_left == end_right:
+        obs.append('Derecha e izquierda finales coiciden: %s' % end_left)
+    if start_left == end_left:
+        obs.append('Inicial y final izquierdas coinciden: %s' % end_left)
+    if start_right == end_right:
+        obs.append('Inicial y final derechas coinciden: %s' % end_right)
+    return obs
