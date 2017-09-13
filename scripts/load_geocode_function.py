@@ -8,5 +8,4 @@ def run():
         geocode_function_definition = f.read()
 
     with connection.cursor() as cursor:
-        cursor.execute('CREATE EXTENSION postgis;')
         cursor.execute(geocode_function_definition)
