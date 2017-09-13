@@ -1,34 +1,43 @@
 # Deploy Georef API
 
-## Sesión tmux
+## Dependencias
 
-`$ tmux new -s georef-api`  para crear la sesión.
+- [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
+- Gunicorn
+- [Python >=3.5.x](https://www.python.org/downloads/)
+- [Pip](https://pip.pypa.io/en/stable/installing/)
 
-`$ tmux attach -t georef-api` para ingresar a la sesión.
+## Instalación
 
-`$ Ctrl + B, D` para salir de la sesión sin terminarla.
+1. Clonar repositorio
 
-## Variables de entorno
+    `$ git clone https://github.com/datosgobar/georef-api.git`
+    
+2. Instalar dependencias con pip
 
-- Copiar archivo `environment.example.sh` a `environment.sh` y completar los valores:
+    `$ pip install -r requirements.txt`
 
-```
-  export FLASK_APP=service/__init__.py
-  export GEOREF_URL=<URL>
-  export OSM_API_URL='http://nominatim.openstreetmap.org/search'
-  export POSTGRES_DBNAME=<database>
-  export POSTGRES_PASSWORD=<user>
-  export POSTGRES_USER=<password>
-```
+3. Copiar las variables de entorno
+
+    `$ cp environment.example.sh environment.sh`
+    
+4. Completar los valores con los datos correspondientes:
+
+  ```bash
+    export FLASK_APP=service/__init__.py
+    export GEOREF_URL= # URL
+    export OSM_API_URL='http://nominatim.openstreetmap.org/search'
+    export GEOREF_HOST= # 'localhost'
+    export GEOREF_DBNAME= # georef 
+    export GEOREF_USER= # user
+    export GEOREF_PASSWORD= # password
+  ```
 
 ## ElasticSearch
-
-[Instalación](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
 
 - Levantar el servicio de ElasticSearch
 
   `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
-  
   
 - Listar índices
 
@@ -38,20 +47,24 @@
 
   `$ curl -XDELETE 'localhost:9200/<nombre_indice>?pretty&pretty'`
 
-## API 
+## Correr API 
 
-- Correr app
+- Correr app en un entorno localhost
 
   `$ ./runserver.sh`
   
-  
+- Correr app con Guicorn
+
+  `$ gunicorn -w 4 -b 0.0.0.0:5000 service:app`
+
+## Pruebas
+
 - Test
 
   `$ python -m unittest tests/normalization.py`
   
   `$ python -m unittest tests/parsing.py`
   
-
 - Consumir mediante la herramienta CURL:
 
   `$ curl localhost:5000/api/v1.0/direcciones?direccion=cabral`
