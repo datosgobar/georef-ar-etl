@@ -1,7 +1,28 @@
 from geo_admin.models import Road, Locality
+from datetime import datetime
 import psycopg2
 import json
 import os
+
+
+roads = []
+flagged_roads = []
+localities = {locality.code: (locality.id, locality.state_id)
+                for locality in Locality.objects.all()}
+
+
+def run():
+    print('-- Procesando vías --')
+    try:
+        streets = run_query()
+        for row in streets:
+            process_street(row)
+        print('-- Insertando vías --')
+        Road.objects.bulk_create(roads)
+        print('-- Proceso completo --')
+        generate_report()
+    except Exception as e:
+        print(e)
 
 
 def get_db_connection():
@@ -13,63 +34,83 @@ def get_db_connection():
 
 
 def run_query():
+    query = """SELECT nomencla as code, \
+                    nombre as name, \
+                    tipo as road_type, \
+                    desdei as start_left, \
+                    desded as start_right, \
+                    hastai as end_left, \
+                    hastad as end_right, \
+                    geom, \
+                    codloc as locality \
+            FROM  indec_vias \
+            WHERE tipo <> 'OTRO';
+        """
     try:
-        query = """SELECT nomencla as code, \
-                          nombre as name, \
-                          tipo as road_type, \
-                          desdei as start_left, \
-                          desded as start_right, \
-                          hastai as end_left, \
-                          hastad as end_right, \
-                          geom, \
-                          codloc as locality \
-                    FROM  indec_vias \
-                    WHERE tipo <> 'OTRO';
-                """
         with get_db_connection().cursor() as cursor:
             cursor.execute(query)
             streets = cursor.fetchall()
-            cursor.close()
         return streets
     except psycopg2.DatabaseError as e:
         print(e)
 
 
-def run():
-    roads = []
-    failed_rows = []
-    localities = {locality.code: (locality.id, locality.state_id)
-                  for locality in Locality.objects.all()}
-    try:
-        streets = run_query()
-        print('-- Procesando vías --')
-        for row in streets:
-            code, name, road_type, start_left, start_right, end_left, \
-            end_right, geom, codloc = row
-            if codloc in localities and localities[codloc][1]:
-                # codloc = '02000010' if '02000000' < codloc < '03000000' else codloc
-                locality_id = localities[codloc][0]
-                state_id = localities[codloc][1]
-                roads.append(Road(
-                    code=code,
-                    name=name,
-                    road_type=road_type,
-                    start_left=start_left,
-                    start_right=start_right,
-                    end_left=end_left,
-                    end_right=end_right,
-                    geom=geom,
-                    locality_id=locality_id if locality_id else None,
-                    state_id=state_id if state_id else None,
-                ))
-            else:
-                failed_rows.append({'nombre': name, 'codloc': codloc, 'nomencla': code})
-        print('-- Insertando vías --')
-        Road.objects.bulk_create(roads)
-        if failed_rows:
-            print('-- Generando log de errores --')
-            with open('failed_roads.json', 'w') as f:
-                json.dump(failed_rows, f, indent=4)
-        print('-- Proceso completo --')
-    except Exception as e:
-        print(e)
+def generate_report():
+    timestamp = datetime.now().strftime('%d-%m-%Y a las %H:%M:%S')
+    heading = 'Proceso ETL de datos INDEC ejecutado el %s.\n' % timestamp
+    ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
+    failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
+
+    with open('report.txt', 'a') as report:
+        print('-- Generando reporte --')
+        report.write(heading)
+        report.write(ok_roads_msg + '\n')
+        report.write(failed_roads_msg + '\n\n')
+
+    if flagged_roads:
+        print('-- Generando log de errores --')
+        with open('flagged_roads.json', 'w') as report:
+            json.dump(flagged_roads, report, indent=2)
+
+    print('** Resultado del proceso **')
+    print(ok_roads_msg)
+    print(failed_roads_msg)
+
+
+def process_street(row):
+    (code, name, road_type, start_left, start_right,
+    end_left, end_right, geom, locality) = row
+    
+    obs = {}
+    if name == 'CALLE S N':
+        obs['nombre'] = 'Sin registro'
+    flagged_boundaries = validate_boundaries(
+        start_left, start_right, end_left, end_right)
+    if flagged_boundaries:
+        obs['alturas'] = flagged_boundaries
+
+    if locality in localities:
+        locality_id = localities[locality][0]
+        state_id = localities[locality][1]
+        road = Road(code=code, name=name, road_type=road_type,
+                    start_left=start_left, start_right=start_right,
+                    end_left=end_left, end_right=end_right, geom=geom,
+                    locality_id=locality_id, state_id=state_id)
+        roads.append(road)
+
+    if obs or locality not in localities:
+        flagged_roads.append({
+            'nombre': name, 'codloc': locality, 'nomencla': code, 'obs': obs})
+
+
+def validate_boundaries(start_left, start_right, end_left, end_right):
+    obs = []
+    if start_left == start_right:
+        obs.append('Derecha e izquierda iniciales coinciden: %s' % start_left)
+    if end_left == end_right:
+        obs.append('Derecha e izquierda finales coiciden: %s' % end_left)
+    if start_left == end_left:
+        obs.append('Inicial y final izquierdas coinciden: %s' % end_left)
+    if start_right == end_right:
+        obs.append('Inicial y final derechas coinciden: %s' % end_right)
+    return obs
