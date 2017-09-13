@@ -34,27 +34,27 @@ export POSTGRES_PASSWORD=<password>
 
 - Crear base de datos
 
-    `$ cd ./manage.py makemigrations`
+    `$./manage.py makemigrations`
 
-    `$ cd ./manage.py migrate`
+    `$./manage.py migrate`
 
 -  Cargar datos de entidades y vías
 
-    `$ cd ./manage.py runscript load_states`
+    `$./manage.py runscript load_states`
 
-    `$ cd ./manage.py runscript load_departments`
+    `$./manage.py runscript load_departments`
 
-    `$ cd ./manage.py runscript load_localities`
+    `$./manage.py runscript load_localities`
 
-    `$ cd ./manage.py runscript load_roads`
+    `$./manage.py runscript load_roads`
 
 - Correr tests
 
-    `$ ./manage.py test`
+    `$./manage.py test`
 
 - Correr app
 
-    `$ ./manage.py runserver`
+    `$./manage.py runserver`
 
 ## ElasticSearch
 
