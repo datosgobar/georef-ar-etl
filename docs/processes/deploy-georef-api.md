@@ -6,6 +6,7 @@
 - Gunicorn
 - [Python >=3.5.x](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installing/)
+- Postgresql Client Common
 
 ## Instalación
 
