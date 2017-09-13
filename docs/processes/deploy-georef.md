@@ -9,18 +9,25 @@
 - [Python >=3.5.x](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installing/)
 - Unzip
-- Unicorn
 - Wget
 
 ## Base de datos
 
-Crear una base de datos en PostgreSQL con la extensión Postgis
+Crear **dos** base de datos en PostgreSQL ambas con la extensión Postgis (no es requerido que se encuentren en el mismo clúster)
 
 Ejemplo:
 
 ```plsql
   -- Creando una base de datos
-  CREATE DATABASE dbname;
+  CREATE DATABASE indec;
+  
+  -- Agregando Postgis a la base de datos creada
+  CREATE EXTENSION postgis;
+```
+
+```plsql
+  -- Creando una base de datos
+  CREATE DATABASE georef;
   
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
@@ -40,14 +47,20 @@ Ejemplo:
 
     `$ cp environment.example.sh environment.sh`
 
-4. Completar los valores con los datos correspondientes
+4. Completar los valores con los datos correspondientes:
 
-    ```
-      export GEOREF_API_URL='<URL>'
-      export POSTGRES_HOST=<host>
-      export POSTGRES_DBNAME=<database>
-      export POSTGRES_USER=<user>
-      export POSTGRES_PASSWORD=<password>
+    ```bash
+      export GEOREF_API_URL= # URL
+
+      export POSTGRES_HOST= # localhost
+      export POSTGRES_DBNAME= # indec
+      export POSTGRES_USER= # user
+      export POSTGRES_PASSWORD= # password
+      
+      export GEOREF_HOST= # localhost
+      export GEOREF_DB_NAME= # georef
+      export GEOREF_DB_USER= # user
+      export GEOREF_DB_PASS= # password
     ```
 5. Exportar las variables de entorno
 

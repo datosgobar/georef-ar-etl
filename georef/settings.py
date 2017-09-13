@@ -84,7 +84,7 @@ POSTGRES = {
         'NAME': 'georef',
         'USER': os.environ.get('GEOREF_DB_USER'),
         'PASSWORD': os.environ.get('GEOREF_DB_PASS'),
-        'HOST': os.environ.get('POSTGRES_HOST'),
+        'HOST': os.environ.get('GEOREF_HOST'),
         'PORT': '5432',
     }
 
