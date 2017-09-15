@@ -1,6 +1,6 @@
 # Kong
 
-Kong es un API Management que facilita la creación, la publicación, el mantenimiento, la monitorización y la protección de API a cualquier escala.
+Kong es un API Management que facilita la creación, publicación, mantenimiento, monitoreo y protección de API a cualquier escala.
 
 ## Instalación
 
@@ -8,7 +8,7 @@ Kong es un API Management que facilita la creación, la publicación, el manteni
 
     `$ sudo apt-get update`
     
-    `$ sudo apt-get install openssl libpcre3 procps perl http`
+    `$ sudo apt-get install openssl libpcre3 procps perl http curl`
 
 - Descargar e instalar paquete  
 
@@ -16,7 +16,7 @@ Kong es un API Management que facilita la creación, la publicación, el manteni
     
     `$ sudo dpkg -i kong-community-edition-0.11.0.xenial.all.deb`
 
-## Base de datos
+## Base de datos    
 
 - Crear base de datos y usuario
 
@@ -54,18 +54,19 @@ Kong es un API Management que facilita la creación, la publicación, el manteni
     
 - Activar plugin JWT
 
-    `$ http POST $HOST_KONG:8001/apis/demo/plugins name=jwt`
+    `$ http POST $HOST_KONG:8001/apis/demo/plugins name=jwt config.secret_is_base64=true`
 
     `$ http $HOST_KONG:8000/calles`
     
     
 - Crear usuario
 
-    `$ http POST $HOST_KONG:8001/consumers username=<user> custom_id=<example:email>`
+    `$ http POST $HOST_KONG:8001/consumers username=<user>`
   
-- Mostrar credenciales
 
-    `$ http POST $HOST_KONG:8001/consumers/<user>/jwt Content-Type:application/x-www-form-urlencoded`
+- Crear credenciales JWT
+
+    `$ curl -H "Content-Type: application/json" -X POST -d '{}' $HOST_KONG:8001/consumers/<name>/jwt`
 
 
 - Listar usuarios o un usuario en particular
@@ -74,14 +75,14 @@ Kong es un API Management que facilita la creación, la publicación, el manteni
 
     `$ http $HOST_KONG:8001/consumers/<user>/jwt`
 
+
 - Consumir APIS
 
     `$ http $HOST_KONG:8000/calles Host:$HOST_KONG 'Authorization:Bearer <token>'`
   
 - Rate limits
 
-    `$ http POST $HOST_KONG:8001/apis/demo/plugins name=rate-limiting consumer_id=59644cad-7ef2-46a6-b282-440a5481d9d0 config.hour=1`
-
+    `$ http POST $HOST_KONG:8001/apis/demo/plugins name=rate-limiting consumer_id=<consumer_id> config.hour=1`
 
 ## Docker
 
