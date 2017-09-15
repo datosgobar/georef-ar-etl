@@ -75,10 +75,18 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
 
     `$ http $HOST_KONG:8001/consumers/<user>/jwt`
 
+    
+- Generar Token con PyJWT
 
+    `$ python`
+    
+    ```python
+      import jwt
+      encoded = jwt.encode({'iss': '<key>'}, '<secret>', algorithm='HS256')
+    ```
 - Consumir APIS
 
-    `$ http $HOST_KONG:8000/calles Host:$HOST_KONG 'Authorization:Bearer <token>'`
+    `$ http $HOST_KONG:8000/calles 'Authorization:Bearer <token>'`
   
 - Rate limits
 
