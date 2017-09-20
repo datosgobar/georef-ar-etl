@@ -76,6 +76,7 @@ WSGI_APPLICATION = 'georef.wsgi.application'
 
 
 API_URL = os.environ.get('GEOREF_API_URL')
+KONG_HOST = os.environ.get('KONG_HOST')
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 

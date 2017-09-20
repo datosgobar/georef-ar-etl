@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from benchmark.models import *
-from georef.settings import API_URL
+from georef.settings import API_URL, KONG_HOST
 from urllib import parse, request
+import base64
+import jwt
 import requests
-
 
 class GeorefWrapper:
     """Interfaz para la API REST de Georef."""
@@ -136,3 +137,17 @@ class NominatimWrapper:
         if 'state' in result:
             address.state = State.objects.get_or_create(name=result['state'])[0]
         return address
+
+
+class KongWrapper:
+    def get_credentials(self, username):
+        kong_url = KONG_HOST + ':8001/consumers/' + username + '/jwt'
+        response = requests.get(kong_url)
+        return response.json() if response.status_code == 200 else None
+
+    def generate_token_from(self, credentials):
+        if credentials is not None:
+            key = credentials['data'][0]['key']
+            secret = credentials['data'][0]['secret']
+            return jwt.encode({'iss': key}, base64.b64decode(secret), algorithm='HS256')
+        return 'No existen credenciales para el usuario ingresado.'
