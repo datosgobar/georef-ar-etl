@@ -38,9 +38,9 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
     
 - Test
     
-    `$ export HOST_KONG=127.0.0.1`
+    `$ export KONG_HOST=127.0.0.1`
     
-    `$ http $HOST_KONG:8000`
+    `$ http $KONG_HOST:8000`
     
 - Registrar Georef API
 
@@ -48,49 +48,65 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
     
     `$ http $GEOREF_API_URL'/calles'`
 
-    `$ http POST $HOST_KONG:8001/apis name=demo hosts=$HOST_KONG upstream_url=$GEOREF_API_URL`
+    `$ http POST $KONG_HOST:8001/apis name=demo hosts=$KONG_HOST upstream_url=$GEOREF_API_URL`
     
-    `$ http $HOST_KONG:8000/calles`
+    `$ http $KONG_HOST:8000/calles`
     
 - Activar plugin JWT
 
-    `$ http POST $HOST_KONG:8001/apis/demo/plugins name=jwt config.secret_is_base64=true`
+    `$ http POST $KONG_HOST:8001/apis/demo/plugins name=jwt config.secret_is_base64=true`
 
-    `$ http $HOST_KONG:8000/calles`
+    `$ http $KONG_HOST:8000/calles`
     
     
 - Crear usuario
 
-    `$ http POST $HOST_KONG:8001/consumers username=<user>`
+    `$ http POST $KONG_HOST:8001/consumers username=<user>`
   
-
+  
 - Crear credenciales JWT
 
-    `$ curl -H "Content-Type: application/json" -X POST -d '{}' $HOST_KONG:8001/consumers/<name>/jwt`
+    `$ curl -H "Content-Type: application/json" -X POST -d '{}' $KONG_HOST:8001/consumers/<name>/jwt`
 
 
 - Listar usuarios o un usuario en particular
 
-    `$ http $HOST_KONG:8001/consumers/`
+    `$ http $KONG_HOST:8001/consumers/`
 
-    `$ http $HOST_KONG:8001/consumers/<user>/jwt`
+    `$ http $KONG_HOST:8001/consumers/<user>/jwt`
 
     
-- Generar Token con PyJWT
+- Generar Token: https://jwt.io/
 
-    `$ python`
+    - HEADER
     
-    ```python
-      import jwt
-      encoded = jwt.encode({'iss': '<key>'}, '<secret>', algorithm='HS256')
-    ```
+        ```json
+        {
+          "alg": "HS256",
+          "typ": "JWT"
+        }
+        ```
+        
+    - PAYLOAD: `"iss": "<key>"`
+    
+    - VERIFY SIGNATURE
+    
+        ```
+        HMACSHA256(
+         base64UrlEncode(header) + "." +
+         base64UrlEncode(payload),
+         <secret>
+        ) x secret base64 encoded
+        ```
+        
+
 - Consumir APIS
 
-    `$ http $HOST_KONG:8000/calles 'Authorization:Bearer <token>'`
+    `$ http $KONG_HOST:8000/calles 'Authorization:Bearer <token>'`
   
 - Rate limits
 
-    `$ http POST $HOST_KONG:8001/apis/demo/plugins name=rate-limiting consumer_id=<consumer_id> config.hour=1`
+    `$ http POST $KONG_HOST:8001/apis/demo/plugins name=rate-limiting consumer_id=<consumer_id> config.hour=1`
 
 ## Docker
 
