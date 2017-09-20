@@ -76,29 +76,40 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
     `$ http $KONG_HOST:8001/consumers/<user>/jwt`
 
     
-- Generar Token: https://jwt.io/
+- Generar Token:
+ 
+    1. [Debugger](https://jwt.io/)
 
-    - HEADER
-    
-        ```json
-        {
-          "alg": "HS256",
-          "typ": "JWT"
-        }
-        ```
+        - HEADER
         
-    - PAYLOAD: `"iss": "<key>"`
-    
-    - VERIFY SIGNATURE
-    
-        ```
-        HMACSHA256(
-         base64UrlEncode(header) + "." +
-         base64UrlEncode(payload),
-         <secret>
-        ) x secret base64 encoded
-        ```
+            ```json
+            {
+              "alg": "HS256",
+              "typ": "JWT"
+            }
+            ```
+            
+        - PAYLOAD: `"iss": "<key>"`
         
+        - VERIFY SIGNATURE
+        
+            ```
+            HMACSHA256(
+             base64UrlEncode(header) + "." +
+             base64UrlEncode(payload),
+             <secret>
+            ) x secret base64 encoded // check
+            ```
+    2. [PyJwt](https://github.com/jpadilla/pyjwt)
+    
+        ```python
+        import jwt
+        import base64
+        
+        encoded = jwt.encode({'iss': '<key>'}, base64.b64decode(b'<secret>'), algorithm='HS256')
+        print(encoded)
+        ```
+
 
 - Consumir APIS
 
