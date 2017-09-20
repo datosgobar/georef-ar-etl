@@ -141,13 +141,16 @@ class NominatimWrapper:
 
 class KongWrapper:
     def get_credentials(self, username):
-        kong_url = KONG_HOST + ':8001/consumers/' + username + '/jwt'
-        response = requests.get(kong_url)
-        return response.json() if response.status_code == 200 else None
+        try:
+            kong_url = KONG_HOST + ':8001/consumers/' + username + '/jwt'
+            response = requests.get(kong_url)
+            return response.json() if response.status_code == 200 else None
+        except (TypeError, requests.ConnectionError):
+            return None
 
     def generate_token_from(self, credentials):
         if credentials is not None:
             key = credentials['data'][0]['key']
             secret = credentials['data'][0]['secret']
             return jwt.encode({'iss': key}, base64.b64decode(secret), algorithm='HS256')
-        return 'No existen credenciales para el usuario ingresado.'
+        return 'No se pudo obtener credenciales para el usuario ingresado.'
