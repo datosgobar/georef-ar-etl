@@ -10,7 +10,7 @@
                     <div class="details" hidden>
                         <button class="btn btn-default btn-sm" data-result="{'source': 'georef', 'address': {{ result }}}">Guardar</button>
                         <span><strong>Tipo de resultado:</strong> {{ result.MatchLevel }}</span><br>
-                        <div id="map-here-{{ forloop.counter0 }}" class="map"></div>
+                        <div id="map-georef-{{ forloop.counter0 }}" class="map"></div>
                     </div>
                 </div>
             {% empty %}
