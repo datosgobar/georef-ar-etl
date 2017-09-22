@@ -22,10 +22,10 @@
                         </select>
                     </div>
                     <div class="col-xs-12 col-sm-6 col-lg-6">
-                        <select id="locality-select" name="lacality" class="form-control" disabled>
+                        <select id="locality-select" name="locality" class="form-control" disabled>
                             <option value="" disabled selected>Localidad</option>
                             {% for locality in localities.localidades|dictsort:"nombre" %}
-                                <option value="{{ locality.nombre }}" data-state="{{ locality.provincia.nombre }}" hidden>
+                                <option value="{{ locality.nombre }}" data-state="{{ locality.provincia }}" hidden>
                                     {{ locality.nombre }}
                                 </option>
                             {% endfor %}
