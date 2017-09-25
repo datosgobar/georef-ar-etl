@@ -77,6 +77,14 @@ WSGI_APPLICATION = 'georef.wsgi.application'
 
 API_URL = os.environ.get('GEOREF_API_URL')
 KONG_HOST = os.environ.get('KONG_HOST')
+OSM_API_URL = 'http://nominatim.openstreetmap.org/'
+HERE = {
+    'API_URL': 'https://geocoder.cit.api.here.com/6.2/geocode.json',
+    'APP_CODE': os.environ.get('HERE_APP_CODE'),
+    'APP_ID': os.environ.get('HERE_APP_ID')
+}
+
+
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 

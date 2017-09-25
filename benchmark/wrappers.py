@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from benchmark.models import *
-from georef.settings import API_URL, KONG_HOST
+from georef.settings import API_URL, KONG_HOST, HERE, OSM_API_URL
 from urllib import parse, request
 import base64
 import jwt
@@ -48,10 +48,10 @@ class GeorefWrapper:
 
 class HereWrapper:
     """Interfaz para la API REST de HERE."""
-    def __init__(self, url, app_code, app_id):
-        self.url = url
-        self.app_code = app_code
-        self.app_id = app_id
+    def __init__(self):
+        self.url = HERE['API_URL']
+        self.app_code = HERE['APP_CODE']
+        self.app_id = HERE['APP_ID']
 
     def search_address(self, address):
         """Busca una dirección en el servicio de HERE.
@@ -96,11 +96,11 @@ class HereWrapper:
 
 class NominatimWrapper:
     """Interfaz para la API REST de Nominatim"""
-    def __init__(self, url, format, country_code, address_details):
-        self.url = url
-        self.format = format
-        self.country_code = country_code
-        self.address_details = address_details
+    def __init__(self):
+        self.url = OSM_API_URL
+        self.format = 'json'
+        self.country_code = 'ar'
+        self.address_details = 1
 
     def search_address(self, address):
         q = '{}/search?q={}&format={}&countrycodes={}&addressdetails={}'.format(

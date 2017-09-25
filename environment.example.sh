@@ -7,4 +7,7 @@ export POSTGRES_HOST=
 export POSTGRES_DBNAME=
 export POSTGRES_USER=
 export POSTGRES_PASSWORD=
+export KONG_HOST=
+export HERE_APP_CODE=
+export HERE_APP_ID=
 

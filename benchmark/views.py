@@ -31,19 +31,8 @@ def compare(request):
     data = {'results': {}}
     if request.method == 'POST':
         address = request.POST.get('address', True)
-        here_wrapper = HereWrapper(
-            url='https://geocoder.cit.api.here.com/6.2/geocode.json',
-            app_code='2KEvGLCDtqH7HLUTNxDu3A&gen=8',
-            app_id='Qop1chzvUyZdOZJatmeG')
-        data['results'].update(here=here_wrapper.search_address(address))
-
-        nominatim_wrapper = NominatimWrapper(
-            url='http://nominatim.openstreetmap.org/',
-            format='json',
-            country_code='ar',
-            address_details='1'
-        )
-        data['results'].update(osm=nominatim_wrapper.search_address(address))
+        data['results'].update(here=HereWrapper().search_address(address))
+        data['results'].update(osm=NominatimWrapper().search_address(address))
         georef_data = json.loads(
             GeorefWrapper().search_address(address).decode('utf-8'))
         data['results'].update(georef=georef_data)
