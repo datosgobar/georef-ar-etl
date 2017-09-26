@@ -88,7 +88,9 @@ def process_street(row):
         start_left, start_right, end_left, end_right)
     if flagged_boundaries:
         obs['alturas'] = flagged_boundaries
-
+    
+    if locality[:2] in '02000010':
+        locality = '02000010'  # Para relacionar FK en calles de CABA.
     if locality in localities:
         locality_id = localities[locality][0]
         state_id = localities[locality][1]
