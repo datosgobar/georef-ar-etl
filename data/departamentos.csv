@@ -1,19 +1,19 @@
 departamento_id,departamento_nombre,provincia_id
-02001,Comuna 1,02
-02004,Comuna 4,02
-02013,Comuna 13,02
-02014,Comuna 14,02
-02006,Comuna 6,02
-02005,Comuna 5,02
-02002,Comuna 2,02
-02003,Comuna 3,02
-02007,Comuna 7,02
-02008,Comuna 8,02
-02009,Comuna 9,02
-02010,Comuna 10,02
-02011,Comuna 11,02
-02012,Comuna 12,02
-02015,Comuna 15,02
+02007,Comuna 1,02
+02014,Comuna 2,02
+02021,Comuna 3,02
+02028,Comuna 4,02
+02035,Comuna 5,02
+02042,Comuna 6,02
+02049,Comuna 7,02
+02056,Comuna 8,02
+02063,Comuna 9,02
+02070,Comuna 10,02
+02077,Comuna 11,02
+02084,Comuna 12,02
+02091,Comuna 13,02
+02098,Comuna 14,02
+02105,Comuna 15,02
 06091,Berazategui,06
 06168,Castelli,06
 06028,Almirante Brown,06
