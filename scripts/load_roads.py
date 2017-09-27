@@ -1,4 +1,4 @@
-from geo_admin.models import Road, Locality
+from geo_admin.models import Road, Locality, Department
 from datetime import datetime
 import psycopg2
 import json
@@ -9,7 +9,7 @@ roads = []
 flagged_roads = []
 localities = {locality.code: (locality.id, locality.state_id)
                 for locality in Locality.objects.all()}
-
+communes = [dept.code for dept in Department.objects.filter(state__code='02')]
 
 def run():
     print('-- Procesando vías --')
@@ -89,8 +89,8 @@ def process_street(row):
     if flagged_boundaries:
         obs['alturas'] = flagged_boundaries
     
-    if locality[:2] in '02000010':
-        locality = '02000010'  # Para relacionar FK en calles de CABA.
+    if locality[:5] in communes:  # Validar contra lista de Comunas.
+        locality = '02000010'     # Para relacionar FK en calles de CABA.
     if locality in localities:
         locality_id = localities[locality][0]
         state_id = localities[locality][1]

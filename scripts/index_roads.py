@@ -12,6 +12,7 @@ def run():
 def index_roads():
     es = Elasticsearch()
     print('-- Creando índices de Calles.')
+    departments = {dept.code: dept.name for dept in Department.objects.all()}
     localities = {loc.id: loc.name for loc in Locality.objects.all()}
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
@@ -32,6 +33,7 @@ def index_roads():
                 'geometria': road.geom,
                 'codigo_postal': road.postal_code,
                 'localidad': localities[road.locality_id],
+                'departamento': departments[road.code[:5]],
                 'provincia': state.name
             }
             data.append({'index': {'_id': road.id}})
