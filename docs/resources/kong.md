@@ -4,21 +4,31 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
 
 ## Instalación
 
+[Documentación oficial](https://getkong.org/install/)
+
+
+## Instalación en Ubuntu xenial
+
 - Instalar dependencias
 
     `$ sudo apt-get update`
     
-    `$ sudo apt-get install openssl libpcre3 procps perl http curl`
+    `$ sudo apt-get install openssl libpcre3 procps perl http`
 
-- Descargar e instalar paquete  
+- Descargar e instalar paquete 
 
-    `$ wget https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/kong-community-edition-0.11.0.xenial.all.deb`
+    `$ wget -O kong-community-edition-0.11.0.xenial.all.deb \
+    https://bintray.com/kong/kong-community-edition-deb/download_file?file_path=dists/kong-community-edition-0.11.0.xenial.all.deb`
     
     `$ sudo dpkg -i kong-community-edition-0.11.0.xenial.all.deb`
+    
+- Generar archivo de configuración y modificar en caso de ser necesario
+
+    `$ cp /etc/kong/kong.conf.default /etc/kong/kong.conf`
 
 ## Base de datos    
 
-- Crear base de datos y usuario
+- Crear base de datos y usuario (PostgreSQL)
 
     ```postgresplsql
       CREATE USER kong; 
@@ -27,14 +37,13 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
 
 - Migraciones
 
-    `$ sudo kong migrations up [-c /path/to/kong.conf]`
+    `$ sudo kong migrations up`
     
 ## Kong
 
 - Levantar Kong
 
-    `$ sudo kong start [-c /path/to/kong.conf]`
-    
+    `$ sudo kong start` 
     
 - Test
     
@@ -42,22 +51,21 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
     
     `$ http $KONG_HOST:8000`
     
-- Registrar Georef API
+- Registrar endpoint de provincias de Georef API
 
-    `$ export GEOREF_API_URL=http://181.209.63.243:5000/api/v1.0`
-    
-    `$ http $GEOREF_API_URL'/calles'`
+    `$ export GEOREF_API_PROVINCIAS=http://181.209.63.243:5000/api/v1.0/provincias`
+        
+    `$ http GEOREF_API_PROVINCIAS`
 
-    `$ http POST $KONG_HOST:8001/apis name=demo hosts=$KONG_HOST upstream_url=$GEOREF_API_URL`
-    
-    `$ http $KONG_HOST:8000/calles`
-    
-- Activar plugin JWT
+    `$ http POST $KONG_HOST:8001/apis name=provincias uris=/provincias upstream_url=$GEOREF_API_PROVINCIAS`
+       
+    `$ http $KONG_HOST:8000/provincias`
+        
+- Activar plugin [JWT](https://getkong.org/plugins/jwt/)
 
-    `$ http POST $KONG_HOST:8001/apis/demo/plugins name=jwt config.secret_is_base64=true`
+    `$ http POST $KONG_HOST:8001/apis/provincias/plugins name=jwt config.secret_is_base64=true`
 
-    `$ http $KONG_HOST:8000/calles`
-    
+    `$ http $KONG_HOST:8000/provincias`
     
 - Crear usuario
 
@@ -66,7 +74,7 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
   
 - Crear credenciales JWT
 
-    `$ curl -H "Content-Type: application/json" -X POST -d '{}' $KONG_HOST:8001/consumers/<name>/jwt`
+    `$ echo '{}' | http POST $KONG_HOST:8001/consumers/<user>/jwt`
 
 
 - Listar usuarios o un usuario en particular
@@ -98,7 +106,7 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
              base64UrlEncode(header) + "." +
              base64UrlEncode(payload),
              <secret>
-            ) x secret base64 encoded // check
+            ) [x] secret base64 encoded // check
             ```
     2. [PyJwt](https://github.com/jpadilla/pyjwt)
     
@@ -110,15 +118,14 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
         print(encoded)
         ```
 
-
 - Consumir APIS
 
-    `$ http $KONG_HOST:8000/calles 'Authorization:Bearer <token>'`
+    `$ http $KONG_HOST:8000/provincias 'Authorization:Bearer <token>'`
   
-- Rate limits
+- [Rate limits](https://getkong.org/plugins/rate-limiting/)
 
-    `$ http POST $KONG_HOST:8001/apis/demo/plugins name=rate-limiting consumer_id=<consumer_id> config.hour=1`
+    `$ http POST $KONG_HOST:8001/apis/provincias/plugins name=rate-limiting consumer_id=<consumer_id> config.minute=10`
 
-## Docker
+- [StatsD](https://getkong.org/plugins/statsd/)
 
-[Demo](https://programar.cloud/post/demo-del-api-gateway-kong/)
+    `$ http POST $KONG_HOST:8001/apis/provincias/plugins name=statsd consumer_id=<consumer_id>`
