@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'georef.wsgi.application'
 
 
 API_URL = os.environ.get('GEOREF_API_URL')
-KONG_HOST = os.environ.get('KONG_HOST')
+KONG_URL = os.environ.get('KONG_URL')
 OSM_API_URL = 'http://nominatim.openstreetmap.org/'
 HERE = {
     'API_URL': 'https://geocoder.cit.api.here.com/6.2/geocode.json',

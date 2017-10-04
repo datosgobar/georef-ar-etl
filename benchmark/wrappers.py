@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from benchmark.models import *
-from georef.settings import API_URL, KONG_HOST, HERE, OSM_API_URL
+from georef.settings import API_URL, KONG_URL, HERE, OSM_API_URL
 from urllib import parse, request
 import base64
 import jwt
@@ -142,8 +142,8 @@ class NominatimWrapper:
 class KongWrapper:
     def get_credentials(self, username):
         try:
-            kong_url = KONG_HOST + ':8001/consumers/' + username + '/jwt'
-            response = requests.get(kong_url)
+            credentials_url = KONG_URL + '/consumers/' + username + '/jwt'
+            response = requests.get(credentials_url)
             return response.json() if response.status_code == 200 else None
         except (TypeError, requests.ConnectionError):
             return None

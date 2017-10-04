@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import json
 import os
 import requests
 
 
 def run(*args):
-    KONG_URL = os.environ.get('KONG_HOST') + ':8001'
+    KONG_URL = os.environ.get('KONG_URL')
     try:
         if not args:
             raise SyntaxError('Error: debe ingresar uno o más nombres de usuario.')
