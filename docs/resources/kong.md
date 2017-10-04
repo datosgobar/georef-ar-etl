@@ -13,7 +13,7 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
 
     `$ sudo apt-get update`
     
-    `$ sudo apt-get install openssl libpcre3 procps perl http`
+    `$ sudo apt-get install openssl libpcre3 procps perl httpie`
 
 - Descargar e instalar paquete 
 
@@ -55,7 +55,7 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
 
     `$ export GEOREF_API_PROVINCIAS=http://181.209.63.243:5000/api/v1.0/provincias`
         
-    `$ http GEOREF_API_PROVINCIAS`
+    `$ http $GEOREF_API_PROVINCIAS`
 
     `$ http POST $KONG_HOST:8001/apis name=provincias uris=/provincias upstream_url=$GEOREF_API_PROVINCIAS`
        
@@ -97,7 +97,14 @@ Kong es un API Management que facilita la creación, publicación, mantenimiento
             }
             ```
             
-        - PAYLOAD: `"iss": "<key>"`
+        - PAYLOAD: 
+        
+            ```json
+            {
+              "iss": "<key>",
+              "name": "<name>"
+            }
+            ```
         
         - VERIFY SIGNATURE
         
