@@ -25,7 +25,7 @@
                         <select id="locality-select" name="locality" class="form-control" disabled>
                             <option value="" disabled selected>Localidad</option>
                             {% for locality in localities.localidades|dictsort:"nombre" %}
-                                <option value="{{ locality.nombre }}" data-state="{{ locality.provincia }}" hidden>
+                                <option value="{{ locality.nombre }}" data-state="{{ locality.provincia.nombre }}" hidden>
                                     {{ locality.nombre }}
                                 </option>
                             {% endfor %}
