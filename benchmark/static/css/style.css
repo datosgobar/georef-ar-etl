@@ -2,6 +2,7 @@ body {
   position: relative;
   padding-bottom: 230;
   height: auto;
+  background: white;
 }
 
 /* Fixes Bootstrap column issue in Safari 10+ */
@@ -385,3 +386,170 @@ body {
       @media (min-width: 768px) {
         #footer #footer-spacer .footer-section {
           text-align: left; } }
+
+#login-container {
+  height: 100%;
+  padding-right: 0;
+  padding-left: 0;
+  display: table-row; }
+  @media (min-width: 992px) {
+    #login-container {
+      padding-right: 15px;
+      padding-left: 15px; } }
+  #login-container #login {
+    display: table;
+    height: 100%;
+    padding: 30px 50px;
+    color: #767676;
+    font-size: 16px; }
+    @media (min-width: 992px) {
+      #login-container #login {
+        -o-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
+        -moz-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
+        -webkit-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
+        box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5); } }
+    #login-container #login h1 {
+      margin: 20px 0;
+      font-weight: 400;
+      font-size: 40px; }
+    #login-container #login form {
+      padding: 50px;
+      -o-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      border-radius: 4px;
+      -o-box-shadow: 0 0 4px 0 rgba(150, 150, 150, 0.5);
+      -moz-box-shadow: 0 0 4px 0 rgba(150, 150, 150, 0.5);
+      -webkit-box-shadow: 0 0 4px 0 rgba(150, 150, 150, 0.5);
+      box-shadow: 0 0 4px 0 rgba(150, 150, 150, 0.5); }
+      #login-container #login form label {
+        display: block;
+        text-align: left;
+        font-weight: 400;
+        padding: 5px 20px 5px 0;
+        font-size: 16px;
+        line-height: 1.2; }
+      #login-container #login form input[type="text"], #login-container #login form input[type="password"] {
+        width: 100%;
+        font-size: 16px;
+        line-height: 1.2;
+        padding: 10px;
+        height: 39.2px;
+        border: 1px solid #cccccc;
+        border-radius: 4px; }
+      #login-container #login form .control-custom .input-prepend {
+        width: 100%;
+        white-space: normal;
+        position: relative; }
+        #login-container #login form .control-custom .input-prepend label.add-on {
+          display: inline-block;
+          margin: 0;
+          width: 20%;
+          font-size: 16px;
+          line-height: 1.2;
+          padding: 10px;
+          height: 39.2px; }
+        #login-container #login form .control-custom .input-prepend label.icon-remove {
+          position: absolute;
+          top: 50%;
+          left: initial;
+          right: 0;
+          min-width: 4em;
+          margin: -1em 0 0 0;
+          font-size: 16px;
+          line-height: 1.2;
+          padding: 10px;
+          height: 39.2px; }
+          #login-container #login form .control-custom .input-prepend label.icon-remove:before, #login-container #login form .control-custom .input-prepend label.icon-remove:after {
+            content: initial; }
+          #login-container #login form .control-custom .input-prepend label.icon-remove span {
+            display: inline-block; }
+        #login-container #login form .control-custom .input-prepend input[type="text"] {
+          display: inline-block;
+          margin: 0;
+          width: 65%;
+          font-size: 16px;
+          line-height: 1.2;
+          padding: 10px;
+          height: 39.2px; }
+      #login-container #login form .package-groups input[type="checkbox"].package-group-checkbox {
+        display: inline-block;
+        width: auto;
+        margin: 0;
+        position: static;
+        vertical-align: baseline; }
+      #login-container #login form .package-groups label.package-group-label {
+        color: #999999;
+        margin: 0;
+        padding: 2px 0; }
+        #login-container #login form .package-groups label.package-group-label:after {
+          content: none; }
+      #login-container #login form .control-group {
+        position: relative; }
+        #login-container #login form .control-group.error .input-prepend .add-on {
+          font-size: 16px;
+          line-height: 1.2;
+          padding: 10px;
+          height: 39.2px; }
+    #login-container #login #login-vertical-wrapper {
+      display: table-cell;
+      vertical-align: middle; }
+      #login-container #login #login-vertical-wrapper .password-reset {
+        text-align: center;
+        margin: 50px 0 0 0; }
+    #login-container #login #forgot-password-positive-feedback {
+      text-align: center;
+      margin-bottom: 40px; }
+      #login-container #login #forgot-password-positive-feedback span {
+        border-radius: 4px;
+        color: #424242;
+        display: inline-block;
+        padding: 10px 20px;
+        background: #f5f5f5; }
+        #login-container #login #forgot-password-positive-feedback span img {
+          width: 20px;
+          height: 20px;
+          margin-right: 10px; }
+    #login-container #login form {
+      width: 100%;
+      margin: 0 auto; }
+      @media (min-width: 768px) {
+        #login-container #login form {
+          width: 600px; } }
+      #login-container #login form label {
+        padding: 0;
+        display: block;
+        width: auto;
+        margin-bottom: 10px; }
+      #login-container #login form .controls {
+        display: block;
+        margin: 0; }
+      #login-container #login form .error {
+        color: #ef4d3d; }
+      #login-container #login form .checkbox {
+        text-align: right;
+        margin: 0; }
+        #login-container #login form .checkbox input {
+          top: 50%;
+          margin-top: -10px; }
+      #login-container #login form .control-group {
+        margin-bottom: 30px; }
+        #login-container #login form .control-group:nth-child(3) {
+          margin: 0; }
+      #login-container #login form .form-actions {
+        margin: 0;
+        padding: 50px 0 0 0;
+        border: none;
+        text-align: center; }
+      #login-container #login form button {
+        background: #0695d6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        margin-bottom: 5px;
+        font-weight: 300;
+        padding: 12px;
+        display: inline-block; }
+        #login-container #login form button:hover {
+          background-color: #17b2f8; }

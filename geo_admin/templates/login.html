@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="login-container" class="container-fluid">
+    <div class="restricted-max-width">
+        <div id="login" class="col-xs-12 col-md-12 col-md-offset-6">
+            <div id="login-vertical-wrapper">
+                {% if form.errors %}
+                <p>Your username and password didn't match. Please try again.</p>
+                {% endif %}
+
+                {% if next %}
+                    {% if user.is_authenticated %}
+                    <p>Your account doesn't have access to this page. To proceed,
+                    please login with an account that has access.</p>
+                    {% else %}
+                    <p>Please login to see this page.</p>
+                    {% endif %}
+                {% endif %}
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="control-group">
+                        <label class="control-label">Usuario</label>
+                        <div class="controls">
+                            <input type="text" name="username" value="" maxlength="" placeholder=""  />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Contraseña</label>
+                        <div class="controls">
+                            <input type="password" name="password" value="" maxlength="" placeholder=""  />
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">INGRESAR</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
