@@ -404,10 +404,10 @@ body {
     font-size: 16px; }
     @media (min-width: 992px) {
       #login-container #login {
-        -o-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
+        /* -o-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
         -moz-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
         -webkit-box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5);
-        box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5); } }
+        box-shadow: 0 -2px 4px 0 rgba(150, 150, 150, 0.5); */ } }
     #login-container #login h1 {
       margin: 20px 0;
       font-weight: 400;
