@@ -6,7 +6,7 @@
         <div class="banner-content">
             <div>
                 <h1 style="visibility: hidden">Georef</h1>
-                <form action="{% url 'generate_token' %}" method="post">
+                <form action="{% url 'get_token' %}" method="post">
                     {% csrf_token %}
                     <input id="searchbox" name="username" class="form-control search-box" style="max-width: 500"
                     placeholder="{{ request.POST.username|default:"Ingrese su nombre de usuario." }}"

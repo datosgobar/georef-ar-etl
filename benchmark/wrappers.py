@@ -148,7 +148,7 @@ class KongWrapper:
         except (TypeError, requests.ConnectionError):
             return None
 
-    def generate_token_from(self, credentials):
+    def get_token_for(self, credentials):
         if credentials is not None:
             key = credentials['data'][0]['key']
             secret = credentials['data'][0]['secret']

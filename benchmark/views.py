@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from benchmark.wrappers import GeorefWrapper, HereWrapper, NominatimWrapper, KongWrapper
+from benchmark.wrappers import GeorefWrapper, HereWrapper, NominatimWrapper
 import json
 
 
@@ -56,15 +56,3 @@ def save_address(request):
         address.save()
         return HttpResponse('Se guardó la dirección correctamente.')
     return redirect('compare')
-
-
-def generate_token(request):
-    data = {}
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        kong_wrapper = KongWrapper()
-        credentials = kong_wrapper.get_credentials(username)
-        data['token'] = kong_wrapper.generate_token_from(credentials)
-    return render(request, 'token.html', data)
-
-
