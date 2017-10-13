@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class State(models.Model):
@@ -57,3 +58,10 @@ class Road(models.Model):
 
     def __str__(self):
         return ', '.join([self.name, self.locality.name, self.state.name])
+
+
+class Consumer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    consumer_id = models.CharField(max_length=100)
+    api_key = models.CharField(max_length=100)
+    api_secret = models.CharField(max_length=100)
