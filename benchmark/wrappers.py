@@ -2,8 +2,6 @@
 from benchmark.models import *
 from georef.settings import API_URL, KONG_URL, HERE, OSM_API_URL
 from urllib import parse, request
-import base64
-import jwt
 import requests
 
 class GeorefWrapper:
@@ -137,20 +135,3 @@ class NominatimWrapper:
         if 'state' in result:
             address.state = State.objects.get_or_create(name=result['state'])[0]
         return address
-
-
-class KongWrapper:
-    def get_credentials(self, username):
-        try:
-            credentials_url = KONG_URL + '/consumers/' + username + '/jwt'
-            response = requests.get(credentials_url)
-            return response.json() if response.status_code == 200 else None
-        except (TypeError, requests.ConnectionError):
-            return None
-
-    def get_token_for(self, credentials):
-        if credentials is not None:
-            key = credentials['data'][0]['key']
-            secret = credentials['data'][0]['secret']
-            return jwt.encode({'iss': key}, base64.b64decode(secret), algorithm='HS256')
-        return 'No se pudo obtener credenciales para el usuario ingresado.'

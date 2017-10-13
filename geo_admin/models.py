@@ -65,3 +65,10 @@ class Consumer(models.Model):
     consumer_id = models.CharField(max_length=100)
     api_key = models.CharField(max_length=100)
     api_secret = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = 'consumidor'
+        verbose_name_plural = 'consumidores'
+
+    def __str__(self):
+        return self.user.username

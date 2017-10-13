@@ -9,13 +9,7 @@
                 <form action="{% url 'get_token' %}" method="post">
                     {% csrf_token %}
                     <input id="searchbox" name="username" class="form-control search-box" style="max-width: 500"
-                    placeholder="{{ request.POST.username|default:"Ingrese su nombre de usuario." }}"
-                    autofocus="" type="text" value="" maxlength="255" autocomplete="off" spellcheck="false">
-                    <div style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-bottom:20px;">
-                        <span>
-                            {{ token|default:"" }}
-                        </span>
-                    </div>
+                        type="text" value="{{ token|default:"" }}" placeholder="Aquí podrá ver su token...">
                     <button id="btn-buscar" type="submit" class="btn btn-primary">Obtener token</button>
                 </form>
             </div>
