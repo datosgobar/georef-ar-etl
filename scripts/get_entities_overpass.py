@@ -20,7 +20,10 @@ def run():
             result = requests.get(url, data=query).json()
 
             for entity in result['elements']:
-                entities.append(entity['tags'])
+                entities.append({'entity': entity['tags'],
+                                 'center': {
+                                     'lat': entity['center']['lat'],
+                                     'lon': entity['center']['lon']}})
             with open('data/osm_%s.json' % value, 'w', encoding='utf-8') as f:
                 f.write(json.dumps(entities, ensure_ascii=False))
                 print(f'-- Entidad {value} extraída exitosamente. --')
