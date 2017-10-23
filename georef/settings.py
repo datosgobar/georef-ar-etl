@@ -88,7 +88,7 @@ HERE = {
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-POSTGRES = {
+GEOREF = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'georef',
         'USER': os.environ.get('GEOREF_DB_USER'),
@@ -102,9 +102,19 @@ SQLITE = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 
+KONG = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'kong',
+        'USER': os.environ.get('KONG_DB_USER'),
+        'PASSWORD': os.environ.get('KONG_DB_PASS'),
+        'HOST': os.environ.get('KONG_HOST'),
+        'PORT': '5432',
+    }
+
 DATABASES = {
     'default': SQLITE if os.environ.get('DJANGO_ENVIRONMENT', 'dev') == 'dev'
-        else POSTGRES
+        else GEOREF,
+    'kong': KONG
 }
 
 

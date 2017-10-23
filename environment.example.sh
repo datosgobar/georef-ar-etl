@@ -8,6 +8,9 @@ export POSTGRES_DBNAME=
 export POSTGRES_USER=
 export POSTGRES_PASSWORD=
 export KONG_URL=
+export KONG_DB_USER=
+export KONG_DB_PASS=
+export KONG_HOST=
 export HERE_APP_CODE=
 export HERE_APP_ID=
 

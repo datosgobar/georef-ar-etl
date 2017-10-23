@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="banner" class="container-fluid blue-gradient">
+    <div class="restricted-max-width">
+        <div class="banner-content">
+            <h1>Métricas</h1>
+            <h4>Consultas por API</h4>
+            {% for api, total in metrics.apis.items %}
+            <span><strong>/{{ api }}</strong> {{ total }}</span><br>
+            {% endfor %}
+            <h4>Consultas por usuario</h4>
+            {% for user, total in metrics.users.items %}
+            <span><strong>{{ user }}</strong> {{ total }}</span><br>
+            {% endfor %}
+            <h4>Consultas por usuario y API</h4>
+            {% for user, api, total in metrics.user_api %}
+            <span><strong>{{ user }}</strong> /{{ api }} {{ total }}</span><br>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
