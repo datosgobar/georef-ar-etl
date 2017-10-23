@@ -10,4 +10,7 @@ export POSTGRES_PASSWORD=
 export KONG_URL=
 export HERE_APP_CODE=
 export HERE_APP_ID=
+export CPA_USER=
+export CPA_PASS=
+export CPA_AUTHKEY=
 
