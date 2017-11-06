@@ -8,6 +8,8 @@ MESSAGES = {
     'states_error': 'Las provincias no pudieron cargarse.',
     'departments_success': 'Los departamentos fueron cargados exitosamente.',
     'departments_error': 'Los departamentos no pudieron cargarse.',
+    'departments_dependency_error': 'Deben cargarse las provincias antes de '
+                                    'los departamentos.',
     'localities_success': 'Las localidades fueron cargadas exitosamente.',
     'localities_error': 'Las localidades no pudieron cargarse.',
     'localities_dependency_error': 'Deben cargarse provincias y departamentos '
@@ -62,7 +64,7 @@ def load_departments():
         except Exception as e:
             print("{0}: {1}".format(MESSAGES['departments_error'], e))
     else:
-        print('Deben cargarse las provincias antes de los departamentos.')
+        print(MESSAGES['departments_dependency_error'])
 
 
 def load_localities():
