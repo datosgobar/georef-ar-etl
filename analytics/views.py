@@ -17,11 +17,17 @@ def save_address_search(request):
             postal_code=post_data.get('postal_code'),
         )
         if post_data.get('locality'):
-            search.locality = Locality.objects.get_or_create(
-                name=post_data['locality'].upper())[0]
+            try:
+                search.locality = Locality.objects.get(
+                    name=post_data['locality'])[0]
+            except Locality.DoesNotExist:
+                search.locality = None
         if post_data.get('state'):
-            search.state = State.objects.get_or_create(
-                name=post_data['state'].upper())[0]
+            try:
+                search.state = State.objects.get(
+                    name=post_data['state'])[0]
+            except State.DoesNotExist:
+                search.state = None
         search.save()
         return HttpResponse('Se guardó la búsqueda correctamente.', status=201)
     return HttpResponse('El recurso no existe.', status=400)
