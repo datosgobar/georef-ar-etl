@@ -1,6 +1,6 @@
 import csv
 from georef.settings import BASE_DIR
-from geo_admin.models import State, Department, Locality
+from geo_admin.models import State, Department, Locality, Settlement
 
 
 MESSAGES = {
@@ -13,15 +13,20 @@ MESSAGES = {
     'localities_success': 'Las localidades fueron cargadas exitosamente.',
     'localities_error': 'Las localidades no pudieron cargarse.',
     'localities_dependency_error': 'Deben cargarse provincias y departamentos '
-                                   'antes de las localidades.'
+                                   'antes de las localidades.',
+    'settlements_success': 'Los asentamientos fueron cargados exitosamente.',
+    'settlements_error': 'Los asentamientos no pudieron cargarse.',
+    'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
+                                   'antes de los asentamientos.'
 }
 
 
 def run():
     try:
-        load_states()
-        load_departments()
-        load_localities()
+        state_ids = load_states()
+        department_ids = load_departments(state_ids)
+        load_localities(state_ids, department_ids)
+        load_settlements(state_ids, department_ids)
     except Exception as e:
         print(e)
 
@@ -39,13 +44,14 @@ def load_states():
         print(MESSAGES['states_success'])
     except Exception as e:
         print("{0}: {1}".format(MESSAGES['states_error'], e))
+    finally:
+        return {state.code: state.id for state in State.objects.all()}
 
 
-def load_departments():
-    state_ids = {state.code: state.id for state in State.objects.all()}
+def load_departments(state_ids):
     if state_ids:
         caba = State.objects.get(code='02')
-        Department.objects.create(name=caba.name, code='02000', state=caba)
+        Department.objects.get_or_create(name=caba.name, code='02000', state=caba)
         departments = []
         try:
             file_path = BASE_DIR + '/data/departamentos.csv'
@@ -63,13 +69,13 @@ def load_departments():
             print(MESSAGES['departments_success'])
         except Exception as e:
             print("{0}: {1}".format(MESSAGES['departments_error'], e))
+        finally:
+            return {dept.code: dept.id for dept in Department.objects.all()}
     else:
         print(MESSAGES['departments_dependency_error'])
 
 
-def load_localities():
-    state_ids = {state.code: state.id for state in State.objects.all()}
-    department_ids = {dept.code: dept.id for dept in Department.objects.all()}
+def load_localities(state_ids, department_ids):
     if state_ids and department_ids:
         localities = []
         try:
@@ -91,3 +97,31 @@ def load_localities():
             print("{0}: {1}".format(MESSAGES['localities_error'], e))
     else:
         print(MESSAGES['localities_dependency_error'])
+
+
+def load_settlements(state_ids, department_ids):
+    if state_ids and department_ids:
+        settlements = []
+        try:
+            file_path = BASE_DIR + '/data/bahra.csv'
+            with open(file_path, newline='') as csv_file:
+                reader = csv.reader(csv_file)
+                next(reader)  # Skips headers row.
+                for row in reader:
+                    (bahra_name, state_code, dept_code, loc_code,
+                     bahra_code, bahra_type, lat, lon) = row
+                    settlements.append(Settlement(
+                        code=bahra_code,
+                        name=bahra_name,
+                        bahra_type=bahra_type,
+                        department_id=department_ids[state_code + dept_code],
+                        state_id=state_ids[state_code],
+                        lat=lat,
+                        lon=lon
+                    ))
+            Settlement.objects.bulk_create(settlements)
+            print(MESSAGES['settlements_success'])
+        except Exception as e:
+            print("{0}: {1}".format(MESSAGES['settlements_error'], e))
+    else:
+        print(MESSAGES['settlements_dependency_error'])
