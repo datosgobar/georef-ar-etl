@@ -40,6 +40,28 @@ class Locality(models.Model):
         return ', '.join([self.name, self.state.name])
 
 
+class Settlement(models.Model):
+    BAHRA_TYPES = (
+        ('E', 'Entidad (E)'),
+        ('LC', 'Componente de localidad compuesta (LC)'),
+        ('LS', 'Localidad simple (LS)'),
+    )
+    code = models.CharField(max_length=11, blank=True, null=True, unique=True, verbose_name='código')
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
+    bahra_type = models.CharField(max_length=3, blank=True, null=True, verbose_name='tipo', choices=BAHRA_TYPES)
+    department = models.ForeignKey(Department, blank=True, null=True, verbose_name='departamento')
+    state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
+    lat = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='latitud')
+    lon = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='longitud')
+
+    class Meta:
+        verbose_name = 'entidad bahra'
+        verbose_name_plural = 'entidades bahra'
+
+    def __str__(self):
+        return ', '.join([self.name, self.state.name])
+
+
 class Road(models.Model):
     code = models.CharField(max_length=13, verbose_name='código')
     name = models.CharField(max_length=100, verbose_name='nombre')
