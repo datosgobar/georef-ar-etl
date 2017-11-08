@@ -25,6 +25,17 @@ class Department(models.Model):
         return ', '.join([self.name, self.state.name])
 
 
+class Municipality(models.Model):
+    code = models.CharField(max_length=6, blank=True, null=True, unique=True, verbose_name='código')
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
+    lat = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='latitud')
+    lon = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='longitud')
+    state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
+
+    class Meta:
+        verbose_name = 'municipio'
+
+
 class Locality(models.Model):
     code = models.CharField(max_length=8, blank=True, null=True, unique=True, verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
