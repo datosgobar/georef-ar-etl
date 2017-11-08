@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch
-from geo_admin.models import Department, Locality, State
+from geo_admin.models import Department, Locality, Settlement, State
 
 
 def run():
@@ -8,6 +8,7 @@ def run():
         index_states(es)
         index_departments(es)
         index_localities(es)
+        index_settlements(es)
     except Exception as e:
         print(e)
 
@@ -72,3 +73,40 @@ def index_localities(es):
         data.append(document)
     es.bulk(index='localidades', doc_type='localidad', body=data, refresh=True)
     print('-- Se creó el índice de Localidades exitosamente.')
+
+
+def index_settlements(es):
+    if es.indices.exists(index='bahra'):
+        print('-- Ya existe el índice de BAHRA.')
+        return
+    print('-- Creando índice de Asentamientos.')
+    barha_types = {
+        'E': 'Entidad (E)',
+        'LC': 'Componente de localidad compuesta (LC)',
+        'LS': 'Localidad simple (LS)'
+    }
+    data = []
+    states = {state.id: (state.code, state.name) for state in State.objects.all()}
+    departments = {dept.id: (dept.code, dept.name) for dept in Department.objects.all()}
+    for settlement in Settlement.objects.all():
+        document = {
+            'id': settlement.code,
+            'nombre': settlement.name,
+            'tipo': barha_types[settlement.bahra_type],
+            'departamento': {
+                'id': departments[settlement.department_id][0],
+                'nombre': departments[settlement.department_id][1]
+            },
+            'provincia': {
+                'id': states[settlement.state_id][0],
+                'nombre': states[settlement.state_id][1]
+            },
+            'ubicacion': {
+                'lat': settlement.lat,
+                'lon': settlement.lon
+            }
+        }
+        data.append({'index': {'_id': settlement.id}})
+        data.append(document)
+    es.bulk(index='bahra', doc_type='asentamiento', body=data, refresh=True)
+    print('-- Se creó el índice de Asentamientos exitosamente.')
