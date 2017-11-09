@@ -62,9 +62,9 @@
 
 - Test
 
-  `$ python -m unittest tests/normalization.py`
+  `$ python -m unittest tests/test_normalization.py`
   
-  `$ python -m unittest tests/parsing.py`
+  `$ python -m unittest tests/test_parsing.py`
   
 - Consumir mediante la herramienta CURL:
 
