@@ -75,17 +75,13 @@ Ejemplo:
 
 7. Sincronizar la base de datos
 
-    `$./manage.py migrate`
+    `$ ./manage.py migrate`
 
 8. Cargar datos de entidades y vías
 
-    `$./manage.py runscript load_states`
+    `$ ./manage.py runscript load_entities`
 
-    `$./manage.py runscript load_departments`
-
-    `$./manage.py runscript load_localities`
-
-    `$./manage.py runscript load_roads`
+    `$ ./manage.py runscript load_roads`
 
 
 ## ElasticSearch
@@ -104,8 +100,12 @@ Ejemplo:
 
     `$ curl localhost:9200/_cat/indices?v`
 
+- Para borrar índices puede usarse el comando
+
+    `$ ./manage.py runscript delete_index --script-args <índice>`
+
 ## Correr App
 
 - Levantar servidor
 
-    `$./manage.py runserver`
+    `$ ./manage.py runserver`
