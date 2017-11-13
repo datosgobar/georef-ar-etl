@@ -23,7 +23,7 @@ def index_roads():
         for road in Road.objects.filter(state_id=state.id):
             document = {
                 'nomenclatura': ', '.join([road.name, localities[road.locality_id], state.name]),
-                'codigo': road.code,
+                'id': road.code,
                 'nombre': road.name,
                 'tipo': road.road_type,
                 'inicio_derecha': road.start_right,
