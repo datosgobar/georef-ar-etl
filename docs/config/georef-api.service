@@ -1,0 +1,23 @@
+[Unit]
+Description=georef-api gunicorn daemon
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/api-pid
+User=<user>
+Group=www-data
+RuntimeDirectory=gunicorn
+WorkingDirectory=/home/<user>/georef-api
+ExecStart=/home/<user>/.virtualenvs/georef-api/bin/gunicorn --pid /run/gunicorn/api-pid -w 4 --bind 0.0.0.0:5000 service:app
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+Environment="OSM_API_URL='http://nominatim.openstreetmap.org/search'"
+Environment="GEOREF_URL="
+Environment="GEOREF_DBNAME="
+Environment="GEOREF_USER="
+Environment="GEOREF_PASSWORD="
+
+[Install]
+WantedBy=multi-user.target

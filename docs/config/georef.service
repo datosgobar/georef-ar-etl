@@ -1,0 +1,29 @@
+[Unit]
+Description=georef gunicorn daemon
+Requires=georef.socket
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/pid
+User=<user>
+Group=www-data
+RuntimeDirectory=gunicorn
+WorkingDirectory=/home/<user>/georef
+ExecStart=/home/<user>/.virtualenvs/georef/bin/gunicorn --pid /run/gunicorn/pid -w 4 --bind unix:/home/<user>/georef/gunicorn.socket georef.wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+Environment="DJANGO_SECRET_KEY=''"
+Environment="DJANGO_POSTGRES_PASS="
+Environment="DJANGO_ENVIRONMENT="
+Environment="GEOREF_DB_USER="
+Environment="GEOREF_DB_PASS="
+Environment="GEOREF_API_URL="
+Environment="POSTGRES_HOST="
+Environment="POSTGRES_DBNAME="
+Environment="POSTGRES_USER="
+Environment="POSTGRES_PASSWORD="
+
+[Install]
+WantedBy=multi-user.target
