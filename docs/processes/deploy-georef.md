@@ -86,23 +86,28 @@ Ejemplo:
 
 ## ElasticSearch
 
-1. Levantar el servicio de ElasticSearch
+1. Instalar dependencias JDK version 1.8.0_131
 
-    `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
-    
-2. Crear índices
+  `$ sudo apt install default-jre`
+  
+2. Instalar eleasticSearch
 
-    `$ ./manage.py runscript index_entities`
+  `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
 
-    `$ ./manage.py runscript index_roads`
+  `# dpkg -i elasticsearch-6.0.0.deb`
 
-3. Verificar índices
+3. Configuraciones
 
-    `$ curl localhost:9200/_cat/indices?v`
+  `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
 
-- Para borrar índices puede usarse el comando
+  ```
+  cluster.name: georef
+  node.name: node-1
+  network.host: 0.0.0.0
+  ```
+4. Probando el servicio
 
-    `$ ./manage.py runscript delete_index --script-args <índice>`
+  `$ curl -X GET 'http://localhost:9200'`
 
 ## Correr App
 
