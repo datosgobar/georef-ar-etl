@@ -13,7 +13,7 @@
 
 ## Base de datos
 
-Crear **dos** base de datos en PostgreSQL ambas con la extensión Postgis (no es requerido que se encuentren en el mismo clúster)
+Crear **dos** bases de datos en PostgreSQL, ambas con la extensión Postgis (no es requerido que se encuentren en el mismo clúster).
 
 Ejemplo:
 
@@ -106,6 +106,36 @@ Ejemplo:
 
 ## Correr App
 
-- Levantar servidor
+Para pruebas con el servidor de desarrollo de Django, ejecutar `$ ./manage.py runserver`.
 
-    `$ ./manage.py runserver`
+Para instancias en servidores, agregar la configuración de los servicios `gunicorn` y `nginx`.
+
+1. Configurar servicio y socket en `/etc/systemd/system/`. Completar y     modificar los archivos `georef.service` y `georef.socket` de este repositorio.
+
+2. Habilitar y levantar el socket:
+
+    `# systemctl enable georef.socket`
+
+    `# systemctl start georef.socket`
+
+3. Levantar el servicio:
+
+    `# systemctl start georef.service`
+
+4. Para `nginx`, crear `/etc/nginx/sites-available/georef` tomando como base la configuración del archivo `georef.nginx`.
+
+5. Generar un link simbólico a la configuración del sitio:
+
+    `# ln -s /etc/nginx/sites-available/georef /etc/nginx/sites-enabled`,
+
+6. Validar configuración:
+
+    `# nginx -t`
+
+7. Cargar la nueva configuración:
+
+    `# nginx -s reload`
+
+8. Correr Nginx:
+
+    `# nginx`.
