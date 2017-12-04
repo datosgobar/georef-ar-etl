@@ -1,4 +1,4 @@
-# Deploy Georef
+# Georef - Guía de instalación para entorno de desarrollo
 
 ## Dependencias
 
@@ -45,18 +45,41 @@ Ejemplo:
     
     `(venv)$ pip install -r requirements.txt`
 
-3. Ejecutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
+3. Copiar las variables de entorno
+
+    `$ cp environment.example.sh environment.sh`
+
+4. Completar los valores con los datos correspondientes:
+
+    ```bash
+      export GEOREF_API_URL= # URL
+
+      export POSTGRES_HOST= # localhost
+      export POSTGRES_DBNAME= # indec
+      export POSTGRES_USER= # user
+      export POSTGRES_PASSWORD= # password
+      
+      export GEOREF_HOST= # localhost
+      export GEOREF_DB_NAME= # georef
+      export GEOREF_DB_USER= # user
+      export GEOREF_DB_PASS= # password
+    ```
+5. Exportar las variables de entorno
+
+    `$ . environment.sh`
+
+6. Ejecutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
 
     ```bash
       cd etl_scripts/
       sh etl_indec_vias.sh
     ```
 
-4. Sincronizar la base de datos
+7. Sincronizar la base de datos
 
     `$ ./manage.py migrate`
 
-5. Cargar datos de entidades y vías
+8. Cargar datos de entidades y vías
 
     `$ ./manage.py runscript load_entities`
 
@@ -65,17 +88,11 @@ Ejemplo:
 
 ## ElasticSearch
 
-1. Instalar dependencias JDK version 1.8.0_131
+1. Levantar el servicio de ElasticSearch
 
-  `$ sudo apt install default-jre`
+  `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
   
-2. Instalar eleasticSearch
-
-  `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
-
-  `# dpkg -i elasticsearch-6.0.0.deb`
-
-3. Configuraciones
+2. Configuraciones
 
   `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
 
@@ -84,11 +101,14 @@ Ejemplo:
   node.name: node-1
   network.host: 0.0.0.0
   ```
-4. Probar el servicio
+  
+3. Probar el servicio
 
   `$ curl -X GET 'http://localhost:9200'`
+
+  `$ curl localhost:9200/_cat/indices?v`
   
-5. Crear índices de entidades y vías
+4. Crear índices de entidades y vías
     
    `(venv)$ ./manage.py runscript index_entities`
     
@@ -96,34 +116,4 @@ Ejemplo:
 
 ## Correr App
 
-Agregar la configuración de los servicios `gunicorn` y `nginx`.
-
-1. Configurar servicio y socket en `/etc/systemd/system/`. Completar y modificar los archivos `georef.service` y `georef.socket` de este repositorio.
-
-2. Habilitar y levantar el socket:
-
-    `# systemctl enable georef.socket`
-
-    `# systemctl start georef.socket`
-
-3. Levantar el servicio:
-
-    `# systemctl start georef.service`
-
-4. Para `nginx`, crear `/etc/nginx/sites-available/georef` tomando como base la configuración del archivo `georef.nginx`.
-
-5. Generar un link simbólico a la configuración del sitio:
-
-    `# ln -s /etc/nginx/sites-available/georef /etc/nginx/sites-enabled`,
-
-6. Validar configuración:
-
-    `# nginx -t`
-
-7. Cargar la nueva configuración:
-
-    `# nginx -s reload`
-
-8. Correr Nginx:
-
-    `# nginx`
+   `(venv)$ ./manage.py runserver`

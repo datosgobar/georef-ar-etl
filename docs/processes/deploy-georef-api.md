@@ -14,49 +14,64 @@
 
     `$ git clone https://github.com/datosgobar/georef-api.git`
     
-2. Instalar dependencias con pip
+2. Crear entorno virtual e instalar dependencias con pip
 
-    `$ pip install -r requirements.txt`
-
-3. Copiar las variables de entorno
-
-    `$ cp environment.example.sh environment.sh`
+    `$ python3.6 -m venv venv`
     
-4. Completar los valores con los datos correspondientes:
-
-  ```bash
-    export FLASK_APP=service/__init__.py
-    export GEOREF_URL= # URL
-    export OSM_API_URL='http://nominatim.openstreetmap.org/search'
-    export GEOREF_HOST= # 'localhost'
-    export GEOREF_DBNAME= # georef 
-    export GEOREF_USER= # user
-    export GEOREF_PASSWORD= # password
-  ```
-
+    `(venv)$ pip install -r requirements.txt`
+ 
 ## ElasticSearch
 
-- Levantar el servicio de ElasticSearch
+1. Instalar dependencias JDK version 1.8.0_131
 
-  `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
+  `$ sudo apt install default-jre`
   
-- Listar índices
+2. Instalar eleasticSearch
 
-  `$ curl localhost:9200/_cat/indices?v`
+  `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
 
-- Borrar índices
+  `# dpkg -i elasticsearch-6.0.0.deb`
 
-  `$ curl -XDELETE 'localhost:9200/<nombre_indice>?pretty&pretty'`
+3. Configuraciones
+
+  `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
+
+  ```
+  cluster.name: georef
+  node.name: node-1
+  network.host: 0.0.0.0
+  ```
+4. Probar el servicio
+
+  `$ curl -X GET 'http://localhost:9200'`
 
 ## Correr API 
 
-- Correr app en un entorno localhost
+Agregar la configuración de los servicios `gunicorn` y `nginx`.
 
-  `$ ./runserver.sh`
-  
-- Correr app con Guicorn
+1. Configurar servicio en `/etc/systemd/system/`. Completar y modificar el archivo `georef-api.service` de este repositorio.
 
-  `$ gunicorn -w 4 -b 0.0.0.0:5000 service:app`
+2. Levantar el servicio:
+
+    `# systemctl start georef-api.service`
+
+3. Para `nginx`, crear `/etc/nginx/sites-available/georef-api` tomando como base la configuración del archivo `georef-api.nginx`.
+
+4. Generar un link simbólico a la configuración del sitio:
+
+    `# ln -s /etc/nginx/sites-available/georef-api /etc/nginx/sites-enabled`,
+
+5. Validar configuración:
+
+    `# nginx -t`
+
+6. Cargar la nueva configuración:
+
+    `# nginx -s reload`
+
+7. Correr Nginx:
+
+    `# nginx`
 
 ## Pruebas
 

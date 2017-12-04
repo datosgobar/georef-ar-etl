@@ -1,22 +1,18 @@
 server {
-    listen 8000;
+    listen 80 default_server;
     client_max_body_size 4G;
 
     keepalive_timeout 5;
 
     # path for static files
-    root /home/<user>/<project>;
+    root /home/deploy/georef-api;
 
     location / {
         # checks for static file, if not found proxy to app
         try_files $uri @proxy_to_app;
     }
 
-    location /static/ {
-        root /home/<user>/<project>;
-    }
-
     location @proxy_to_app {
-        proxy_pass http://unix:/home/<user>/<project>/gunicorn.socket; 
+        proxy_pass http://localhost:<api_port>;
     }
 }
