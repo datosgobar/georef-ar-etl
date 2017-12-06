@@ -40,6 +40,7 @@
   cluster.name: georef
   node.name: node-1
   network.host: 0.0.0.0
+  http.max_content_length: 100mb
   ```
 4. Probar el servicio
 
