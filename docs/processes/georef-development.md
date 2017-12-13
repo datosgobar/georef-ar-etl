@@ -19,7 +19,7 @@ Ejemplo:
 
 ```plsql
   -- Creando una base de datos
-  CREATE DATABASE indec;
+  CREATE DATABASE indec WITH ENCODING='UTF8';
   
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
@@ -27,7 +27,7 @@ Ejemplo:
 
 ```plsql
   -- Creando una base de datos
-  CREATE DATABASE georef;
+  CREATE DATABASE georef WITH ENCODING='UTF8';
   
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
@@ -43,7 +43,7 @@ Ejemplo:
 
     `$ python3.6 -m venv venv`
     
-    `(venv)$ pip install -r requirements.txt`
+    `(venv) $ pip install -r requirements.txt`
 
 3. Copiar las variables de entorno
 
@@ -53,16 +53,15 @@ Ejemplo:
 
     ```bash
       export GEOREF_API_URL= # URL
+      export GEOREF_HOST= # localhost
+      export GEOREF_DB_NAME= # georef
+      export GEOREF_DB_USER= # user
+      export GEOREF_DB_PASS= # password
 
       export POSTGRES_HOST= # localhost
       export POSTGRES_DBNAME= # indec
       export POSTGRES_USER= # user
       export POSTGRES_PASSWORD= # password
-      
-      export GEOREF_HOST= # localhost
-      export GEOREF_DB_NAME= # georef
-      export GEOREF_DB_USER= # user
-      export GEOREF_DB_PASS= # password
     ```
 5. Exportar las variables de entorno
 
@@ -77,13 +76,13 @@ Ejemplo:
 
 7. Sincronizar la base de datos
 
-    `$ ./manage.py migrate`
+    `(venv) $ ./manage.py migrate`
 
 8. Cargar datos de entidades y vías
 
-    `$ ./manage.py runscript load_entities`
+    `(venv) $ ./manage.py runscript load_entities`
 
-    `$ ./manage.py runscript load_roads`
+    `(venv) $ ./manage.py runscript load_roads`
 
 
 ## ElasticSearch
@@ -94,12 +93,17 @@ Ejemplo:
   
 2. Configuraciones
 
-  `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
+  `$ sudo vi path/to/elasticsearch/config/elasticsearch.yml`
 
   ```
   cluster.name: georef
   node.name: node-1
-  network.host: 0.0.0.0
+  ```
+  
+  `$ sudo vi /etc/sysctl.conf`
+  
+  ```
+  vm.max_map_count=262144
   ```
   
 3. Probar el servicio
