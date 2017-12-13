@@ -93,7 +93,7 @@ GEOREF = {
         'NAME': os.environ.get('GEOREF_DB_NAME'),
         'USER': os.environ.get('GEOREF_DB_USER'),
         'PASSWORD': os.environ.get('GEOREF_DB_PASS'),
-        'HOST': os.environ.get('GEOREF_HOST'),
+        'HOST': os.environ.get('GEOREF_DB_HOST'),
         'PORT': '5432',
     }
 

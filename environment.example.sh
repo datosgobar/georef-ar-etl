@@ -1,7 +1,8 @@
 export DJANGO_ENVIRONMENT=
 export DJANGO_SECRET_KEY=
 export GEOREF_API_URL=
-export GEOREF_HOST=
+export GEOREF_DB_HOST=
+export GEOREF_DB_NAME=
 export GEOREF_DB_USER=
 export GEOREF_DB_PASS=
 export POSTGRES_HOST=
@@ -14,4 +15,3 @@ export KONG_DB_PASS=
 export KONG_HOST=
 export HERE_APP_CODE=
 export HERE_APP_ID=
-
