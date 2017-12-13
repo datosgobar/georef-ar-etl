@@ -41,7 +41,7 @@ def load_states():
     try:
         states = []
         file_path = BASE_DIR + '/data/provincias.csv'
-        with open(file_path, newline='') as csv_file:
+        with open(file_path, newline='', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file)
             next(reader)
             for row in reader:
@@ -61,7 +61,7 @@ def load_departments(state_ids):
         departments = []
         try:
             file_path = BASE_DIR + '/data/departamentos.csv'
-            with open(file_path, newline='') as csv_file:
+            with open(file_path, newline='', encoding='utf-8') as csv_file:
                 reader = csv.reader(csv_file)
                 next(reader)  # Skips headers row.
                 for row in reader:
@@ -86,7 +86,7 @@ def load_municipalities(state_ids):
         municipalities = []
         try:
             file_path = BASE_DIR + '/data/municipios.csv'
-            with open(file_path, newline='') as csv_file:
+            with open(file_path, newline='', encoding='utf-8') as csv_file:
                 reader = csv.reader(csv_file)
                 next(reader)  # Skips headers row.
                 for row in reader:
@@ -111,7 +111,7 @@ def load_localities(state_ids, department_ids):
         localities = []
         try:
             file_path = BASE_DIR + '/data/localidades.csv'
-            with open(file_path, newline='') as csv_file:
+            with open(file_path, newline='', encoding='utf-8') as csv_file:
                 reader = csv.reader(csv_file)
                 next(reader)  # Skips headers row.
                 for row in reader:
@@ -135,7 +135,7 @@ def load_settlements(state_ids, department_ids):
         settlements = []
         try:
             file_path = BASE_DIR + '/data/bahra.csv'
-            with open(file_path, newline='') as csv_file:
+            with open(file_path, newline='', encoding='utf-8') as csv_file:
                 reader = csv.reader(csv_file)
                 next(reader)  # Skips headers row.
                 for row in reader:
