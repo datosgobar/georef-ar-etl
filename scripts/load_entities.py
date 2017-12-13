@@ -45,7 +45,7 @@ def load_states():
             reader = csv.reader(csv_file)
             next(reader)
             for row in reader:
-                states.append(State(code=row[0], name=row[1]))
+                states.append(State(code=row[0], name=row[1].encode('utf-8')))
         State.objects.bulk_create(states)
         print(MESSAGES['states_success'])
     except Exception as e:
@@ -68,7 +68,7 @@ def load_departments(state_ids):
                     dept_code, dept_name, state_code = row
                     departments.append(Department(
                         code=dept_code,
-                        name=dept_name,
+                        name=dept_name.encode('utf-8'),
                         state_id=state_ids[state_code]
                         ))
             Department.objects.bulk_create(departments)
@@ -92,7 +92,7 @@ def load_municipalities(state_ids):
                 for row in reader:
                     mun_name, mun_code, state_code, lat, lon = row
                     municipalities.append(Municipality(
-                        name=mun_name,
+                        name=mun_name.encode('utf-8'),
                         code=mun_code,
                         state_id=state_ids[state_code],
                         lat=lat,
@@ -118,7 +118,7 @@ def load_localities(state_ids, department_ids):
                     loc_code, loc_name, state_code, dept_code = row
                     localities.append(Locality(
                         code=loc_code,
-                        name=loc_name,
+                        name=loc_name.encode('utf-8'),
                         department_id=department_ids[dept_code],
                         state_id=state_ids[state_code]
                     ))
@@ -143,7 +143,7 @@ def load_settlements(state_ids, department_ids):
                      bahra_code, bahra_type, lat, lon) = row
                     settlements.append(Settlement(
                         code=bahra_code,
-                        name=bahra_name,
+                        name=bahra_name.encode('utf-8'),
                         bahra_type=bahra_type,
                         department_id=department_ids[state_code + dept_code],
                         state_id=state_ids[state_code],

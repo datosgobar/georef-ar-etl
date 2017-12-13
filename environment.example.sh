@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 export DJANGO_ENVIRONMENT=
 export DJANGO_SECRET_KEY=
 export GEOREF_API_URL=
