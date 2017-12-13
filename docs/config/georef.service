@@ -16,9 +16,11 @@ PrivateTmp=true
 
 Environment="DJANGO_SECRET_KEY=''"
 Environment="DJANGO_ENVIRONMENT="
+Environment="GEOREF_API_URL="
+Environment="GEOREF_DB_HOST="
+Environment="GEOREF_DB_NAME="
 Environment="GEOREF_DB_USER="
 Environment="GEOREF_DB_PASS="
-Environment="GEOREF_API_URL="
 Environment="POSTGRES_HOST="
 Environment="POSTGRES_DBNAME="
 Environment="POSTGRES_USER="

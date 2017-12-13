@@ -84,6 +84,9 @@ Ejemplo:
 
     `(venv) $ ./manage.py runscript load_roads`
 
+6. Cargar función para geocodificar direcciones
+
+    `(venv) $ ./manage.py runscript load_geocode_function`
 
 ## ElasticSearch
 
@@ -117,7 +120,9 @@ Ejemplo:
    `(venv)$ ./manage.py runscript index_entities`
     
    `(venv)$ ./manage.py runscript index_roads`
-
+   
+   `$ curl localhost:9200/_cat/indices?v`
+   
 ## Correr App
 
-   `(venv)$ ./manage.py runserver`
+   `(venv)$ ./manage.py runserver --insecure`

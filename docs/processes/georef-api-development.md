@@ -29,20 +29,12 @@
     export FLASK_APP=service/__init__.py
     export GEOREF_URL= # URL
     export OSM_API_URL='http://nominatim.openstreetmap.org/search'
-    export GEOREF_HOST= # 'localhost'
-    export GEOREF_DBNAME= # georef 
-    export GEOREF_USER= # user
-    export GEOREF_PASSWORD= # password
+    export GEOREF_DB_HOST= # 'localhost'
+    export GEOREF_DB_NAME= # georef 
+    export GEOREF_DB_USER= # user
+    export GEOREF_DB_PASS= # password
   ```
  
-5. Levantar el servicio de ElasticSearch
-
-  `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
-  
-6. Listar índices
-
-  `$ curl localhost:9200/_cat/indices?v`
-
 ## ElasticSearch
 
 - Levantar el servicio de ElasticSearch
