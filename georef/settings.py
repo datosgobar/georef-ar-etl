@@ -90,7 +90,7 @@ HERE = {
 
 GEOREF = {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'georef',
+        'NAME': os.environ.get('GEOREF_DB_NAME'),
         'USER': os.environ.get('GEOREF_DB_USER'),
         'PASSWORD': os.environ.get('GEOREF_DB_PASS'),
         'HOST': os.environ.get('GEOREF_HOST'),
