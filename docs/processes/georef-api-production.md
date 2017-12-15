@@ -4,6 +4,7 @@
 
 - [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
 - Gunicorn
+- [Nginx](https://nginx.org/)
 - [Python >=3.5.x](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installing/)
 - Postgresql Client Common
@@ -84,6 +85,6 @@ Agregar la configuración de los servicios `gunicorn` y `nginx`.
   
 - Consumir mediante la herramienta CURL:
 
-  `$ curl localhost:5000/api/v1.0/direcciones?direccion=cabral`
+  `$ curl localhost:80/api/v1.0/direcciones?direccion=cabral`
   
-  `$ curl localhost:5000/api/v1.0/provincias`
+  `$ curl localhost:80/api/v1.0/provincias`

@@ -3,7 +3,9 @@
 ## Dependencias
 
 - [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
+- Gunicorn
 - [Gedal](http://www.gdal.org/index.html)
+- [Nginx](https://nginx.org/)
 - [PostgreSQL 9.6](https://www.postgresql.org/download/)
 - [PostGis 2.3](http://postgis.net/install/)
 - [Python >=3.5.x](https://www.python.org/downloads/)
@@ -19,7 +21,7 @@ Ejemplo:
 
 ```plsql
   -- Creando una base de datos
-  CREATE DATABASE indec;
+  CREATE DATABASE indec WITH ENCODING='UTF8';
   
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
@@ -27,7 +29,7 @@ Ejemplo:
 
 ```plsql
   -- Creando una base de datos
-  CREATE DATABASE georef;
+  CREATE DATABASE georef WITH ENCODING='UTF8';
   
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
@@ -44,24 +46,49 @@ Ejemplo:
     `$ python3.6 -m venv venv`
     
     `(venv)$ pip install -r requirements.txt`
+    
+3. Copiar las variables de entorno
 
-3. Ejecutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
+    `$ cp environment.example.sh environment.sh`
+    
+4. Completar los valores con los datos correspondientes:
+
+    ```bash
+      export GEOREF_API_URL= # URL
+      export GEOREF_HOST= # localhost
+      export GEOREF_DB_NAME= # georef
+      export GEOREF_DB_USER= # user
+      export GEOREF_DB_PASS= # password
+
+      export POSTGRES_HOST= # localhost
+      export POSTGRES_DBNAME= # indec
+      export POSTGRES_USER= # user
+      export POSTGRES_PASSWORD= # password
+    ```
+5. Exportar las variables de entorno
+
+    `$ . environment.sh`
+
+6. Ejecutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
 
     ```bash
       cd etl_scripts/
       sh etl_indec_vias.sh
     ```
 
-4. Sincronizar la base de datos
+7. Sincronizar la base de datos
 
     `$ ./manage.py migrate`
 
-5. Cargar datos de entidades y vías
+8. Cargar datos de entidades y vías
 
     `$ ./manage.py runscript load_entities`
 
     `$ ./manage.py runscript load_roads`
+    
+9. Cargar función para geocodificar direcciones
 
+    `(venv) $ ./manage.py runscript load_geocode_function`
 
 ## ElasticSearch
 
@@ -86,6 +113,8 @@ Ejemplo:
   http.max_content_length: 100mb
   ```
 4. Probar el servicio
+
+  `$ sudo service elasticsearch start` 
 
   `$ curl -X GET 'http://localhost:9200'`
   

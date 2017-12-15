@@ -8,11 +8,11 @@
 
 - Descargando los archivos binarios
 
-  `# wget https://www.python.org/ftp/python/3.6.1/Python-3.6.1.tgz`
+  `$ wget https://www.python.org/ftp/python/3.6.2/Python-3.6.4.tgz`
 
-  `# tar xvf Python-3.6.1.tgz`
+  `$ tar xvf Python-3.6.4.tgz`
 
-  `# cd Python-3.6.1`
+  `$ cd Python-3.6.4`
 
 - Instalación
 
@@ -23,8 +23,6 @@
 - Pip
 
   `$ sudo apt install python-pip` o `python3-pip`
-
-  `$ pip install --upgrade pip`
 
 - Virtualenvwrapper
 

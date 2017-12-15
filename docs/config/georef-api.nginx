@@ -5,7 +5,7 @@ server {
     keepalive_timeout 5;
 
     # path for static files
-    root /home/deploy/georef-api;
+    root /home/<user>/georef-api;
 
     location / {
         # checks for static file, if not found proxy to app
@@ -13,6 +13,6 @@ server {
     }
 
     location @proxy_to_app {
-        proxy_pass http://localhost:<api_port>;
+        proxy_pass http://localhost:8000;
     }
 }

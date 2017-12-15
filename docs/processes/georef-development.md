@@ -84,7 +84,7 @@ Ejemplo:
 
     `(venv) $ ./manage.py runscript load_roads`
 
-6. Cargar función para geocodificar direcciones
+9. Cargar función para geocodificar direcciones
 
     `(venv) $ ./manage.py runscript load_geocode_function`
 
