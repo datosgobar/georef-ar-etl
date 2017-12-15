@@ -1,21 +1,25 @@
 # -*- coding: utf-8 -*-
 from benchmark.models import *
 from georef.settings import API_URL, KONG_URL, HERE, OSM_API_URL
-from urllib import parse, request
+from urllib import parse, request, error
 import requests
+
 
 class GeorefWrapper:
     """Interfaz para la API REST de Georef."""
     def search_address(self, address, locality=None, state=None):
         resource = API_URL + 'direcciones?'
-        query = { 'direccion': address }
+        query = {'direccion': address}
         if locality:
             query.update(localidad=locality)
         if state:
             query.update(provincia=state)
         resource += parse.urlencode(query)
-        return request.urlopen(resource).read()
-    
+        try:
+            return request.urlopen(resource).read()
+        except error.URLError as e:
+            return e
+
     def get_address_from(self, search_text, result):
         """Procesa una dirección de Georef y retorna un objeto Address."""
         type = AddressType.objects.get_or_create(name=result['tipo'])[0]
