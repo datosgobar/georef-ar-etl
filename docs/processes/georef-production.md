@@ -11,11 +11,12 @@
 - [Python >=3.5.x](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installing/)
 - Unzip
+- [Virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
 - Wget
 
 ## Base de datos
 
-Crear **dos** bases de datos en PostgreSQL, ambas con la extensión Postgis (no es requerido que se encuentren en el mismo clúster).
+Crear **dos** bases de datos en PostgreSQL, ambas con la extensión Postgis. No es requerido que se encuentren en el mismo clúster ni alojadas en el mismo _host_ de la aplicación.
 
 Ejemplo:
 
