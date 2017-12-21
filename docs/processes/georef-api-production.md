@@ -25,27 +25,28 @@
 
 1. Instalar dependencias JDK version 1.8.0_131
 
-  `$ sudo apt install default-jre`
+    `$ sudo apt install default-jre`
   
 2. Instalar eleasticSearch
 
-  `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
+    `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
 
-  `# dpkg -i elasticsearch-6.0.0.deb`
+    `# dpkg -i elasticsearch-6.0.0.deb`
 
 3. Configuraciones
 
-  `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
+    `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
 
-  ```
-  cluster.name: georef
-  node.name: node-1
-  network.host: 0.0.0.0
-  http.max_content_length: 100mb
-  ```
+    ```
+    cluster.name: georef
+    node.name: node-1
+    network.host: 0.0.0.0
+    http.max_content_length: 100mb
+    ```
+    
 4. Probar el servicio
 
-  `$ curl -X GET 'http://localhost:9200'`
+    `$ curl -X GET 'http://localhost:9200'`
 
 ## Correr API 
 

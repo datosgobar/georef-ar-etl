@@ -25,7 +25,7 @@
     
 4. Completar los valores con los datos correspondientes:
 
-  ```bash
+    ```bash
     export FLASK_APP=service/__init__.py
     export GEOREF_URL= # URL
     export OSM_API_URL='http://nominatim.openstreetmap.org/search'
@@ -33,7 +33,7 @@
     export GEOREF_DB_NAME= # georef 
     export GEOREF_DB_USER= # user
     export GEOREF_DB_PASS= # password
-  ```
+    ```
  
 ## ElasticSearch
 
@@ -51,8 +51,10 @@
 
 ## Correr API 
 
-    `(venv)$ . environment.sh`
+- Correr los siguientes comandos:
 
+    `(venv)$ . environment.sh`
+    
     `(venv)$ flask run`
 
 ## Pruebas

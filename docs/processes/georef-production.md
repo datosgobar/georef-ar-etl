@@ -54,16 +54,16 @@ Ejemplo:
 4. Completar los valores con los datos correspondientes:
 
     ```bash
-      export GEOREF_API_URL= # URL
-      export GEOREF_HOST= # localhost
-      export GEOREF_DB_NAME= # georef
-      export GEOREF_DB_USER= # user
-      export GEOREF_DB_PASS= # password
-
-      export POSTGRES_HOST= # localhost
-      export POSTGRES_DBNAME= # indec
-      export POSTGRES_USER= # user
-      export POSTGRES_PASSWORD= # password
+    export GEOREF_API_URL= # URL
+    export GEOREF_HOST= # localhost
+    export GEOREF_DB_NAME= # georef
+    export GEOREF_DB_USER= # user
+    export GEOREF_DB_PASS= # password
+    
+    export POSTGRES_HOST= # localhost
+    export POSTGRES_DBNAME= # indec
+    export POSTGRES_USER= # user
+    export POSTGRES_PASSWORD= # password
     ```
 5. Exportar las variables de entorno
 
@@ -72,8 +72,8 @@ Ejemplo:
 6. Ejecutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
 
     ```bash
-      cd etl_scripts/
-      sh etl_indec_vias.sh
+    cd etl_scripts/
+    sh etl_indec_vias.sh
     ```
 
 7. Sincronizar la base de datos
@@ -94,35 +94,36 @@ Ejemplo:
 
 1. Instalar dependencias JDK version 1.8.0_131
 
-  `$ sudo apt install default-jre`
+    `$ sudo apt install default-jre`
   
 2. Instalar eleasticSearch
 
-  `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
+    `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
 
-  `# dpkg -i elasticsearch-6.0.0.deb`
+    `# dpkg -i elasticsearch-6.0.0.deb`
 
 3. Configuraciones
 
-  `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
-
-  ```
-  cluster.name: georef
-  node.name: node-1
-  network.host: 0.0.0.0
-  http.max_content_length: 100mb
-  ```
+    `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
+    
+    ```
+    cluster.name: georef
+    node.name: node-1
+    network.host: 0.0.0.0
+    http.max_content_length: 100mb
+    ```
+    
 4. Probar el servicio
 
-  `$ sudo service elasticsearch start` 
-
-  `$ curl -X GET 'http://localhost:9200'`
+    `$ sudo service elasticsearch start` 
+    
+    `$ curl -X GET 'http://localhost:9200'`
   
 5. Crear índices de entidades y vías
+        
+    `(venv)$ ./manage.py runscript index_entities`
     
-   `(venv)$ ./manage.py runscript index_entities`
-    
-   `(venv)$ ./manage.py runscript index_roads`
+    `(venv)$ ./manage.py runscript index_roads`
 
 ## Correr App
 
