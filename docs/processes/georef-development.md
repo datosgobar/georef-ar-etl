@@ -50,7 +50,7 @@ Ejemplo:
 
     `$ cp environment.example.sh environment.sh`
 
-4. Completar los valores con los datos correspondientes:
+4. Completar con los valores de configuración correspondiente a las [bases de datos creadas](#base-de-datos):
 
     ```bash
     export GEOREF_API_URL= # URL
