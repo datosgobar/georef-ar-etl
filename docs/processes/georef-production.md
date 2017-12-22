@@ -23,7 +23,7 @@ Ejemplo:
 ```plsql
   -- Creando una base de datos
   CREATE DATABASE indec WITH ENCODING='UTF8';
-  
+
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
 ```
@@ -31,7 +31,7 @@ Ejemplo:
 ```plsql
   -- Creando una base de datos
   CREATE DATABASE georef WITH ENCODING='UTF8';
-  
+
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
 ```
@@ -45,27 +45,47 @@ Ejemplo:
 2. Crear entorno virtual e instalar dependencias con pip
 
     `$ python3.6 -m venv venv`
-    
+
     `(venv)$ pip install -r requirements.txt`
-    
+
 3. Copiar las variables de entorno
 
     `$ cp environment.example.sh environment.sh`
-    
-4. Completar con los valores de configuración correspondiente a las [bases de datos creadas](#base-de-datos):
 
-    ```bash
-    export GEOREF_API_URL= # URL
-    export GEOREF_HOST= # localhost
-    export GEOREF_DB_NAME= # georef
-    export GEOREF_DB_USER= # user
-    export GEOREF_DB_PASS= # password
-    
-    export POSTGRES_HOST= # localhost
-    export POSTGRES_DBNAME= # indec
-    export POSTGRES_USER= # user
-    export POSTGRES_PASSWORD= # password
-    ```
+4. Completar el script `environment.sh` con los valores de configuración correspondientes:
+
+    - Configuraciones de aplicación
+
+        ```bash
+        export DJANGO_ENVIRONMENT= # opciones: dev | prod
+        export DJANGO_SECRET_KEY= # valor obligatorio
+        ```
+
+    - Configuraciones de [bases de datos previamente creadas](#base-de-datos)
+
+        ```bash
+        export GEOREF_API_URL= # Ejemplo: http://127.0.0.1:5000/api/v1.0/
+        export GEOREF_DB_HOST= # localhost
+        export GEOREF_DB_NAME= # georef
+        export GEOREF_DB_USER= # user
+        export GEOREF_DB_PASS= # password
+        export POSTGRES_HOST= # localhost
+        export POSTGRES_DBNAME= # indec
+        export POSTGRES_USER= # user
+        export POSTGRES_PASSWORD= # password
+        ```
+
+    - Configuraciones para la integración de los servicios KONG y HERE(opcional)
+
+        ```bash
+        export KONG_URL= # Ejemplo: http://127.0.0.1:8000/
+        export KONG_DB_USER= # user
+        export KONG_DB_PASS= # password
+        export KONG_HOST= # localhost
+        export HERE_APP_CODE= # app_code
+        export HERE_APP_ID= # app_id
+        ```
+
 5. Exportar las variables de entorno
 
     `$ . environment.sh`
@@ -86,7 +106,7 @@ Ejemplo:
     `$ ./manage.py runscript load_entities`
 
     `$ ./manage.py runscript load_roads`
-    
+
 9. Cargar función para geocodificar direcciones
 
     `(venv) $ ./manage.py runscript load_geocode_function`
@@ -96,7 +116,7 @@ Ejemplo:
 1. Instalar dependencias JDK version 1.8.0_131
 
     `$ sudo apt install default-jre`
-  
+
 2. Instalar eleasticSearch
 
     `$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.deb`
@@ -106,24 +126,24 @@ Ejemplo:
 3. Configuraciones
 
     `$ sudo vi /etc/elasticsearch/elasticsearch.yml`
-    
+
     ```
     cluster.name: georef
     node.name: node-1
     network.host: 0.0.0.0
     http.max_content_length: 100mb
     ```
-    
+
 4. Probar el servicio
 
     `$ sudo service elasticsearch start` 
-    
+
     `$ curl -X GET 'http://localhost:9200'`
-  
+
 5. Crear índices de entidades y vías
-        
+
     `(venv)$ ./manage.py runscript index_entities`
-    
+
     `(venv)$ ./manage.py runscript index_roads`
 
 ## Correr App
