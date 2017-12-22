@@ -73,7 +73,7 @@ Ejemplo:
         export POSTGRES_PASSWORD= # password
         ```
 
-    - Configuraciones para la integración de los servicios KONG y HERE(opcional)
+    - Configuraciones para la integración de los servicios [KONG](../resources/kong.md) y [HERE](https://developer.here.com/)(opcional)
 
         ```bash
         export KONG_URL= # Ejemplo: http://127.0.0.1:8000/
