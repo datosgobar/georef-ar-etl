@@ -60,6 +60,7 @@ Ejemplo:
         export DJANGO_ENVIRONMENT= # opciones: dev | prod
         export DJANGO_SECRET_KEY= # valor obligatorio
         ```
+        Nota: [Ver instructivo para crear _secret key_](python3.6.md#secret-key)
 
     - Configuraciones de [bases de datos previamente creadas](#base-de-datos)
 
