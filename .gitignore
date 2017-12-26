@@ -59,4 +59,9 @@ db.sqlite3
 .idea/
 .vscode/
 
+# environments
 environment.sh
+
+# reports
+flagged_roads.json
+report.txt
