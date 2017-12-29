@@ -110,6 +110,10 @@ Ejemplo:
 9. Cargar función para geocodificar direcciones
 
     `(venv) $ ./manage.py runscript load_geocode_function`
+    
+10. Generar los archivos estáticos
+
+    `(venv) $ ./manage.py collectstatic`
 
 ## ElasticSearch
 
