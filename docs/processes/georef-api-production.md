@@ -21,6 +21,23 @@
     `$ python3.6 -m venv venv`
     
     `(venv)$ pip install -r requirements.txt`
+    
+
+3. Copiar las variables de entorno
+
+    `$ cp environment.example.sh environment.sh`
+    
+4. Completar los valores con los datos correspondientes:
+
+    ```bash
+    export FLASK_APP=service/__init__.py
+    export GEOREF_URL= # URL
+    export OSM_API_URL='http://nominatim.openstreetmap.org/search'
+    export GEOREF_DB_HOST= # 'localhost'
+    export GEOREF_DB_NAME= # georef 
+    export GEOREF_DB_USER= # user
+    export GEOREF_DB_PASS= # password
+    ```
  
 ## ElasticSearch
 
