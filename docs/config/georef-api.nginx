@@ -13,6 +13,6 @@ server {
     }
 
     location @proxy_to_app {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:5000;
     }
 }

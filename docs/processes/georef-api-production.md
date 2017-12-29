@@ -98,12 +98,12 @@ Agregar la configuración de los servicios `gunicorn` y `nginx`.
 
 - Test
 
-  `$ python -m unittest tests/test_normalization.py`
+  `(venv) $ python -m unittest tests/test_normalization.py`
   
-  `$ python -m unittest tests/test_parsing.py`
+  `(venv) $ python -m unittest tests/test_parsing.py`
   
 - Consumir mediante la herramienta CURL:
 
-  `$ curl localhost:80/api/v1.0/direcciones?direccion=cabral`
+  `$ curl localhost/api/v1.0/direcciones?direccion=cabral+500`
   
-  `$ curl localhost:80/api/v1.0/provincias`
+  `$ curl localhost/api/v1.0/provincias`
