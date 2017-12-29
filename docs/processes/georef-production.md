@@ -150,6 +150,10 @@ Ejemplo:
     `(venv)$ ./manage.py runscript index_entities`
 
     `(venv)$ ./manage.py runscript index_roads`
+    
+6. Ver los índices creados
+
+    `$ curl http://localhost:9200/_cat/indices?v`
 
 ## Correr App
 
