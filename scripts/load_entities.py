@@ -90,7 +90,7 @@ def load_municipalities(state_ids):
                 reader = csv.reader(csv_file)
                 next(reader)  # Skips headers row.
                 for row in reader:
-                    mun_name, mun_code, state_code, lat, lon = row
+                    mun_code, mun_name, lat, lon, state_code= row
                     municipalities.append(Municipality(
                         name=mun_name,
                         code=mun_code,

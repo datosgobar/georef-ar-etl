@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
-from geo_admin.models import Department, Locality, Settlement, State
+from geo_admin.models import Department, Locality, Municipality,\
+    Settlement, State
 
 
 def run():
@@ -7,6 +8,7 @@ def run():
         es = Elasticsearch()
         index_states(es)
         index_departments(es)
+        index_municipalities(es)
         index_localities(es)
         index_settlements(es)
     except Exception as e:
@@ -46,6 +48,34 @@ def index_departments(es):
         data.append(document)
     es.bulk(index='departamentos', doc_type='departamento', body=data, refresh=True)
     print('-- Se creó el índice de Departamentos exitosamente.')
+
+
+def index_municipalities(es):
+    if es.indices.exists(index='municipios'):
+        print('-- Ya existe el índice de Municipios.')
+        return
+    print('-- Creando índice de Municipios.')
+    data = []
+    states = {state.id: (state.code, state.name) for state in
+              State.objects.all()}
+    for mun in Municipality.objects.all():
+        document = {
+            'id': mun.code,
+            'nombre': mun.name,
+            'provincia': {
+                'id': states[mun.state_id][0],
+                'nombre': states[mun.state_id][1]
+            },
+            'ubicacion': {
+                'lat': mun.lat,
+                'lon': mun.lon
+            }
+        }
+        data.append({'index': {'_id': mun.id}})
+        data.append(document)
+    es.bulk(index='municipios', doc_type='municipios', body=data,
+            refresh=True)
+    print('-- Se creó el índice de Municipios exitosamente.')
 
 
 def index_localities(es):
