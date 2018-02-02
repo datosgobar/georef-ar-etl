@@ -1,10 +1,11 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 
 
 class State(models.Model):
     code = models.CharField(max_length=2, blank=True, null=True, unique=True, verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
+    geom = models.PolygonField(blank=True, null=True)
 
     class Meta:
         verbose_name = 'provincia'
@@ -17,6 +18,7 @@ class Department(models.Model):
     code = models.CharField(max_length=5, blank=True, null=True, unique=True,  verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
     state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
+    geom = models.PolygonField(blank=True, null=True)
 
     class Meta:
         verbose_name = 'departamento'
@@ -28,9 +30,8 @@ class Department(models.Model):
 class Municipality(models.Model):
     code = models.CharField(max_length=6, blank=True, null=True, unique=True, verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
-    lat = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='latitud')
-    lon = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='longitud')
     state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
+    geom = models.PolygonField(blank=True, null=True)
 
     class Meta:
         verbose_name = 'municipio'
@@ -62,8 +63,7 @@ class Settlement(models.Model):
     bahra_type = models.CharField(max_length=3, blank=True, null=True, verbose_name='tipo', choices=BAHRA_TYPES)
     department = models.ForeignKey(Department, blank=True, null=True, verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
-    lat = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='latitud')
-    lon = models.DecimalField(max_digits=1000, decimal_places=10, verbose_name='longitud')
+    geom = models.MultiPointField(blank=True, null=True)
 
     class Meta:
         verbose_name = 'entidad bahra'

@@ -89,7 +89,7 @@ HERE = {
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 GEOREF = {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('GEOREF_DB_NAME'),
         'USER': os.environ.get('GEOREF_DB_USER'),
         'PASSWORD': os.environ.get('GEOREF_DB_PASS'),
