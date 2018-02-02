@@ -32,20 +32,21 @@ then
     ogrinfo -ro -so "${i}/${i}.shp" -al >> ign.log
   done
 
-  declare URL_SHP_BARHA='http://wms.ign.gob.ar/geoserver/idera/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=idera:bahra&outputFormat=SHAPE-ZIP'
-  declare FILE_BARHA='barha.zip'
+  declare URL_SHP_BARHA='http://wms.ign.gob.ar/bahra/descargas/BAHRA_2014_version_1.1_shape.tar.gz'
+  declare FILE_BARHA='barha.tar.gz'
 
   wget --progress=dot -e dotbytes=1M -O ${FILE_BARHA} ${URL_SHP_BARHA}
-  unzip ${FILE_BARHA} -d bahra
+  mkdir -p bahra
+  tar -zxvf ${FILE_BARHA} -C bahra
 
   export SHAPE_ENCODING="LATIN1"
 
   ogr2ogr -overwrite -progress -f "PostgreSQL" \
   PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
-  bahra/bahra.shp -nln ign_bahra -nlt POINT -lco GEOMETRY_NAME=geom
+  bahra/bahra_27112014.shp -nln ign_bahra -nlt MULTIPOINT -lco GEOMETRY_NAME=geom -lco precision=NO
 
   echo "--------------------------------------------------------------------------- $(date)" >> ign.log
-  ogrinfo -ro -so "${i}/${i}.shp" -al >> ign.log
+  ogrinfo -ro -so "bahra/bahra_27112014.shp" -al >> ign.log
 
   echo "Terminado!"
   fi
