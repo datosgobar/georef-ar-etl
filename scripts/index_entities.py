@@ -23,8 +23,17 @@ def index_states(es):
     data = []
     for state in State.objects.all():
         data.append({'index': {'_id': state.id}})
-        data.append({'id': state.code, 'nombre': state.name})
-    es.bulk(index='provincias', doc_type='provincia', body=data, refresh=True)
+        data.append({
+            'id': state.code,
+            'nombre': state.name,
+            'geometry': {
+                'type': state.geom.geom_type,
+                'coordinates': state.geom.coords,
+                'geometry_name': 'geom'
+            }
+        })
+    es.bulk(index='provincias', doc_type='provincia', body=data, refresh=True,
+            request_timeout=120)
     print('-- Se creó el índice de Provincias exitosamente.')
 
 
@@ -36,9 +45,17 @@ def index_departments(es):
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
     for dept in Department.objects.all():
+        geometry = {}
+        if dept.geom is not None:
+            geometry = {
+                'type': dept.geom.geom_type,
+                'coordinates': dept.geom.coords,
+                'geometry_name': 'geom'
+            }
         document = {
             'id': dept.code,
             'nombre': dept.name,
+            'geometry': geometry,
             'provincia': {
                 'id': states[dept.state_id][0],
                 'nombre': states[dept.state_id][1]
@@ -46,7 +63,8 @@ def index_departments(es):
         }
         data.append({'index': {'_id': dept.id}})
         data.append(document)
-    es.bulk(index='departamentos', doc_type='departamento', body=data, refresh=True)
+    es.bulk(index='departamentos', doc_type='departamento', body=data,
+            refresh=True, request_timeout=120)
     print('-- Se creó el índice de Departamentos exitosamente.')
 
 
@@ -66,15 +84,16 @@ def index_municipalities(es):
                 'id': states[mun.state_id][0],
                 'nombre': states[mun.state_id][1]
             },
-            'ubicacion': {
-                'lat': mun.lat,
-                'lon': mun.lon
+            'geometry': {
+                'type': mun.geom.geom_type,
+                'coordinates': mun.geom.coords,
+                'geometry_name': 'geom'
             }
         }
         data.append({'index': {'_id': mun.id}})
         data.append(document)
     es.bulk(index='municipios', doc_type='municipios', body=data,
-            refresh=True)
+            refresh=True, request_timeout=120)
     print('-- Se creó el índice de Municipios exitosamente.')
 
 
@@ -101,7 +120,8 @@ def index_localities(es):
         }
         data.append({'index': {'_id': locality.id}})
         data.append(document)
-    es.bulk(index='localidades', doc_type='localidad', body=data, refresh=True)
+    es.bulk(index='localidades', doc_type='localidad', body=data, refresh=True,
+            request_timeout=120)
     print('-- Se creó el índice de Localidades exitosamente.')
 
 
@@ -131,12 +151,14 @@ def index_settlements(es):
                 'id': states[settlement.state_id][0],
                 'nombre': states[settlement.state_id][1]
             },
-            'ubicacion': {
-                'lat': settlement.lat,
-                'lon': settlement.lon
+            'geometry': {
+                'type': settlement.geom.geom_type,
+                'coordinates': settlement.geom.coords,
+                'geometry_name': 'geom'
             }
         }
         data.append({'index': {'_id': settlement.id}})
         data.append(document)
-    es.bulk(index='bahra', doc_type='asentamiento', body=data, refresh=True)
+    es.bulk(index='bahra', doc_type='asentamiento', body=data, refresh=True,
+            request_timeout=120)
     print('-- Se creó el índice de Asentamientos exitosamente.')
