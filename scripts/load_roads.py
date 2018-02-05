@@ -11,6 +11,7 @@ localities = {locality.code: (locality.id, locality.state_id)
                 for locality in Locality.objects.all()}
 communes = [dept.code for dept in Department.objects.filter(state__code='02')]
 
+
 def run():
     print('-- Procesando vías --')
     try:
@@ -79,7 +80,7 @@ def generate_report():
 
 def process_street(row):
     (code, name, road_type, start_left, start_right,
-    end_left, end_right, geom, locality) = row
+        end_left, end_right, geom, locality) = row
     
     obs = {}
     if name == 'CALLE S N':

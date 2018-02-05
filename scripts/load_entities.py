@@ -1,7 +1,9 @@
-import csv
 from georef.settings import BASE_DIR
 from geo_admin.models import State, Department, Locality, Municipality, \
     Settlement
+import csv
+import os
+import psycopg2
 
 
 MESSAGES = {
@@ -37,16 +39,38 @@ def run():
         print(e)
 
 
+def get_db_connection():
+    return psycopg2.connect(
+        host=os.environ.get('POSTGRES_HOST'),
+        dbname=os.environ.get('POSTGRES_DBNAME'),
+        user=os.environ.get('POSTGRES_USER'),
+        password=os.environ.get('POSTGRES_PASSWORD'))
+
+
+def run_query_entities(query):
+    try:
+        with get_db_connection().cursor() as cursor:
+            cursor.execute(query)
+            entities = cursor.fetchall()
+        return entities
+    except psycopg2.DatabaseError as e:
+        print(e)
+
+
 def load_states():
     try:
-        states = []
-        file_path = BASE_DIR + '/data/provincias.csv'
-        with open(file_path, newline='', encoding='utf-8') as csv_file:
-            reader = csv.reader(csv_file)
-            next(reader)
-            for row in reader:
-                states.append(State(code=row[0], name=row[1]))
-        State.objects.bulk_create(states)
+        query = """SELECT in1 AS code, \
+                          upper(nam) AS name, \
+                          geom \
+                    FROM  ign_provincias \
+                    ORDER BY code;
+                """
+        states = run_query_entities(query)
+        states_list = []
+        for row in states:
+            (code, name, geom) = row
+            states_list.append(State(code=code, name=name, geom=geom))
+        State.objects.bulk_create(states_list)
         print(MESSAGES['states_success'])
     except Exception as e:
         print("{0}: {1}".format(MESSAGES['states_error'], e))
@@ -58,20 +82,25 @@ def load_departments(state_ids):
     if state_ids:
         caba = State.objects.get(code='02')
         Department.objects.get_or_create(name=caba.name, code='02000', state=caba)
-        departments = []
         try:
-            file_path = BASE_DIR + '/data/departamentos.csv'
-            with open(file_path, newline='', encoding='utf-8') as csv_file:
-                reader = csv.reader(csv_file)
-                next(reader)  # Skips headers row.
-                for row in reader:
-                    dept_code, dept_name, state_code = row
-                    departments.append(Department(
-                        code=dept_code,
-                        name=dept_name,
-                        state_id=state_ids[state_code]
-                        ))
-            Department.objects.bulk_create(departments)
+            query = """SELECT in1 as code, \
+                              upper(nam) as name, \
+                              geom, \
+                              substring(in1,1,2) as state_id \
+                        FROM  ign_departamentos \
+                        ORDER BY code;
+                    """
+            departments = run_query_entities(query)
+            departments_list = []
+            for row in departments:
+                (code, name, geom, state_code) = row
+                departments_list.append(Department(
+                    code=code,
+                    name=name,
+                    geom=geom,
+                    state_id=state_ids[state_code]
+                ))
+            Department.objects.bulk_create(departments_list)
             print(MESSAGES['departments_success'])
         except Exception as e:
             print("{0}: {1}".format(MESSAGES['departments_error'], e))
@@ -83,22 +112,25 @@ def load_departments(state_ids):
 
 def load_municipalities(state_ids):
     if state_ids:
-        municipalities = []
         try:
-            file_path = BASE_DIR + '/data/municipios.csv'
-            with open(file_path, newline='', encoding='utf-8') as csv_file:
-                reader = csv.reader(csv_file)
-                next(reader)  # Skips headers row.
-                for row in reader:
-                    mun_code, mun_name, lat, lon, state_code= row
-                    municipalities.append(Municipality(
-                        name=mun_name,
-                        code=mun_code,
-                        state_id=state_ids[state_code],
-                        lat=lat,
-                        lon=lon
-                        ))
-            Municipality.objects.bulk_create(municipalities)
+            query = """SELECT in1 as code, \
+                               upper(nam) as name, \
+                               geom, \
+                               substring(in1, 1, 2) as state_id \
+                        FROM ign_municipios \
+                        ORDER BY code;
+                    """
+            municipalities = run_query_entities(query)
+            municipalities_list = []
+            for row in municipalities:
+                code, name, geom, state_code = row
+                municipalities_list.append(Municipality(
+                    code=code,
+                    name=name,
+                    geom=geom,
+                    state_id=state_ids[state_code]
+                ))
+            Municipality.objects.bulk_create(municipalities_list)
             print(MESSAGES['municipalities_success'])
         except Exception as e:
             print("{0}: {1}".format(MESSAGES['municipalities_error'], e))
@@ -132,25 +164,30 @@ def load_localities(state_ids, department_ids):
 
 def load_settlements(state_ids, department_ids):
     if state_ids and department_ids:
-        settlements = []
         try:
-            file_path = BASE_DIR + '/data/bahra.csv'
-            with open(file_path, newline='', encoding='utf-8') as csv_file:
-                reader = csv.reader(csv_file)
-                next(reader)  # Skips headers row.
-                for row in reader:
-                    (bahra_name, state_code, dept_code, loc_code,
-                     bahra_code, bahra_type, lat, lon) = row
-                    settlements.append(Settlement(
-                        code=bahra_code,
-                        name=bahra_name,
-                        bahra_type=bahra_type,
-                        department_id=department_ids[state_code + dept_code],
-                        state_id=state_ids[state_code],
-                        lat=lat,
-                        lon=lon
-                    ))
-            Settlement.objects.bulk_create(settlements)
+            query = """SELECT cod_bahra as code, \
+                          upper(nombre_bah) as name, \
+                          tipo_bahra as bahra_type, \
+                          cod_depto as dep_code, \
+                          cod_prov as state_code, \
+                          geom \
+                       FROM ign_bahra \
+                       WHERE tipo_bahra IN ('LS', 'E', 'LC') \
+                       ORDER BY code;
+                    """
+            settlements = run_query_entities(query)
+            settlements_list = []
+            for row in settlements:
+                (code, name, bahra_type, dep_code, state_code, geom) = row
+                settlements_list.append(Settlement(
+                    code=code,
+                    name=name,
+                    bahra_type=bahra_type,
+                    department_id=department_ids[state_code + dep_code],
+                    state_id=state_ids[state_code],
+                    geom=geom
+                ))
+            Settlement.objects.bulk_create(settlements_list)
             print(MESSAGES['settlements_success'])
         except Exception as e:
             print("{0}: {1}".format(MESSAGES['settlements_error'], e))
