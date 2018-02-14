@@ -28,9 +28,14 @@ class Department(models.Model):
 
 
 class Municipality(models.Model):
-    code = models.CharField(max_length=6, blank=True, null=True, unique=True, verbose_name='código')
-    name = models.CharField(max_length=100, blank=True, null=True, verbose_name='nombre')
-    state = models.ForeignKey(State, blank=True, null=True, verbose_name='provincia')
+    code = models.CharField(max_length=6, blank=True, null=True, unique=True,
+                            verbose_name='código')
+    name = models.CharField(max_length=100, blank=True, null=True,
+                            verbose_name='nombre')
+    department = models.ForeignKey(Department, blank=True, null=True,
+                                   verbose_name='departamento')
+    state = models.ForeignKey(State, blank=True, null=True,
+                              verbose_name='provincia')
     geom = models.PolygonField(blank=True, null=True)
 
     class Meta:
