@@ -11,6 +11,7 @@ UPDATE ign_departamentos SET in1 = '06217' WHERE in1 = '06218';
 
 -- MUNICIPIOS
 DELETE FROM ign_municipios WHERE in1 ISNULL ;
+DELETE FROM ign_municipios WHERE st_isvalid(geom) = FALSE ;
 
 UPDATE ign_municipios SET in1 = '540287' WHERE in1 = '550287';
 UPDATE ign_municipios SET in1 = '540343' WHERE in1 = '550343';
