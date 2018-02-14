@@ -107,9 +107,9 @@ Ejemplo:
 
     `(venv) $ ./manage.py runscript load_roads`
 
-9. Cargar función para geocodificar direcciones
+9. Cargar funciones PostgreSql
 
-    `(venv) $ ./manage.py runscript load_geocode_function`
+    `(venv) $ ./manage.py runscript load_functions`
     
 10. Generar los archivos estáticos
 
