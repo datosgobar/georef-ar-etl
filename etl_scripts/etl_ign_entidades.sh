@@ -33,7 +33,7 @@ then
   done
 
   declare URL_SHP_BARHA='http://wms.ign.gob.ar/bahra/descargas/BAHRA_2014_version_1.1_shape.tar.gz'
-  declare FILE_BARHA='barha.tar.gz'
+  declare FILE_BARHA='bahra.tar.gz'
 
   wget --progress=dot -e dotbytes=1M -O ${FILE_BARHA} ${URL_SHP_BARHA}
   mkdir -p bahra

@@ -20,7 +20,7 @@ Ejemplo:
 
 ```plsql
   -- Creando una base de datos
-  CREATE DATABASE indec WITH ENCODING='UTF8';
+  CREATE DATABASE georef_data WITH ENCODING='UTF8';
 
   -- Agregando Postgis a la base de datos creada
   CREATE EXTENSION postgis;
@@ -90,11 +90,12 @@ Ejemplo:
 
     `$ . environment.sh`
 
-6. Ejecutar el script `etl_indec_vias.sh` para descargar e importar los datos de INDEC:
+6. Ejecutar el script `etl_indec_vias.sh` y `etl_ign_entities.sh` para descargar e importar los datos de INDEC e IGN:
 
     ```bash
     cd etl_scripts/
-    sh etl_indec_vias.sh
+    ./etl_ign_entities.sh
+    ./etl_indec_vias.sh
     ```
 
 7. Sincronizar la base de datos

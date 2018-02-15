@@ -59,6 +59,7 @@ def run_query_entities(query):
 
 def load_states():
     try:
+        print('-- Cargando la entidad Provincia.')
         query = """SELECT in1 AS code, \
                           upper(nam) AS name, \
                           geom \
@@ -83,6 +84,7 @@ def load_departments(state_ids):
         caba = State.objects.get(code='02')
         Department.objects.get_or_create(name=caba.name, code='02000', state=caba)
         try:
+            print('-- Cargando la entidad Departamento.')
             query = """SELECT in1 as code, \
                               upper(nam) as name, \
                               geom, \
@@ -113,6 +115,7 @@ def load_departments(state_ids):
 def load_municipalities(state_ids, department_ids):
     if state_ids:
         try:
+            print('-- Cargando la entidad Municipalidad.')
             query = """SELECT in1 as code, \
                                upper(nam) as name, \
                                geom, \
@@ -144,6 +147,7 @@ def load_localities(state_ids, department_ids):
     if state_ids and department_ids:
         localities = []
         try:
+            print('-- Cargando la entidad Localidad.')
             file_path = BASE_DIR + '/data/localidades.csv'
             with open(file_path, newline='', encoding='utf-8') as csv_file:
                 reader = csv.reader(csv_file)
@@ -167,6 +171,7 @@ def load_localities(state_ids, department_ids):
 def load_settlements(state_ids, department_ids):
     if state_ids and department_ids:
         try:
+            print('-- Cargando la entidad Asentamientos.')
             query = """SELECT cod_bahra as code, \
                           upper(nombre_bah) as name, \
                           tipo_bahra as bahra_type, \
