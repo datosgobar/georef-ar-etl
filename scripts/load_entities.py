@@ -24,12 +24,15 @@ MESSAGES = {
     'municipalities_success': 'Los municipios fueron cargados exitosamente.',
     'municipalities_error': 'Los municipios no pudieron cargarse.',
     'municipalities_dependency_error': 'Deben cargarse provincias y '
-                                       'departamentos antes de los municipios.'
+                                       'departamentos antes de los municipios.',
+    'functions_success': 'Las funciones SQL fueron cargadas exitosamente.',
+    'functions_error': 'Ocurrió un error al cargar las funciones SQL.'
 }
 
 
 def run():
     try:
+        load_functions()
         state_ids = load_states()
         department_ids = load_departments(state_ids)
         load_municipalities(state_ids, department_ids)
@@ -46,6 +49,26 @@ def get_db_connection():
         user=os.environ.get('POSTGRES_USER'),
         password=os.environ.get('POSTGRES_PASSWORD'))
 
+def load_functions():
+    try:
+        print('-- Cargando funciones SQL.')
+
+        files_path = [
+            BASE_DIR + '/etl_scripts/ign_entities_patch.sql',
+            BASE_DIR + '/etl_scripts/function_get_department.sql',
+        ]
+
+        for file in files_path:
+            with open(file, 'r') as f:
+                func = f.read()
+            with get_db_connection() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(func)
+        
+        print(MESSAGES['functions_success'])
+    except psycopg2.DatabaseError as e:
+        print(MESSAGES['functions_error'])
+        print(e)
 
 def run_query_entities(query):
     try:
