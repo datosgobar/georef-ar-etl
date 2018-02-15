@@ -32,7 +32,7 @@ def run():
     try:
         state_ids = load_states()
         department_ids = load_departments(state_ids)
-        load_municipalities(state_ids)
+        load_municipalities(state_ids, department_ids)
         load_localities(state_ids, department_ids)
         load_settlements(state_ids, department_ids)
     except Exception as e:
@@ -110,12 +110,13 @@ def load_departments(state_ids):
         print(MESSAGES['departments_dependency_error'])
 
 
-def load_municipalities(state_ids):
+def load_municipalities(state_ids, department_ids):
     if state_ids:
         try:
             query = """SELECT in1 as code, \
                                upper(nam) as name, \
                                geom, \
+                               get_department(in1) as department_id, \
                                substring(in1, 1, 2) as state_id \
                         FROM ign_municipios \
                         ORDER BY code;
@@ -123,11 +124,12 @@ def load_municipalities(state_ids):
             municipalities = run_query_entities(query)
             municipalities_list = []
             for row in municipalities:
-                code, name, geom, state_code = row
+                code, name, geom, dept_code, state_code = row
                 municipalities_list.append(Municipality(
                     code=code,
                     name=name,
                     geom=geom,
+                    department_id=department_ids[dept_code] or None,
                     state_id=state_ids[state_code]
                 ))
             Municipality.objects.bulk_create(municipalities_list)

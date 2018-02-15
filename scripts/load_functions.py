@@ -7,7 +7,6 @@ def run():
     try:
         files_path = [
             BASE_DIR + '/etl_scripts/function_geocodificar.sql',
-            BASE_DIR + '/etl_scripts/function_get_department.sql'
         ]
 
         for file in files_path:
@@ -18,4 +17,3 @@ def run():
         print('-- Se cargaron las funciones exitosamente.')
     except psycopg2.DatabaseError as e:
         print(e)
-
