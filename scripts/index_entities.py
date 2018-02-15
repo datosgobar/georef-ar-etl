@@ -113,6 +113,13 @@ def index_municipalities(es):
                 'id': {'type': 'text'},
                 'name': {'type': 'text'},
                 'geometry': {'type': 'geo_shape'},
+                'departamento': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'text'},
+                        'name': {'type': 'text'},
+                    }
+                },
                 'provincia': {
                     'type': 'object',
                     'properties': {
@@ -130,11 +137,17 @@ def index_municipalities(es):
     data = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
+    departments = {dept.id: (dept.code, dept.name) for dept in
+                   Department.objects.all()}
     for mun in Municipality.objects.all():
         data.append({'index': {'_id': mun.id}})
         data.append({
             'id': mun.code,
             'nombre': mun.name,
+            'departamento': {
+                'id': departments[mun.department_id][0],
+                'nombre': departments[mun.department_id][1]
+            },
             'provincia': {
                 'id': states[mun.state_id][0],
                 'nombre': states[mun.state_id][1]
