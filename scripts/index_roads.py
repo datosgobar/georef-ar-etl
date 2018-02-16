@@ -39,5 +39,6 @@ def index_roads():
             data.append({'index': {'_id': road.id}})
             data.append(document)
         if data:
-            es.bulk(index=index_name, doc_type='calle', body=data, refresh=True)
+            es.bulk(index=index_name, doc_type='calle', body=data, refresh=True,
+                    request_timeout=320)
             print('-- Se creó el índice "%s".' % index_name)
