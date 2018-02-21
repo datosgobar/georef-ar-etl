@@ -24,8 +24,8 @@ def index_states(es):
     mapping = {
         'provincia': {
             'properties': {
-                'id': {'type': 'text'},
-                'name': {'type': 'text'},
+                'id': {'type': 'keyword'},
+                'nombre': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'}
             }
         }
@@ -60,14 +60,15 @@ def index_departments(es):
     mapping = {
         'departamento': {
             'properties': {
-                'id': {'type': 'text'},
-                'name': {'type': 'text'},
+                'id': {'type': 'keyword'},
+                'nombre': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
                 'provincia': {
                     'type': 'object',
+                    'dynamic': 'false',
                     'properties': {
-                        'id': {'type': 'text'},
-                        'name': {'type': 'text'},
+                        'id': {'type': 'keyword'},
+                        'nombre': {'type': 'keyword'},
                     }
                 }
             }
@@ -110,21 +111,23 @@ def index_municipalities(es):
     mapping = {
         'municipio': {
             'properties': {
-                'id': {'type': 'text'},
-                'name': {'type': 'text'},
+                'id': {'type': 'keyword'},
+                'nombre': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
                 'departamento': {
                     'type': 'object',
+                    'dynamic': 'false',
                     'properties': {
-                        'id': {'type': 'text'},
-                        'name': {'type': 'text'},
+                        'id': {'type': 'keyword'},
+                        'nombre': {'type': 'keyword'},
                     }
                 },
                 'provincia': {
                     'type': 'object',
+                    'dynamic': 'false',
                     'properties': {
-                        'id': {'type': 'text'},
-                        'name': {'type': 'text'},
+                        'id': {'type': 'keyword'},
+                        'nombre': {'type': 'keyword'},
                     }
                 }
             }
@@ -199,21 +202,23 @@ def index_settlements(es):
     mapping = {
         'asentamiento': {
             'properties': {
-                'id': {'type': 'text'},
-                'nombre': {'type': 'text'},
-                'tipo': {'type': 'text'},
+                'id': {'type': 'keyword'},
+                'nombre': {'type': 'keyword'},
+                'tipo': {'type': 'keyword'},
                 'departamento': {
                     'type': 'object',
+                    'dynamic': 'false',
                     'properties': {
-                        'id': {'type': 'text'},
-                        'name': {'type': 'text'},
+                        'id': {'type': 'keyword'},
+                        'nombre': {'type': 'keyword'},
                     }
                 },
                 'provincia': {
                     'type': 'object',
+                    'dynamic': 'false',
                     'properties': {
-                        'id': {'type': 'text'},
-                        'name': {'type': 'text'},
+                        'id': {'type': 'keyword'},
+                        'nombre': {'type': 'keyword'},
                     }
                 },
                 'geometry': {'type': 'geo_shape'},
