@@ -49,6 +49,7 @@ def get_db_connection():
         user=os.environ.get('POSTGRES_USER'),
         password=os.environ.get('POSTGRES_PASSWORD'))
 
+
 def load_functions():
     try:
         print('-- Cargando funciones SQL.')
@@ -70,6 +71,7 @@ def load_functions():
         print(MESSAGES['functions_error'])
         print(e)
 
+
 def run_query_entities(query):
     try:
         with get_db_connection().cursor() as cursor:
@@ -85,6 +87,8 @@ def load_states():
         print('-- Cargando la entidad Provincia.')
         query = """SELECT in1 AS code, \
                           upper(nam) AS name, \
+                          st_y(st_centroid(geom)) as lat, \
+                          st_x(st_centroid(geom)) as lon, \
                           geom \
                     FROM  ign_provincias \
                     ORDER BY code;
@@ -92,8 +96,9 @@ def load_states():
         states = run_query_entities(query)
         states_list = []
         for row in states:
-            (code, name, geom) = row
-            states_list.append(State(code=code, name=name, geom=geom))
+            (code, name, lat, lon, geom) = row
+            states_list.append(State(code=code, name=name, lat=lat,
+                                     lon=lon, geom=geom))
         State.objects.bulk_create(states_list)
         print(MESSAGES['states_success'])
     except Exception as e:
@@ -105,11 +110,14 @@ def load_states():
 def load_departments(state_ids):
     if state_ids:
         caba = State.objects.get(code='02')
-        Department.objects.get_or_create(name=caba.name, code='02000', state=caba)
+        Department.objects.get_or_create(name=caba.name, code='02000',
+                                         state=caba, lat=0.0, lon=0.0)
         try:
             print('-- Cargando la entidad Departamento.')
             query = """SELECT in1 as code, \
                               upper(nam) as name, \
+                              st_y(st_centroid(geom)) as lat, \
+                              st_x(st_centroid(geom)) as lon, \
                               geom, \
                               substring(in1,1,2) as state_id \
                         FROM  ign_departamentos \
@@ -118,10 +126,12 @@ def load_departments(state_ids):
             departments = run_query_entities(query)
             departments_list = []
             for row in departments:
-                (code, name, geom, state_code) = row
+                (code, name, lat, lon, geom, state_code) = row
                 departments_list.append(Department(
                     code=code,
                     name=name,
+                    lat=lat,
+                    lon=lon,
                     geom=geom,
                     state_id=state_ids[state_code]
                 ))
@@ -141,6 +151,8 @@ def load_municipalities(state_ids, department_ids):
             print('-- Cargando la entidad Municipalidad.')
             query = """SELECT in1 as code, \
                                upper(nam) as name, \
+                               st_y(st_centroid(geom)) as lat, \
+                               st_x(st_centroid(geom)) as lon, \
                                geom, \
                                get_department(in1) as department_id, \
                                substring(in1, 1, 2) as state_id \
@@ -150,10 +162,12 @@ def load_municipalities(state_ids, department_ids):
             municipalities = run_query_entities(query)
             municipalities_list = []
             for row in municipalities:
-                code, name, geom, dept_code, state_code = row
+                code, name, lat, lon, geom, dept_code, state_code = row
                 municipalities_list.append(Municipality(
                     code=code,
                     name=name,
+                    lat=lat,
+                    lon=lon,
                     geom=geom,
                     department_id=department_ids[dept_code] or None,
                     state_id=state_ids[state_code]
@@ -200,6 +214,8 @@ def load_settlements(state_ids, department_ids):
                           tipo_bahra as bahra_type, \
                           cod_depto as dep_code, \
                           cod_prov as state_code, \
+                          st_y(st_centroid(geom)) as lat, \
+                          st_x(st_centroid(geom)) as lon, \
                           geom \
                        FROM ign_bahra \
                        WHERE tipo_bahra IN ('LS', 'E', 'LC') \
@@ -208,13 +224,16 @@ def load_settlements(state_ids, department_ids):
             settlements = run_query_entities(query)
             settlements_list = []
             for row in settlements:
-                (code, name, bahra_type, dep_code, state_code, geom) = row
+                (code, name, bahra_type, dep_code, state_code,
+                 lat, lon, geom) = row
                 settlements_list.append(Settlement(
                     code=code,
                     name=name,
                     bahra_type=bahra_type,
                     department_id=department_ids[state_code + dep_code],
                     state_id=state_ids[state_code],
+                    lat=lat,
+                    lon=lon,
                     geom=geom
                 ))
             Settlement.objects.bulk_create(settlements_list)

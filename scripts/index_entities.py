@@ -26,6 +26,8 @@ def index_states(es):
             'properties': {
                 'id': {'type': 'keyword'},
                 'nombre': {'type': 'keyword'},
+                'lat': {'type': 'keyword'},
+                'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'}
             }
         }
@@ -40,14 +42,16 @@ def index_states(es):
         data.append({
             'id': state.code,
             'nombre': state.name,
+            'lat': state.lat,
+            'lon': state.lon,
             'geometry': {
                 'type': 'polygon',
                 'coordinates': state.geom.coords
             }
         })
+
     es.bulk(index='provincias', doc_type='provincia', body=data, refresh=True,
             request_timeout=320)
-
     print('-- Se creó el índice de Provincias exitosamente.')
 
 
@@ -62,6 +66,8 @@ def index_departments(es):
             'properties': {
                 'id': {'type': 'keyword'},
                 'nombre': {'type': 'keyword'},
+                'lat': {'type': 'keyword'},
+                'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
                 'provincia': {
                     'type': 'object',
@@ -83,20 +89,20 @@ def index_departments(es):
     for dept in Department.objects.all():
         geometry = {}
         if dept.geom is not None:
-            geometry = {
-                'type': 'polygon',
-                'coordinates': dept.geom.coords,
-            }
+            geometry = {'type': 'polygon', 'coordinates': dept.geom.coords}
         data.append({'index': {'_id': dept.id}})
         data.append({
             'id': dept.code,
             'nombre': dept.name,
+            'lat': dept.lat,
+            'lon': dept.lon,
             'geometry': geometry,
             'provincia': {
                 'id': states[dept.state_id][0],
                 'nombre': states[dept.state_id][1]
             }
         })
+
     es.bulk(index='departamentos', doc_type='departamento', body=data,
             refresh=True, request_timeout=320)
     print('-- Se creó el índice de Departamentos exitosamente.')
@@ -113,6 +119,8 @@ def index_municipalities(es):
             'properties': {
                 'id': {'type': 'keyword'},
                 'nombre': {'type': 'keyword'},
+                'lat': {'type': 'keyword'},
+                'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
                 'departamento': {
                     'type': 'object',
@@ -147,6 +155,12 @@ def index_municipalities(es):
         data.append({
             'id': mun.code,
             'nombre': mun.name,
+            'lat': mun.lat,
+            'lon': mun.lon,
+            'geometry': {
+                'type': 'polygon',
+                'coordinates': mun.geom.coords,
+            },
             'departamento': {
                 'id': departments[mun.department_id][0],
                 'nombre': departments[mun.department_id][1]
@@ -154,10 +168,6 @@ def index_municipalities(es):
             'provincia': {
                 'id': states[mun.state_id][0],
                 'nombre': states[mun.state_id][1]
-            },
-            'geometry': {
-                'type': 'polygon',
-                'coordinates': mun.geom.coords,
             }
         })
 
@@ -205,6 +215,9 @@ def index_settlements(es):
                 'id': {'type': 'keyword'},
                 'nombre': {'type': 'keyword'},
                 'tipo': {'type': 'keyword'},
+                'lat': {'type': 'keyword'},
+                'lon': {'type': 'keyword'},
+                'geometry': {'type': 'geo_shape'},
                 'departamento': {
                     'type': 'object',
                     'dynamic': 'false',
@@ -220,8 +233,7 @@ def index_settlements(es):
                         'id': {'type': 'keyword'},
                         'nombre': {'type': 'keyword'},
                     }
-                },
-                'geometry': {'type': 'geo_shape'},
+                }
             }
         }
     }
@@ -236,12 +248,19 @@ def index_settlements(es):
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in Department.objects.all()}
+
     for settlement in Settlement.objects.all():
         data.append({'index': {'_id': settlement.id}})
         data.append({
             'id': settlement.code,
             'nombre': settlement.name,
             'tipo': barha_types[settlement.bahra_type],
+            'lat': settlement.lat,
+            'lon': settlement.lon,
+            'geometry': {
+                'type': 'multipoint',
+                'coordinates': settlement.geom.coords
+            },
             'departamento': {
                 'id': departments[settlement.department_id][0],
                 'nombre': departments[settlement.department_id][1]
@@ -249,12 +268,9 @@ def index_settlements(es):
             'provincia': {
                 'id': states[settlement.state_id][0],
                 'nombre': states[settlement.state_id][1]
-            },
-            'geometry': {
-                'type': 'multipoint',
-                'coordinates': settlement.geom.coords
             }
         })
+
     es.bulk(index='bahra', doc_type='asentamiento', body=data, refresh=True,
             request_timeout=320)
     print('-- Se creó el índice de Asentamientos exitosamente.')
