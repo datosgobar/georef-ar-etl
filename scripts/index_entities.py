@@ -3,6 +3,17 @@ from geo_admin.models import Department, Locality, Municipality,\
     Settlement, State
 
 
+DEFAULT_SETTINGS = {
+    'analysis': {
+        'normalizer': {
+            'uppercase_normalizer': {
+                'type': 'custom',
+                'filter': ['uppercase']
+            }
+        }
+    }
+}
+
 def run():
     try:
         es = Elasticsearch()
@@ -25,16 +36,20 @@ def index_states(es):
         'provincia': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {'type': 'keyword'},
+                'nombre': { 
+                    'type': 'keyword',
+                    'normalizer': 'uppercase_normalizer'
+                },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'}
             }
         }
     }
-    es.indices.create(index='provincias')
-    es.indices.put_mapping(index='provincias', doc_type='provincia',
-                           body=mapping)
+    es.indices.create(index='provincias', body={
+        'settings': DEFAULT_SETTINGS,
+        'mapping': mapping
+    })
 
     data = []
     for state in State.objects.all():
@@ -65,7 +80,10 @@ def index_departments(es):
         'departamento': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {'type': 'keyword'},
+                'nombre': {
+                    'type': 'keyword',
+                    'normalizer': 'uppercase_normalizer'
+                },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
@@ -74,15 +92,20 @@ def index_departments(es):
                     'dynamic': 'false',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        },
                     }
                 }
             }
         }
     }
-    es.indices.create(index='departamentos')
-    es.indices.put_mapping(index='departamentos', doc_type='departamento',
-                           body=mapping)
+
+    es.indices.create(index='departamentos', body={
+        'settings': DEFAULT_SETTINGS,
+        'mapping': mapping
+    })
 
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
@@ -118,7 +141,10 @@ def index_municipalities(es):
         'municipio': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {'type': 'keyword'},
+                'nombre': {
+                    'type': 'keyword',
+                    'normalizer': 'uppercase_normalizer'
+                },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
@@ -127,7 +153,10 @@ def index_municipalities(es):
                     'dynamic': 'false',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        },
                     }
                 },
                 'provincia': {
@@ -135,15 +164,20 @@ def index_municipalities(es):
                     'dynamic': 'false',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        }
                     }
                 }
             }
         }
     }
-    es.indices.create(index='municipios')
-    es.indices.put_mapping(index='municipios', doc_type='municipio',
-                           body=mapping)
+    
+    es.indices.create(index='municipios', body={
+        'settings': DEFAULT_SETTINGS,
+        'mapping': mapping
+    })
 
     data = []
     states = {state.id: (state.code, state.name) for state in
@@ -181,6 +215,46 @@ def index_localities(es):
         print('-- Ya existe el índice de Localidades.')
         return
     print('-- Creando índice de Localidades.')
+
+    mapping = {
+        'localidad': {
+            'properties': {
+                'id': {'type': 'keyword'},
+                'nombre': {
+                    'type': 'keyword',
+                    'normalizer': 'uppercase_normalizer'
+                },
+                'departamento': {
+                    'type': 'object',
+                    'dynamic': 'false',
+                    'properties': {
+                        'id': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        },
+                    }
+                },
+                'provincia': {
+                    'type': 'object',
+                    'dynamic': 'false',
+                    'properties': {
+                        'id': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    es.indices.create(index='localidades', body={
+        'settings': DEFAULT_SETTINGS,
+        'mapping': mapping
+    })
+
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in Department.objects.all()}
@@ -213,7 +287,10 @@ def index_settlements(es):
         'asentamiento': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {'type': 'keyword'},
+                'nombre': {
+                    'type': 'keyword',
+                    'normalizer': 'uppercase_normalizer'
+                },
                 'tipo': {'type': 'keyword'},
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
@@ -223,7 +300,10 @@ def index_settlements(es):
                     'dynamic': 'false',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        },
                     }
                 },
                 'provincia': {
@@ -231,20 +311,27 @@ def index_settlements(es):
                     'dynamic': 'false',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        },
                     }
                 }
             }
         }
     }
-    es.indices.create(index='bahra')
-    es.indices.put_mapping(index='bahra', doc_type='asentamiento', body=mapping)
+    
+    es.indices.create(index='bahra', body={
+        'settings': DEFAULT_SETTINGS,
+        'mapping': mapping
+    })
 
-    barha_types = {
+    bahra_types = {
         'E': 'Entidad (E)',
         'LC': 'Componente de localidad compuesta (LC)',
         'LS': 'Localidad simple (LS)'
     }
+    
     data = []
     states = {state.id: (state.code, state.name) for state in State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in Department.objects.all()}
@@ -254,7 +341,7 @@ def index_settlements(es):
         data.append({
             'id': settlement.code,
             'nombre': settlement.name,
-            'tipo': barha_types[settlement.bahra_type],
+            'tipo': bahra_types[settlement.bahra_type],
             'lat': settlement.lat,
             'lon': settlement.lon,
             'geometry': {
