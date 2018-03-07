@@ -70,7 +70,7 @@ Ejemplo:
         export GEOREF_DB_USER= # user
         export GEOREF_DB_PASS= # password
         export POSTGRES_HOST= # localhost
-        export POSTGRES_DBNAME= # indec
+        export POSTGRES_DBNAME= # georef_data
         export POSTGRES_USER= # user
         export POSTGRES_PASSWORD= # password
         ```
