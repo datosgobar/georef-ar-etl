@@ -5,7 +5,7 @@
 - [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
 - Gunicorn
 - [Nginx](https://nginx.org/)
-- [Python >=3.5.x](https://www.python.org/downloads/)
+- [Python >=3.6.x](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installing/)
 - Postgresql Client Common
 - [Virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
