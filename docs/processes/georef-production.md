@@ -8,7 +8,7 @@
 - [Nginx](https://nginx.org/)
 - [PostgreSQL 9.6](https://www.postgresql.org/download/)
 - [PostGis 2.3](http://postgis.net/install/)
-- [Python >=3.5.x](https://www.python.org/downloads/)
+- [Python >=3.6.x](https://www.python.org/downloads/)
 - [Pip](https://pip.pypa.io/en/stable/installing/)
 - Unzip
 - [Virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
@@ -71,7 +71,7 @@ Ejemplo:
         export GEOREF_DB_USER= # user
         export GEOREF_DB_PASS= # password
         export POSTGRES_HOST= # localhost
-        export POSTGRES_DBNAME= # indec
+        export POSTGRES_DBNAME= # georef_data
         export POSTGRES_USER= # user
         export POSTGRES_PASSWORD= # password
         ```
