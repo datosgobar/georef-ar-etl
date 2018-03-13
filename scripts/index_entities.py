@@ -48,7 +48,7 @@ def index_states(es):
     }
     es.indices.create(index='provincias', body={
         'settings': DEFAULT_SETTINGS,
-        'mapping': mapping
+        'mappings': mapping
     })
 
     data = []
@@ -104,7 +104,7 @@ def index_departments(es):
 
     es.indices.create(index='departamentos', body={
         'settings': DEFAULT_SETTINGS,
-        'mapping': mapping
+        'mappings': mapping
     })
 
     data = []
@@ -176,7 +176,7 @@ def index_municipalities(es):
     
     es.indices.create(index='municipios', body={
         'settings': DEFAULT_SETTINGS,
-        'mapping': mapping
+        'mappings': mapping
     })
 
     data = []
@@ -252,7 +252,7 @@ def index_localities(es):
     
     es.indices.create(index='localidades', body={
         'settings': DEFAULT_SETTINGS,
-        'mapping': mapping
+        'mappings': mapping
     })
 
     data = []
@@ -323,7 +323,7 @@ def index_settlements(es):
     
     es.indices.create(index='bahra', body={
         'settings': DEFAULT_SETTINGS,
-        'mapping': mapping
+        'mappings': mapping
     })
 
     bahra_types = {
