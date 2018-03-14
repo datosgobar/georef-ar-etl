@@ -14,6 +14,7 @@ DEFAULT_SETTINGS = {
     }
 }
 
+
 def run():
     try:
         es = Elasticsearch()
