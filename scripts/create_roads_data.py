@@ -4,8 +4,8 @@ import json
 
 MESSAGES = {
     'roads_data_info': '-- Creando datos de Calles.',
-    'roads_data_success': '-- Los datos de "%s" fueron creados correctamente',
-    'roads_process_success': '-- Los datos fueron creados correctamente'
+    'road_data_success': '-- Los datos de "%s" fueron creados correctamente.',
+    'roads_data_success': '-- Los datos de Calles fueron creados correctamente.'
 }
 
 
@@ -48,6 +48,6 @@ def index_roads():
         with open('{}.json'.format(index_name), 'w') as outfile:
             json.dump(data, outfile)
         if data:
-            print(MESSAGES['roads_data_success'] % index_name)
+            print(MESSAGES['road_data_success'] % index_name)
 
-    print(MESSAGES['roads_process_success'])
+    print(MESSAGES['roads_data_success'])

@@ -9,8 +9,8 @@ MESSAGES = {
     'departments_info': '-- Creando datos de la entidad Departamento.',
     'departments_success': '-- Los datos de la entidad Departamento '
                            'fueron creados exitosamente.',
-    'municipality_info': '-- Creando datos de la entidad Municipalidad.',
-    'municipality_success': '-- Los datos de la entidad Municipalidad '
+    'municipality_info': '-- Creando datos de la entidad Municipio.',
+    'municipality_success': '-- Los datos de la entidad Municipio '
                             'fueron creados exitosamente.',
     'locality_info': '-- Creando datos de la entidad Localidad.',
     'locality_sucess': '-- Los datos de la entidad Localidad '
@@ -48,7 +48,7 @@ def create_data_states():
             }
         })
     with open('provincias.json', 'w') as outfile:
-        json.dump(data, outfile)
+        json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['states_success'])
 
 
@@ -105,8 +105,8 @@ def create_data_municipalities():
                 'nombre': states[mun.state_id][1]
             }
         })
-    with open('municipalidades.json', 'w') as outfile:
-        json.dump(data, outfile)
+    with open('municipios.json', 'w') as outfile:
+        json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['municipality_success'])
 
 
@@ -132,7 +132,7 @@ def create_data_localities():
             }
         })
     with open('localidades.json', 'w') as outfile:
-        json.dump(data, outfile)
+        json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['locality_sucess'])
 
 
@@ -172,5 +172,5 @@ def create_data_settlements():
             }
         })
     with open('asentamientos.json', 'w') as outfile:
-        json.dump(data, outfile)
+        json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['settlement_success'])
