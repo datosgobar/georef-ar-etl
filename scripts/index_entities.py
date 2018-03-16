@@ -1,69 +1,8 @@
 from elasticsearch import Elasticsearch
 from geo_admin.models import Department, Locality, Municipality,\
     Settlement, State
-
-SPANISH_STOP_FILTER = 'name_stop_spanish'
-NAME_NORMALIZER = 'name_normalizer'
-NAME_ANALYZER = 'name_analyzer'
-NAME_ANALYZER_SYNONYMS = 'name_analyzer_synonyms'
-ENTITY_NAME_SYNONYMS_FILTER = 'entity_name_synonyms'
-
-
-def build_synonyms(original, synonyms):
-    return '{} => {}'.format(original, ', '.join([original] + synonyms))
-
-
-DEFAULT_SETTINGS = {
-    'analysis': {
-        'filter': {
-            SPANISH_STOP_FILTER: {
-                'type': 'stop',
-                'stopwords': ['la', 'las', 'el', 'los', 'de', 'del', 'y', 'e']
-            },
-            ENTITY_NAME_SYNONYMS_FILTER: {
-                'type': 'synonym',
-                'synonyms': [
-                    build_synonyms('ciudad autonoma buenos aires', [
-                        'caba', 'c.a.b.a.', 'capital', 'capital federal'
-                    ]),
-                    build_synonyms('buenos aires', [
-                        'gba', 'bsas', 'bs.as.'
-                    ])
-                ]
-            }
-        },
-        'normalizer': {
-            NAME_NORMALIZER: {
-                'type': 'custom',
-                'filter': [
-                    'lowercase',
-                    'asciifolding'
-                ]
-            }
-        },
-        'analyzer': {
-            NAME_ANALYZER: {
-                'type': 'custom',
-                'tokenizer': 'whitespace',
-                'filter': [
-                    'lowercase',
-                    'asciifolding',
-                    SPANISH_STOP_FILTER
-                ]
-            },
-            NAME_ANALYZER_SYNONYMS: {
-                'type': 'custom',
-                'tokenizer': 'whitespace',
-                'filter': [
-                    'lowercase',
-                    'asciifolding',
-                    SPANISH_STOP_FILTER,
-                    ENTITY_NAME_SYNONYMS_FILTER
-                ]
-            }
-        }
-    }
-}
+from scripts.elasticsearch_params import DEFAULT_SETTINGS,\
+    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_SYNONYMS
 
 
 def run():
@@ -95,7 +34,7 @@ def index_states(es):
                     'fields': {
                         'exacto': {
                             'type': 'keyword',
-                            'normalizer': NAME_NORMALIZER
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
                         }
                     }
                 },
@@ -146,7 +85,7 @@ def index_departments(es):
                     'fields': {
                         'exacto': {
                             'type': 'keyword',
-                            'normalizer': NAME_NORMALIZER
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
                         }
                     }
                 },
@@ -165,7 +104,7 @@ def index_departments(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }
@@ -221,7 +160,7 @@ def index_municipalities(es):
                     'fields': {
                         'exacto': {
                             'type': 'keyword',
-                            'normalizer': NAME_NORMALIZER
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
                         }
                     }
                 },
@@ -240,7 +179,7 @@ def index_municipalities(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }
@@ -258,7 +197,7 @@ def index_municipalities(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }
@@ -321,7 +260,7 @@ def index_localities(es):
                     'fields': {
                         'exacto': {
                             'type': 'keyword',
-                            'normalizer': NAME_NORMALIZER
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
                         }
                     }
                 },
@@ -337,7 +276,7 @@ def index_localities(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }
@@ -355,7 +294,7 @@ def index_localities(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }
@@ -409,7 +348,7 @@ def index_settlements(es):
                     'fields': {
                         'exacto': {
                             'type': 'keyword',
-                            'normalizer': NAME_NORMALIZER
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
                         }
                     }
                 },
@@ -440,7 +379,7 @@ def index_settlements(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }
@@ -458,7 +397,7 @@ def index_settlements(es):
                             'fields': {
                                 'exacto': {
                                     'type': 'keyword',
-                                    'normalizer': NAME_NORMALIZER
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
                                 }
                             }
                         }

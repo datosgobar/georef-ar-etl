@@ -1,6 +1,94 @@
 from elasticsearch import Elasticsearch
 from geo_admin.models import Department, Locality, State, Road
 
+from scripts.elasticsearch_params import DEFAULT_SETTINGS,\
+    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_SYNONYMS
+
+
+STREET_MAPPING = {
+    'calle': {
+        'properties': {
+            'nomenclatura': {
+                'type': 'text',
+                'index': False
+            },
+            'id': {'type': 'keyword'},
+            'nombre': {
+                'type': 'text',
+                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'search_analyzer': NAME_ANALYZER,
+                'fields': {
+                    'exacto': {
+                        'type': 'keyword',
+                        'normalizer': LOWCASE_ASCII_NORMALIZER
+                    }
+                }
+            },
+            'tipo': {
+                'type': 'keyword',
+                'normalizer': LOWCASE_ASCII_NORMALIZER
+            },
+            'inicio_derecha': {
+                'type': 'integer',
+                'index': False
+            },
+            'inicio_izquierda': {
+                'type': 'integer',
+                'index': False
+            },
+            'fin_derecha': {
+                'type': 'integer',
+                'index': False
+            },
+            'fin_izquierda': {
+                'type': 'integer',
+                'index': False
+            },
+            'geometria': {
+                'type': 'text',
+                'index': False
+            },
+            'codigo_postal': {
+                'type': 'text',
+                'index': False
+            },
+            'localidad': {
+                'type': 'text',
+                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'search_analyzer': NAME_ANALYZER,
+                'fields': {
+                    'exacto': {
+                        'type': 'keyword',
+                        'normalizer': LOWCASE_ASCII_NORMALIZER
+                    }
+                }
+            },
+            'provincia': {
+                'type': 'text',
+                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'search_analyzer': NAME_ANALYZER,
+                'fields': {
+                    'exacto': {
+                        'type': 'keyword',
+                        'normalizer': LOWCASE_ASCII_NORMALIZER
+                    }
+                }
+            },
+            'departamento': {
+                'type': 'text',
+                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'search_analyzer': NAME_ANALYZER,
+                'fields': {
+                    'exacto': {
+                        'type': 'keyword',
+                        'normalizer': LOWCASE_ASCII_NORMALIZER
+                    }
+                }               
+            }
+        }
+    }
+}
+
 
 def run():
     try:
@@ -14,12 +102,15 @@ def index_roads():
     print('-- Creando índices de Calles.')
     departments = {dept.code: dept.name for dept in Department.objects.all()}
     localities = {loc.id: loc.name for loc in Locality.objects.all()}
+    
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
+        
         if es.indices.exists(index=index_name):
             print('-- Ya existe el índice "%s".' % index_name)
             continue
         data = []
+
         for road in Road.objects.filter(state_id=state.id):
             document = {
                 'nomenclatura': ', '.join([road.name, localities[road.locality_id], state.name]),
@@ -38,7 +129,12 @@ def index_roads():
             }
             data.append({'index': {'_id': road.id}})
             data.append(document)
+
         if data:
-            es.bulk(index=index_name, doc_type='calle', body=data, refresh=True,
-                    request_timeout=320)
+            es.indices.create(index=index_name, body={
+                'settings': DEFAULT_SETTINGS,
+                'mappings': STREET_MAPPING
+            })
+            es.bulk(index=index_name, doc_type='calle', body=data,
+                    refresh=True, request_timeout=320)
             print('-- Se creó el índice "%s".' % index_name)
