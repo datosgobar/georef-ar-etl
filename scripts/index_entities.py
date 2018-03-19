@@ -295,6 +295,17 @@ def index_settlements(es):
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
+                'municipio': {
+                    'type': 'object',
+                    'dynamic': 'false',
+                    'properties': {
+                        'id': {'type': 'keyword'},
+                        'nombre': {
+                            'type': 'keyword',
+                            'normalizer': 'uppercase_normalizer'
+                        },
+                    }
+                },
                 'departamento': {
                     'type': 'object',
                     'dynamic': 'false',
@@ -333,8 +344,12 @@ def index_settlements(es):
     }
     
     data = []
-    states = {state.id: (state.code, state.name) for state in State.objects.all()}
-    departments = {dept.id: (dept.code, dept.name) for dept in Department.objects.all()}
+    states = {state.id: (state.code, state.name)
+              for state in State.objects.all()}
+    departments = {dept.id: (dept.code, dept.name)
+                   for dept in Department.objects.all()}
+    municipalities = {mun.id: (mun.code, mun.name)
+                      for mun in Municipality.objects.all()}
 
     for settlement in Settlement.objects.all():
         data.append({'index': {'_id': settlement.id}})
@@ -347,6 +362,12 @@ def index_settlements(es):
             'geometry': {
                 'type': 'multipoint',
                 'coordinates': settlement.geom.coords
+            },
+            'municipio': {
+                'id': municipalities[settlement.municipality_id][0]
+                if settlement.municipality_id else None,
+                'nombre': municipalities[settlement.municipality_id][1]
+                if settlement.municipality_id else None
             },
             'departamento': {
                 'id': departments[settlement.department_id][0],
