@@ -1,12 +1,11 @@
+from scripts.synonyms_entities import SYNONYMS_ENTITIES
+
+
 SPANISH_STOP_FILTER = 'name_stop_spanish'
 LOWCASE_ASCII_NORMALIZER = 'lowcase_ascii_normalizer'
 NAME_ANALYZER = 'name_analyzer'
 NAME_ANALYZER_SYNONYMS = 'name_analyzer_synonyms'
 ENTITY_NAME_SYNONYMS_FILTER = 'entity_name_synonyms'
-
-
-def build_synonyms(original, synonyms):
-    return '{} => {}'.format(original, ', '.join([original] + synonyms))
 
 
 DEFAULT_SETTINGS = {
@@ -18,14 +17,7 @@ DEFAULT_SETTINGS = {
             },
             ENTITY_NAME_SYNONYMS_FILTER: {
                 'type': 'synonym',
-                'synonyms': [
-                    build_synonyms('ciudad autonoma buenos aires', [
-                        'caba', 'c.a.b.a.', 'capital', 'capital federal'
-                    ]),
-                    build_synonyms('buenos aires', [
-                        'gba', 'bsas', 'bs.as.'
-                    ])
-                ]
+                'synonyms': SYNONYMS_ENTITIES
             }
         },
         'normalizer': {
