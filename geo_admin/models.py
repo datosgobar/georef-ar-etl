@@ -91,6 +91,8 @@ class Settlement(models.Model):
                             verbose_name='nombre')
     bahra_type = models.CharField(max_length=3, blank=True, null=True,
                                   verbose_name='tipo', choices=BAHRA_TYPES)
+    municipality = models.ForeignKey(Municipality, blank=True, null=True,
+                                     verbose_name='municipalidad')
     department = models.ForeignKey(Department, blank=True, null=True,
                                    verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True,
