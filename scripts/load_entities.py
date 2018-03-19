@@ -35,9 +35,9 @@ def run():
         load_functions()
         state_ids = load_states()
         department_ids = load_departments(state_ids)
-        load_municipalities(state_ids, department_ids)
+        municipality_ids = load_municipalities(state_ids, department_ids)
         load_localities(state_ids, department_ids)
-        load_settlements(state_ids, department_ids)
+        load_settlements(state_ids, department_ids, municipality_ids)
     except Exception as e:
         print(e)
 
@@ -57,6 +57,7 @@ def load_functions():
         files_path = [
             BASE_DIR + '/etl_scripts/ign_entities_patch.sql',
             BASE_DIR + '/etl_scripts/function_get_department.sql',
+            BASE_DIR + '/etl_scripts/function_get_municipality.sql',
         ]
 
         for file in files_path:
@@ -176,6 +177,8 @@ def load_municipalities(state_ids, department_ids):
             print(MESSAGES['municipalities_success'])
         except Exception as e:
             print("{0}: {1}".format(MESSAGES['municipalities_error'], e))
+        finally:
+            return {mun.code: mun.id for mun in Municipality.objects.all()}
     else:
         print(MESSAGES['municipalities_dependency_error'])
 
@@ -205,13 +208,14 @@ def load_localities(state_ids, department_ids):
         print(MESSAGES['localities_dependency_error'])
 
 
-def load_settlements(state_ids, department_ids):
-    if state_ids and department_ids:
+def load_settlements(state_ids, department_ids, municipality_ids):
+    if state_ids and department_ids and municipality_ids:
         try:
             print('-- Cargando la entidad Asentamientos.')
             query = """SELECT cod_bahra as code, \
                           upper(nombre_bah) as name, \
                           tipo_bahra as bahra_type, \
+                          get_municipality(cod_bahra) as municipality_id, \
                           cod_depto as dep_code, \
                           cod_prov as state_code, \
                           st_y(st_centroid(geom)) as lat, \
@@ -224,12 +228,13 @@ def load_settlements(state_ids, department_ids):
             settlements = run_query_entities(query)
             settlements_list = []
             for row in settlements:
-                (code, name, bahra_type, dep_code, state_code,
+                (code, name, bahra_type, mun_code, dep_code, state_code,
                  lat, lon, geom) = row
                 settlements_list.append(Settlement(
                     code=code,
                     name=name,
                     bahra_type=bahra_type,
+                    municipality_id=municipality_ids[mun_code] if mun_code else None,
                     department_id=department_ids[state_code + dep_code],
                     state_id=state_ids[state_code],
                     lat=lat,
