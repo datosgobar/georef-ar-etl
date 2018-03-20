@@ -26,7 +26,7 @@ then
 
     ogr2ogr -overwrite -progress -f "PostgreSQL" \
     PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
-    "${i}/${i}.shp" -nln "ign_${i}s" -nlt POLYGON -lco GEOMETRY_NAME=geom
+    "${i}/${i}.shp" -nln "ign_${i}s" -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 
     echo "--------------------------------------------------------------------------- $(date)" >> ign.log
     ogrinfo -ro -so "${i}/${i}.shp" -al >> ign.log

@@ -14,6 +14,7 @@ DEFAULT_SETTINGS = {
     }
 }
 
+
 def run():
     try:
         es = Elasticsearch()
@@ -60,7 +61,7 @@ def index_states(es):
             'lat': state.lat,
             'lon': state.lon,
             'geometry': {
-                'type': 'polygon',
+                'type': 'multipolygon',
                 'coordinates': state.geom.coords
             }
         })
@@ -112,7 +113,7 @@ def index_departments(es):
     for dept in Department.objects.all():
         geometry = {}
         if dept.geom is not None:
-            geometry = {'type': 'polygon', 'coordinates': dept.geom.coords}
+            geometry = {'type': 'multipolygon', 'coordinates': dept.geom.coords}
         data.append({'index': {'_id': dept.id}})
         data.append({
             'id': dept.code,
@@ -192,7 +193,7 @@ def index_municipalities(es):
             'lat': mun.lat,
             'lon': mun.lon,
             'geometry': {
-                'type': 'polygon',
+                'type': 'multipolygon',
                 'coordinates': mun.geom.coords,
             },
             'departamento': {
