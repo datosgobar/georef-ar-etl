@@ -2,7 +2,8 @@ from elasticsearch import Elasticsearch
 from geo_admin.models import Department, Locality, State, Road
 
 from scripts.elasticsearch_params import DEFAULT_SETTINGS,\
-    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_SYNONYMS
+    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_ROAD_SYNONYMS,\
+    NAME_ANALYZER_ENTITY_SYNONYMS
 
 
 STREET_MAPPING = {
@@ -15,7 +16,7 @@ STREET_MAPPING = {
             'id': {'type': 'keyword'},
             'nombre': {
                 'type': 'text',
-                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'analyzer': NAME_ANALYZER_ROAD_SYNONYMS,
                 'search_analyzer': NAME_ANALYZER,
                 'fields': {
                     'exacto': {
@@ -25,8 +26,9 @@ STREET_MAPPING = {
                 }
             },
             'tipo': {
-                'type': 'keyword',
-                'normalizer': LOWCASE_ASCII_NORMALIZER
+                'type': 'text',
+                'analyzer': NAME_ANALYZER_ROAD_SYNONYMS,
+                'search_analyzer': NAME_ANALYZER
             },
             'inicio_derecha': {
                 'type': 'integer',
@@ -54,7 +56,7 @@ STREET_MAPPING = {
             },
             'localidad': {
                 'type': 'text',
-                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                 'search_analyzer': NAME_ANALYZER,
                 'fields': {
                     'exacto': {
@@ -65,7 +67,7 @@ STREET_MAPPING = {
             },
             'provincia': {
                 'type': 'text',
-                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                 'search_analyzer': NAME_ANALYZER,
                 'fields': {
                     'exacto': {
@@ -76,7 +78,7 @@ STREET_MAPPING = {
             },
             'departamento': {
                 'type': 'text',
-                'analyzer': NAME_ANALYZER_SYNONYMS,
+                'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                 'search_analyzer': NAME_ANALYZER,
                 'fields': {
                     'exacto': {

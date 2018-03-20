@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 from geo_admin.models import Department, Locality, Municipality,\
     Settlement, State
 from scripts.elasticsearch_params import DEFAULT_SETTINGS,\
-    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_SYNONYMS
+    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_ENTITY_SYNONYMS
 
 
 def run():
@@ -29,7 +29,7 @@ def index_states(es):
                 'id': {'type': 'keyword'},
                 'nombre': { 
                     'type': 'text',
-                    'analyzer': NAME_ANALYZER_SYNONYMS,
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                     'search_analyzer': NAME_ANALYZER,
                     'fields': {
                         'exacto': {
@@ -40,7 +40,7 @@ def index_states(es):
                 },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
-                'geometry': {'type': 'geo_shape'}
+                'geometry': {'type': 'geo_shape', 'ignore_malformed': True}
             }
         }
     }
@@ -80,7 +80,7 @@ def index_departments(es):
                 'id': {'type': 'keyword'},
                 'nombre': {
                     'type': 'text',
-                    'analyzer': NAME_ANALYZER_SYNONYMS,
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                     'search_analyzer': NAME_ANALYZER,
                     'fields': {
                         'exacto': {
@@ -99,7 +99,7 @@ def index_departments(es):
                         'id': {'type': 'keyword'},
                         'nombre': {
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
@@ -155,7 +155,7 @@ def index_municipalities(es):
                 'id': {'type': 'keyword'},
                 'nombre': { 
                     'type': 'text',
-                    'analyzer': NAME_ANALYZER_SYNONYMS,
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                     'search_analyzer': NAME_ANALYZER,
                     'fields': {
                         'exacto': {
@@ -174,7 +174,7 @@ def index_municipalities(es):
                         'id': {'type': 'keyword'},
                         'nombre': { 
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
@@ -192,7 +192,7 @@ def index_municipalities(es):
                         'id': {'type': 'keyword'},
                         'nombre': { 
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
@@ -255,7 +255,7 @@ def index_localities(es):
                 'id': {'type': 'keyword'},
                 'nombre': { 
                     'type': 'text',
-                    'analyzer': NAME_ANALYZER_SYNONYMS,
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                     'search_analyzer': NAME_ANALYZER,
                     'fields': {
                         'exacto': {
@@ -271,7 +271,7 @@ def index_localities(es):
                         'id': {'type': 'keyword'},
                        'nombre': { 
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
@@ -289,7 +289,7 @@ def index_localities(es):
                         'id': {'type': 'keyword'},
                         'nombre': { 
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
@@ -343,7 +343,7 @@ def index_settlements(es):
                 'id': {'type': 'keyword'},
                 'nombre': { 
                     'type': 'text',
-                    'analyzer': NAME_ANALYZER_SYNONYMS,
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                     'search_analyzer': NAME_ANALYZER,
                     'fields': {
                         'exacto': {
@@ -374,7 +374,7 @@ def index_settlements(es):
                         'id': {'type': 'keyword'},
                         'nombre': { 
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
@@ -392,7 +392,7 @@ def index_settlements(es):
                         'id': {'type': 'keyword'},
                         'nombre': { 
                             'type': 'text',
-                            'analyzer': NAME_ANALYZER_SYNONYMS,
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
                             'search_analyzer': NAME_ANALYZER,
                             'fields': {
                                 'exacto': {
