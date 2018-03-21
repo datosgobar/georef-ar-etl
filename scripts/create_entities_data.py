@@ -4,19 +4,19 @@ import json
 
 MESSAGES = {
     'states_info': '-- Creando datos de la entidad Provincia.',
-    'states_success': '-- Los datos de la entidad Provincia '
+    'states_success': 'Los datos de la entidad Provincia '
                       'fueron creados exitosamente.',
     'departments_info': '-- Creando datos de la entidad Departamento.',
-    'departments_success': '-- Los datos de la entidad Departamento '
+    'departments_success': 'Los datos de la entidad Departamento '
                            'fueron creados exitosamente.',
     'municipality_info': '-- Creando datos de la entidad Municipio.',
-    'municipality_success': '-- Los datos de la entidad Municipio '
+    'municipality_success': 'Los datos de la entidad Municipio '
                             'fueron creados exitosamente.',
     'locality_info': '-- Creando datos de la entidad Localidad.',
-    'locality_sucess': '-- Los datos de la entidad Localidad '
+    'locality_sucess': 'Los datos de la entidad Localidad '
                        'fueron creados exitosamente.',
     'settlement_info': '-- Creando datos de la entidad Asentamiento.',
-    'settlement_success': '-- Los datos de la entidad Asentamiento '
+    'settlement_success': 'Los datos de la entidad Asentamiento '
                           'fueron creados exitosamente.'
 }
 
@@ -43,11 +43,11 @@ def create_data_states():
             'lat': str(state.lat),
             'lon': str(state.lon),
             'geometry': {
-                'type': 'polygon',
+                'type': 'multipolygon',
                 'coordinates': state.geom.coords
             }
         })
-    with open('provincias.json', 'w') as outfile:
+    with open('data/provincias.json', 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['states_success'])
 
@@ -60,7 +60,7 @@ def create_data_departments():
     for dept in Department.objects.all():
         geometry = {}
         if dept.geom is not None:
-            geometry = {'type': 'polygon', 'coordinates': dept.geom.coords}
+            geometry = {'type': 'multipolygon', 'coordinates': dept.geom.coords}
         data.append({'index': {'_id': dept.id}})
         data.append({
             'id': dept.code,
@@ -73,7 +73,7 @@ def create_data_departments():
                 'nombre': states[dept.state_id][1]
             }
         })
-    with open('departamentos.json', 'w') as outfile:
+    with open('data/departamentos.json', 'w') as outfile:
         json.dump(data, outfile)
     print(MESSAGES['departments_success'])
 
@@ -93,7 +93,7 @@ def create_data_municipalities():
             'lat': str(mun.lat),
             'lon': str(mun.lon),
             'geometry': {
-                'type': 'polygon',
+                'type': 'multipolygon',
                 'coordinates': mun.geom.coords,
             },
             'departamento': {
@@ -105,7 +105,7 @@ def create_data_municipalities():
                 'nombre': states[mun.state_id][1]
             }
         })
-    with open('municipios.json', 'w') as outfile:
+    with open('data/municipios.json', 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['municipality_success'])
 
@@ -131,7 +131,7 @@ def create_data_localities():
                 'nombre': states[locality.state_id][1]
             }
         })
-    with open('localidades.json', 'w') as outfile:
+    with open('data/localidades.json', 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['locality_sucess'])
 
@@ -149,6 +149,8 @@ def create_data_settlements():
               State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in
                    Department.objects.all()}
+    municipalities = {mun.id: (mun.code, mun.name)
+                      for mun in Municipality.objects.all()}
 
     for settlement in Settlement.objects.all():
         data.append({'index': {'_id': settlement.id}})
@@ -162,6 +164,12 @@ def create_data_settlements():
                 'type': 'multipoint',
                 'coordinates': settlement.geom.coords
             },
+            'municipio': {
+                'id': municipalities[settlement.municipality_id][0]
+                if settlement.municipality_id else None,
+                'nombre': municipalities[settlement.municipality_id][1]
+                if settlement.municipality_id else None
+            },
             'departamento': {
                 'id': departments[settlement.department_id][0],
                 'nombre': departments[settlement.department_id][1]
@@ -171,6 +179,6 @@ def create_data_settlements():
                 'nombre': states[settlement.state_id][1]
             }
         })
-    with open('asentamientos.json', 'w') as outfile:
+    with open('data/asentamientos.json', 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['settlement_success'])
