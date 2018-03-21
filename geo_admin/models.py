@@ -7,7 +7,7 @@ class State(models.Model):
                             verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name='nombre')
-    geom = models.PolygonField(blank=True, null=True)
+    geom = models.MultiPolygonField(blank=True, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
     lon = models.DecimalField(max_digits=9, decimal_places=6,
@@ -27,7 +27,7 @@ class Department(models.Model):
                             verbose_name='nombre')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
-    geom = models.PolygonField(blank=True, null=True)
+    geom = models.MultiPolygonField(blank=True, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
     lon = models.DecimalField(max_digits=9, decimal_places=6,
@@ -49,7 +49,7 @@ class Municipality(models.Model):
                                    verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
-    geom = models.PolygonField(blank=True, null=True)
+    geom = models.MultiPolygonField(blank=True, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
     lon = models.DecimalField(max_digits=9, decimal_places=6,
@@ -91,6 +91,8 @@ class Settlement(models.Model):
                             verbose_name='nombre')
     bahra_type = models.CharField(max_length=3, blank=True, null=True,
                                   verbose_name='tipo', choices=BAHRA_TYPES)
+    municipality = models.ForeignKey(Municipality, blank=True, null=True,
+                                     verbose_name='municipalidad')
     department = models.ForeignKey(Department, blank=True, null=True,
                                    verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True,
