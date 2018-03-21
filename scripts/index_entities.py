@@ -1,18 +1,8 @@
 from elasticsearch import Elasticsearch
 from geo_admin.models import Department, Locality, Municipality,\
     Settlement, State
-
-
-DEFAULT_SETTINGS = {
-    'analysis': {
-        'normalizer': {
-            'uppercase_normalizer': {
-                'type': 'custom',
-                'filter': ['uppercase']
-            }
-        }
-    }
-}
+from scripts.elasticsearch_params import DEFAULT_SETTINGS,\
+    LOWCASE_ASCII_NORMALIZER, NAME_ANALYZER, NAME_ANALYZER_ENTITY_SYNONYMS
 
 
 def run():
@@ -38,8 +28,15 @@ def index_states(es):
             'properties': {
                 'id': {'type': 'keyword'},
                 'nombre': { 
-                    'type': 'keyword',
-                    'normalizer': 'uppercase_normalizer'
+                    'type': 'text',
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                    'search_analyzer': NAME_ANALYZER,
+                    'fields': {
+                        'exacto': {
+                            'type': 'keyword',
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
+                        }
+                    }
                 },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
@@ -82,21 +79,35 @@ def index_departments(es):
             'properties': {
                 'id': {'type': 'keyword'},
                 'nombre': {
-                    'type': 'keyword',
-                    'normalizer': 'uppercase_normalizer'
+                    'type': 'text',
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                    'search_analyzer': NAME_ANALYZER,
+                    'fields': {
+                        'exacto': {
+                            'type': 'keyword',
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
+                        }
+                    }
                 },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
                 'provincia': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
                         'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
-                        },
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -142,32 +153,53 @@ def index_municipalities(es):
         'municipio': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {
-                    'type': 'keyword',
-                    'normalizer': 'uppercase_normalizer'
+                'nombre': { 
+                    'type': 'text',
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                    'search_analyzer': NAME_ANALYZER,
+                    'fields': {
+                        'exacto': {
+                            'type': 'keyword',
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
+                        }
+                    }
                 },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
                 'geometry': {'type': 'geo_shape'},
                 'departamento': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
-                        },
+                        'nombre': { 
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
+                        }
                     }
                 },
                 'provincia': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
+                        'nombre': { 
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
                         }
                     }
                 }
@@ -221,29 +253,50 @@ def index_localities(es):
         'localidad': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {
-                    'type': 'keyword',
-                    'normalizer': 'uppercase_normalizer'
+                'nombre': { 
+                    'type': 'text',
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                    'search_analyzer': NAME_ANALYZER,
+                    'fields': {
+                        'exacto': {
+                            'type': 'keyword',
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
+                        }
+                    }
                 },
                 'departamento': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
-                        },
+                       'nombre': { 
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
+                        }
                     }
                 },
                 'provincia': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
+                        'nombre': { 
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
                         }
                     }
                 }
@@ -288,9 +341,16 @@ def index_settlements(es):
         'asentamiento': {
             'properties': {
                 'id': {'type': 'keyword'},
-                'nombre': {
-                    'type': 'keyword',
-                    'normalizer': 'uppercase_normalizer'
+                'nombre': { 
+                    'type': 'text',
+                    'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                    'search_analyzer': NAME_ANALYZER,
+                    'fields': {
+                        'exacto': {
+                            'type': 'keyword',
+                            'normalizer': LOWCASE_ASCII_NORMALIZER
+                        }
+                    }
                 },
                 'tipo': {'type': 'keyword'},
                 'lat': {'type': 'keyword'},
@@ -298,35 +358,56 @@ def index_settlements(es):
                 'geometry': {'type': 'geo_shape'},
                 'municipio': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
                         'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
                         },
                     }
                 },
                 'departamento': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
-                        },
+                        'nombre': { 
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
+                        }
                     }
                 },
                 'provincia': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
-                        'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
-                        },
+                        'nombre': { 
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
+                        }
                     }
                 }
             }
