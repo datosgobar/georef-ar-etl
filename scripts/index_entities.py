@@ -40,7 +40,7 @@ def index_states(es):
                 },
                 'lat': {'type': 'keyword'},
                 'lon': {'type': 'keyword'},
-                'geometry': {'type': 'geo_shape', 'ignore_malformed': True}
+                'geometry': {'type': 'geo_shape'}
             }
         }
     }
@@ -358,12 +358,19 @@ def index_settlements(es):
                 'geometry': {'type': 'geo_shape'},
                 'municipio': {
                     'type': 'object',
-                    'dynamic': 'false',
+                    'dynamic': 'strict',
                     'properties': {
                         'id': {'type': 'keyword'},
                         'nombre': {
-                            'type': 'keyword',
-                            'normalizer': 'uppercase_normalizer'
+                            'type': 'text',
+                            'analyzer': NAME_ANALYZER_ENTITY_SYNONYMS,
+                            'search_analyzer': NAME_ANALYZER,
+                            'fields': {
+                                'exacto': {
+                                    'type': 'keyword',
+                                    'normalizer': LOWCASE_ASCII_NORMALIZER
+                                }
+                            }
                         },
                     }
                 },
