@@ -1,11 +1,12 @@
 from geo_admin.models import Department, Locality, State, Road
 import json
+import os
 
 
 MESSAGES = {
     'roads_data_info': '-- Creando datos de Calles.',
-    'road_data_success': '-- Los datos de "%s" fueron creados correctamente.',
-    'roads_data_success': '-- Los datos de Calles fueron creados correctamente.'
+    'road_data_success': 'Los datos de "%s" fueron creados correctamente.',
+    'road_data_error': 'Los datos de "%s" no pudieron ser creados.'
 }
 
 
@@ -45,9 +46,14 @@ def index_roads():
             data.append({'index': {'_id': road.id}})
             data.append(document)
 
-        with open('{}.json'.format(index_name), 'w') as outfile:
+        filename = 'data/vias/{}.json'
+
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+
+        with open(filename.format(index_name), 'w') as outfile:
             json.dump(data, outfile)
         if data:
             print(MESSAGES['road_data_success'] % index_name)
-
-    print(MESSAGES['roads_data_success'])
+        else:
+            print(MESSAGES['road_data_error'] % index_name)

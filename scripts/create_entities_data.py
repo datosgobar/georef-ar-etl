@@ -1,6 +1,8 @@
 from geo_admin.models import State, Department, Municipality, Locality,\
     Settlement
 import json
+import os
+
 
 MESSAGES = {
     'states_info': '-- Creando datos de la entidad Provincia.',
@@ -47,7 +49,13 @@ def create_data_states():
                 'coordinates': state.geom.coords
             }
         })
-    with open('data/provincias.json', 'w') as outfile:
+
+    filename = 'data/entidades/provincias.json'
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['states_success'])
 
@@ -73,7 +81,13 @@ def create_data_departments():
                 'nombre': states[dept.state_id][1]
             }
         })
-    with open('data/departamentos.json', 'w') as outfile:
+
+    filename = 'data/entidades/departamentos.json'
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'w') as outfile:
         json.dump(data, outfile)
     print(MESSAGES['departments_success'])
 
@@ -105,7 +119,12 @@ def create_data_municipalities():
                 'nombre': states[mun.state_id][1]
             }
         })
-    with open('data/municipios.json', 'w') as outfile:
+
+    filename = 'data/entidades/municipios.json'
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['municipality_success'])
 
@@ -131,7 +150,13 @@ def create_data_localities():
                 'nombre': states[locality.state_id][1]
             }
         })
-    with open('data/localidades.json', 'w') as outfile:
+
+    filename = 'data/entidades/localidades.json'
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['locality_sucess'])
 
@@ -179,6 +204,12 @@ def create_data_settlements():
                 'nombre': states[settlement.state_id][1]
             }
         })
-    with open('data/asentamientos.json', 'w') as outfile:
+
+    filename = 'data/entidades/asentamientos.json'
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+
+    with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['settlement_success'])
