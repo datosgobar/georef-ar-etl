@@ -16,11 +16,11 @@ then
  if ogrinfo "PG:host=${POSTGRES_HOST} dbname=${POSTGRES_DBNAME} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}" | grep "successful"
  then
   # Geoserver INDEC
-  URL='http://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:vias&outputFormat=SHAPE-ZIP'
+  URL='https://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:vias&outputFormat=SHAPE-ZIP'
   FILE='vias.zip'
 
   # Descarga la capa "Vías de circulación" en formato SHAPEFILE
-  wget --progress=dot -e dotbytes=1M -O ${FILE} ${URL}
+  wget --progress=dot -e dotbytes=1M -O ${FILE} ${URL} --no-check-certificate
 
   # Descomprime
   unzip ${FILE} -d vias
