@@ -2,7 +2,6 @@
 
 ## Dependencias
 
-- [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
 - [Gedal](http://www.gdal.org/index.html)
 - [PostgreSQL 9.6](https://www.postgresql.org/download/)
 - [PostGis 2.3](http://postgis.net/install/)
@@ -75,13 +74,9 @@ Ejemplo:
         export POSTGRES_PASSWORD= # password
         ```
 
-    - Configuraciones para la integración de los servicios [KONG](../resources/kong.md) y [HERE](https://developer.here.com/)(opcional)
+    - Configuraciones para la integración de [HERE](https://developer.here.com/)(opcional)
 
         ```bash
-        export KONG_URL= # Ejemplo: http://127.0.0.1:8000/
-        export KONG_DB_USER= # user
-        export KONG_DB_PASS= # password
-        export KONG_HOST= # localhost
         export HERE_APP_CODE= # app_code
         export HERE_APP_ID= # app_id
         ```
@@ -108,48 +103,9 @@ Ejemplo:
 
     `(venv) $ ./manage.py runscript load_roads`
 
-9. Cargar funciones PostgreSql
-
-    `(venv) $ ./manage.py runscript load_functions`
-    
-10. Generar los archivos estáticos
+9. Generar los archivos estáticos
 
     `(venv) $ ./manage.py collectstatic`
-
-## ElasticSearch
-
-1. Levantar el servicio de ElasticSearch
-
-    `$ cd path/to/elasticsearch/bin/ && ./elasticseach`
-
-2. Configuraciones
-
-    `$ sudo vi path/to/elasticsearch/config/elasticsearch.yml`
-
-    ```
-    cluster.name: georef
-    node.name: node-1
-    ```
-
-    `$ sudo vi /etc/sysctl.conf`
-
-    ```
-    vm.max_map_count=262144
-    ```
-
-3. Probar el servicio
-
-    `$ curl -X GET 'http://localhost:9200'`
-
-    `$ curl localhost:9200/_cat/indices?v`
-
-4. Crear índices de entidades y vías
-
-    `(venv)$ ./manage.py runscript index_entities`
-
-    `(venv)$ ./manage.py runscript index_roads`
-
-    `$ curl localhost:9200/_cat/indices?v`
 
 ## Correr App
 

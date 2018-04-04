@@ -2,7 +2,6 @@
 
 ## Dependencias
 
-- [ElasticSearch >=5.5](https://www.elastic.co/guide/en/elasticsearch/reference/current/_installation.html)
 - Gunicorn
 - [Gedal](http://www.gdal.org/index.html)
 - [Nginx](https://nginx.org/)
@@ -76,13 +75,9 @@ Ejemplo:
         export POSTGRES_PASSWORD= # password
         ```
 
-    - Configuraciones para la integración de los servicios [KONG](../resources/kong.md) y [HERE](https://developer.here.com/)(opcional)
+    - Configuraciones para la integración de [HERE](https://developer.here.com/)(opcional)
 
         ```bash
-        export KONG_URL= # Ejemplo: http://127.0.0.1:8000/
-        export KONG_DB_USER= # user
-        export KONG_DB_PASS= # password
-        export KONG_HOST= # localhost
         export HERE_APP_CODE= # app_code
         export HERE_APP_ID= # app_id
         ```
@@ -109,11 +104,7 @@ Ejemplo:
 
     `$ ./manage.py runscript load_roads`
 
-9. Cargar funciones PostgreSql
-
-    `(venv) $ ./manage.py runscript load_functions`
-    
-10. Generar los archivos estáticos
+9. Generar los archivos estáticos
 
     `(venv) $ ./manage.py collectstatic`
 
