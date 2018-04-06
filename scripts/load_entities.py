@@ -55,6 +55,7 @@ def load_functions():
         print('-- Cargando funciones SQL.')
 
         files_path = [
+            BASE_DIR + '/etl_scripts/ddl_tables.sql',
             BASE_DIR + '/etl_scripts/ign_entities_patch.sql',
             BASE_DIR + '/etl_scripts/function_get_department.sql',
             BASE_DIR + '/etl_scripts/function_get_municipality.sql',
