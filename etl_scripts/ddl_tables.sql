@@ -1,4 +1,4 @@
-CREATE TABLE public.indec_cuadras
+CREATE TABLE IF NOT EXISTS public.indec_cuadras
 (
   fid character varying(25),
   geom geometry(MultiLineString),
