@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-export DJANGO_ENVIRONMENT=
-export DJANGO_SECRET_KEY=
+export DEBUG=
+export DJANGO_SECRET_KEY=''
 export GEOREF_API_URL=
 export GEOREF_DB_HOST=
 export GEOREF_DB_NAME=
@@ -10,9 +10,3 @@ export POSTGRES_HOST=
 export POSTGRES_DBNAME=
 export POSTGRES_USER=
 export POSTGRES_PASSWORD=
-export KONG_URL=
-export KONG_DB_USER=
-export KONG_DB_PASS=
-export KONG_HOST=
-export HERE_APP_CODE=
-export HERE_APP_ID=
