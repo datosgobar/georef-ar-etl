@@ -59,26 +59,6 @@ class Municipality(models.Model):
         verbose_name = 'municipio'
 
 
-class Locality(models.Model):
-    code = models.CharField(max_length=8, blank=True, null=True, unique=True,
-                            verbose_name='código')
-    name = models.CharField(max_length=100, blank=True, null=True,
-                            verbose_name='nombre')
-    agglomerate = models.CharField(max_length=4, blank=True, null=True,
-                                   verbose_name='aglomerado')
-    department = models.ForeignKey(Department, blank=True, null=True,
-                                   verbose_name='departamento')
-    state = models.ForeignKey(State, blank=True, null=True,
-                              verbose_name='provincia')
-
-    class Meta:
-        verbose_name = 'localidad'
-        verbose_name_plural = 'localidades'
-
-    def __str__(self):
-        return ', '.join([self.name, self.state.name])
-
-
 class Settlement(models.Model):
     BAHRA_TYPES = (
         ('E', 'Entidad (E)'),
@@ -127,8 +107,8 @@ class Road(models.Model):
     geom = models.TextField(blank=True, null=True, verbose_name='geometría')
     postal_code = models.CharField(max_length=8, blank=True, null=True,
                                    verbose_name='código postal')
-    locality = models.ForeignKey(Locality, blank=True, null=True,
-                                 verbose_name='localidad')
+    dept = models.ForeignKey(Department, blank=True, null=True,
+                             verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
 
@@ -136,5 +116,5 @@ class Road(models.Model):
         verbose_name = 'calle'
 
     def __str__(self):
-        return ', '.join([self.name, self.locality.name, self.state.name])
+        return ', '.join([self.name, self.dept.name, self.state.name])
 

@@ -1,10 +1,11 @@
-from geo_admin.models import Department, Locality, State, Road
+from geo_admin.models import Department, State, Road
 import json
 import os
 
 
 MESSAGES = {
     'roads_data_info': '-- Creando datos de Calles.',
+    'roads_state_info': 'Cargando datos para: %s, cantidad: %d',
     'road_data_success': 'Los datos de "%s" fueron creados correctamente.',
     'road_data_error': 'Los datos de "%s" no pudieron ser creados.'
 }
@@ -19,16 +20,21 @@ def run():
 
 def index_roads():
     print(MESSAGES['roads_data_info'])
-    departments = {dept.code: dept.name for dept in Department.objects.all()}
-    localities = {loc.id: loc.name for loc in Locality.objects.all()}
+    departments = {dept.id: dept.name for dept in Department.objects.all()}
+    
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
         data = []
-        for road in Road.objects.filter(state_id=state.id):
+        roads_filtered = Road.objects.filter(state_id=state.id)
+        
+        roads_count = roads_filtered.count()
+        print(MESSAGES['roads_state_info'] % (index_name, roads_count))
+
+        for road in roads_filtered:
             document = {
                 'nomenclatura': ', '.join([
                     road.name,
-                    localities[road.locality_id],
+                    departments[road.dept_id],
                     state.name]),
                 'id': road.code,
                 'nombre': road.name,
@@ -39,8 +45,7 @@ def index_roads():
                 'fin_izquierda': road.end_left,
                 'geometria': road.geom,
                 'codigo_postal': road.postal_code,
-                'localidad': localities[road.locality_id],
-                'departamento': departments[road.code[:5]],
+                'departamento': departments[road.dept_id],
                 'provincia': state.name
             }
             data.append({'index': {'_id': road.id}})
