@@ -35,6 +35,7 @@ then
   # Genera log de actividad
   echo "--------------------------------------------------------------------------- $(date)" >> indec.log
   ogrinfo -ro -so vias/vias.shp -al >> indec.log
+  rm ${FILE}; rm -rf vias;
   echo "Terminado!"
   fi
 fi

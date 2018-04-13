@@ -30,6 +30,8 @@ then
 
     echo "--------------------------------------------------------------------------- $(date)" >> ign.log
     ogrinfo -ro -so "${i}/${i}.shp" -al >> ign.log
+
+    rm ${FILE}; rm -rf ${i};
   done
 
   declare URL_SHP_BARHA='http://wms.ign.gob.ar/bahra/descargas/BAHRA_2014_version_1.1_shape.tar.gz'
@@ -47,7 +49,7 @@ then
 
   echo "--------------------------------------------------------------------------- $(date)" >> ign.log
   ogrinfo -ro -so "bahra/bahra_27112014.shp" -al >> ign.log
-
+  rm ${FILE_BARHA}; rm -rf bahra;
   echo "Terminado!"
   fi
 fi
