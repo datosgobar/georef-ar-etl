@@ -101,6 +101,7 @@ def load_states():
             (code, name, lat, lon, geom) = row
             states_list.append(State(code=code, name=name, lat=lat,
                                      lon=lon, geom=geom))
+        State.objects.all().delete()
         State.objects.bulk_create(states_list)
         print(MESSAGES['states_success'])
     except Exception as e:
