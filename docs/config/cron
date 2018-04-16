@@ -1,0 +1,1 @@
+0 10 * * 1 cd $GEOREF_ETL_DIR && make >> $GEOREF_ETL_DIR/logs/cron.log 2>&1
