@@ -8,4 +8,4 @@ Las fuentes de los datos son: el Instituto Nacional de Estadística y Censos (IN
 Ver la [guía de instalación y uso](docs/processes/install.md).
 
 ## Soporte
-En caso de que encuentres algún bug, tengas problemas con la instalación, o tengas comentarios de alguna parte de `georef-api`, podés mandarnos un mail a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar) o [crear un issue](https://github.com/datosgobar/georef-api/issues/new?title=Encontre-un-bug-en-georef-api).
+En caso de que encuentres algún bug, tengas problemas con la instalación, o tengas comentarios de alguna parte de `georef-etl`, podés mandarnos un mail a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar) o [crear un issue](https://github.com/datosgobar/georef-api/issues/new?title=Encontre-un-bug-en-georef-api).
