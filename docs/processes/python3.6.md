@@ -22,6 +22,10 @@
 
   `# make altinstall`
 
+- Crear un link simbólico para `python3.6`
+
+  `# ln -s /usr/local/bin/python3.6 /usr/bin/python3.6`
+
 - Pip
 
   `$ sudo apt install python-pip` o `python3-pip`
