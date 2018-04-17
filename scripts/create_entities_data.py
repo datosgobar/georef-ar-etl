@@ -1,5 +1,4 @@
-from geo_admin.models import State, Department, Municipality, Locality,\
-    Settlement
+from geo_admin.models import State, Department, Municipality, Settlement
 import json
 import os
 
@@ -14,9 +13,6 @@ MESSAGES = {
     'municipality_info': '-- Creando datos de la entidad Municipio.',
     'municipality_success': 'Los datos de la entidad Municipio '
                             'fueron creados exitosamente.',
-    'locality_info': '-- Creando datos de la entidad Localidad.',
-    'locality_sucess': 'Los datos de la entidad Localidad '
-                       'fueron creados exitosamente.',
     'settlement_info': '-- Creando datos de la entidad Asentamiento.',
     'settlement_success': 'Los datos de la entidad Asentamiento '
                           'fueron creados exitosamente.'
@@ -28,7 +24,6 @@ def run():
         create_data_states()
         create_data_departments()
         create_data_municipalities()
-        create_data_localities()
         create_data_settlements()
     except Exception as e:
         print(e)
@@ -127,38 +122,6 @@ def create_data_municipalities():
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
     print(MESSAGES['municipality_success'])
-
-
-def create_data_localities():
-    print(MESSAGES['locality_info'])
-    data = []
-    states = {state.id: (state.code, state.name) for state in
-              State.objects.all()}
-    departments = {dept.id: (dept.code, dept.name) for dept in
-                   Department.objects.all()}
-    for locality in Locality.objects.all():
-        data.append({'index': {'_id': locality.id}})
-        data.append({
-            'id': locality.code,
-            'nombre': locality.name,
-            'departamento': {
-                'id': departments[locality.department_id][0],
-                'nombre': departments[locality.department_id][1]
-            },
-            'provincia': {
-                'id': states[locality.state_id][0],
-                'nombre': states[locality.state_id][1]
-            }
-        })
-
-    filename = 'data/entidades/localidades.json'
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile, ensure_ascii=False)
-    print(MESSAGES['locality_sucess'])
 
 
 def create_data_settlements():

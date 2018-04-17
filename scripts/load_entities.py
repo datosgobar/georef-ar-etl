@@ -1,6 +1,5 @@
 from georef.settings import BASE_DIR
-from geo_admin.models import State, Department, Locality, Municipality, \
-    Settlement
+from geo_admin.models import State, Department, Municipality, Settlement
 import csv
 import os
 import psycopg2
@@ -13,10 +12,6 @@ MESSAGES = {
     'departments_error': 'Los departamentos no pudieron cargarse.',
     'departments_dependency_error': 'Deben cargarse las provincias antes de '
                                     'los departamentos.',
-    'localities_success': 'Las localidades fueron cargadas exitosamente.',
-    'localities_error': 'Las localidades no pudieron cargarse.',
-    'localities_dependency_error': 'Deben cargarse provincias y departamentos '
-                                   'antes de las localidades.',
     'settlements_success': 'Los asentamientos fueron cargados exitosamente.',
     'settlements_error': 'Los asentamientos no pudieron cargarse.',
     'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
@@ -36,7 +31,6 @@ def run():
         state_ids = load_states()
         department_ids = load_departments(state_ids)
         municipality_ids = load_municipalities(state_ids, department_ids)
-        load_localities(state_ids, department_ids)
         load_settlements(state_ids, department_ids, municipality_ids)
     except Exception as e:
         print(e)
@@ -183,31 +177,6 @@ def load_municipalities(state_ids, department_ids):
             return {mun.code: mun.id for mun in Municipality.objects.all()}
     else:
         print(MESSAGES['municipalities_dependency_error'])
-
-
-def load_localities(state_ids, department_ids):
-    if state_ids and department_ids:
-        localities = []
-        try:
-            print('-- Cargando la entidad Localidad.')
-            file_path = BASE_DIR + '/data/localidades.csv'
-            with open(file_path, newline='', encoding='utf-8') as csv_file:
-                reader = csv.reader(csv_file)
-                next(reader)  # Skips headers row.
-                for row in reader:
-                    loc_code, loc_name, state_code, dept_code = row
-                    localities.append(Locality(
-                        code=loc_code,
-                        name=loc_name,
-                        department_id=department_ids[dept_code],
-                        state_id=state_ids[state_code]
-                    ))
-            Locality.objects.bulk_create(localities)
-            print(MESSAGES['localities_success'])
-        except Exception as e:
-            print("{0}: {1}".format(MESSAGES['localities_error'], e))
-    else:
-        print(MESSAGES['localities_dependency_error'])
 
 
 def load_settlements(state_ids, department_ids, municipality_ids):
