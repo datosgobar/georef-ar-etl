@@ -1,4 +1,4 @@
-from geo_admin.models import Road, Locality, Department
+from geo_admin.models import Road, State, Department
 from datetime import datetime
 import psycopg2
 import json
@@ -7,10 +7,8 @@ import os
 
 roads = []
 flagged_roads = []
-localities = {locality.code: (locality.id, locality.state_id)
-                for locality in Locality.objects.all()}
-communes = [dept.code for dept in Department.objects.filter(state__code='02')]
-
+states = {state.code: state.id for state in State.objects.all()}
+depts = {dept.code: dept.id for dept in Department.objects.all()}
 
 def run():
     print('-- Procesando vías --')
@@ -42,8 +40,7 @@ def run_query():
                     desded as start_right, \
                     hastai as end_left, \
                     hastad as end_right, \
-                    geom, \
-                    codloc as locality \
+                    geom \
             FROM  indec_vias \
             WHERE tipo <> 'OTRO';
         """
@@ -80,7 +77,7 @@ def generate_report():
 
 def process_street(row):
     (code, name, road_type, start_left, start_right,
-        end_left, end_right, geom, locality) = row
+        end_left, end_right, geom) = row
     
     obs = {}
     if name == 'CALLE S N':
@@ -89,21 +86,28 @@ def process_street(row):
         start_left, start_right, end_left, end_right)
     if flagged_boundaries:
         obs['alturas'] = flagged_boundaries
-    
-    if locality[:5] in communes:  # Validar contra lista de Comunas.
-        locality = '02000010'     # Para relacionar FK en calles de CABA.
-    if locality in localities:
-        locality_id = localities[locality][0]
-        state_id = localities[locality][1]
+
+    state_code = code[:2]
+    dept_code = code[:5]
+
+    if state_code in states and dept_code in depts:
+        state_id = states[state_code]
+        dept_id = depts[dept_code]
+
         road = Road(code=code, name=name, road_type=road_type,
                     start_left=start_left, start_right=start_right,
                     end_left=end_left, end_right=end_right, geom=geom,
-                    locality_id=locality_id, state_id=state_id)
+                    dept_id=dept_id, state_id=state_id)
         roads.append(road)
+    else:
+        if state_code not in states:
+            obs['provincia'] = 'Provincia {} no encontrada'.format(state_code)
+        if dept_code not in depts:
+            obs['departamento'] = 'Depto. {} no encontrado'.format(dept_code)
 
-    if obs or locality not in localities:
+    if obs:
         flagged_roads.append({
-            'nombre': name, 'codloc': locality, 'nomencla': code, 'obs': obs})
+            'nombre': name, 'nomencla': code, 'obs': obs})
 
 
 def validate_boundaries(start_left, start_right, end_left, end_right):
