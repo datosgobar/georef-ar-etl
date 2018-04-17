@@ -18,6 +18,7 @@ then
         declare URL_GEOSERVICIOS="https://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:cuadras&outputFormat=csv&CQL_FILTER=nomencla+like+%27${i}%25%27"
         wget --progress=dot -e dotbytes=1M -O ${FILE} ${URL_GEOSERVICIOS} --no-check-certificate
         psql -h ${POSTGRES_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DBNAME} -c "COPY public.indec_cuadras FROM '${PWD}/${FILE}' DELIMITER ',' CSV HEADER"
+        rm ${FILE}
     done
     echo "Terminado!"
 fi
