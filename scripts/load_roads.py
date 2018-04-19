@@ -59,7 +59,7 @@ def generate_report():
     ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
     failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
 
-    with open('report.txt', 'a') as report:
+    with open('logs/load_roads.log', 'a') as report:
         print('-- Generando reporte --')
         report.write(heading)
         report.write(ok_roads_msg + '\n')
@@ -67,7 +67,7 @@ def generate_report():
 
     if flagged_roads:
         print('-- Generando log de errores --')
-        with open('flagged_roads.json', 'w') as report:
+        with open('logs/flagged_roads.json', 'w') as report:
             json.dump(flagged_roads, report, indent=2)
 
     print('** Resultado del proceso **')

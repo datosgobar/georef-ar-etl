@@ -33,9 +33,11 @@ then
      vias/vias.shp -nln indec_vias -nlt MULTILINESTRING -lco GEOMETRY_NAME=geom
 
   # Genera log de actividad
-  echo "--------------------------------------------------------------------------- $(date)" >> indec.log
-  ogrinfo -ro -so vias/vias.shp -al >> indec.log
+  mkdir -p logs
+  echo "--------------------------------------------------------------------------- $(date)" >> logs/indec_vias.log
+  ogrinfo -ro -so vias/vias.shp -al >> logs/indec_vias.log
   rm ${FILE}; rm -rf vias;
+
   echo "Terminado!"
   fi
 fi
