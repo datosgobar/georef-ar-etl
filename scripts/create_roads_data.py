@@ -5,7 +5,7 @@ import os
 
 MESSAGES = {
     'roads_data_info': '-- Creando datos de Calles.',
-    'roads_state_info': 'Cargando datos para: %s, cantidad: %d',
+    'roads_state_info': '-- Cargando datos para: %s, cantidad: %d',
     'road_data_success': 'Los datos de "%s" fueron creados correctamente.',
     'road_data_error': 'Los datos de "%s" no pudieron ser creados.'
 }
