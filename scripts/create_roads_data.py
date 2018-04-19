@@ -48,7 +48,6 @@ def index_roads():
                 'departamento': departments[road.dept_id],
                 'provincia': state.name
             }
-            data.append({'index': {'_id': road.id}})
             data.append(document)
 
         filename = 'data/vias/{}.json'

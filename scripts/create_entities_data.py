@@ -33,7 +33,6 @@ def create_data_states():
     print(MESSAGES['states_info'])
     data = []
     for state in State.objects.all():
-        data.append({'index': {'_id': state.id}})
         data.append({
             'id': state.code,
             'nombre': state.name,
@@ -64,7 +63,6 @@ def create_data_departments():
         geometry = {}
         if dept.geom is not None:
             geometry = {'type': 'multipolygon', 'coordinates': dept.geom.coords}
-        data.append({'index': {'_id': dept.id}})
         data.append({
             'id': dept.code,
             'nombre': dept.name,
@@ -95,7 +93,6 @@ def create_data_municipalities():
     departments = {dept.id: (dept.code, dept.name) for dept in
                    Department.objects.all()}
     for mun in Municipality.objects.all():
-        data.append({'index': {'_id': mun.id}})
         data.append({
             'id': mun.code,
             'nombre': mun.name,
@@ -141,7 +138,6 @@ def create_data_settlements():
                       for mun in Municipality.objects.all()}
 
     for settlement in Settlement.objects.all():
-        data.append({'index': {'_id': settlement.id}})
         data.append({
             'id': settlement.code,
             'nombre': settlement.name,
