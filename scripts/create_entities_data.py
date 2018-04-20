@@ -38,7 +38,7 @@ def create_data_states():
             'nombre': state.name,
             'lat': str(state.lat),
             'lon': str(state.lon),
-            'geometry': {
+            'geometria': {
                 'type': 'multipolygon',
                 'coordinates': state.geom.coords
             }
@@ -68,7 +68,7 @@ def create_data_departments():
             'nombre': dept.name,
             'lat': str(dept.lat),
             'lon': str(dept.lon),
-            'geometry': geometry,
+            'geometria': geometry,
             'provincia': {
                 'id': states[dept.state_id][0],
                 'nombre': states[dept.state_id][1]
@@ -98,7 +98,7 @@ def create_data_municipalities():
             'nombre': mun.name,
             'lat': str(mun.lat),
             'lon': str(mun.lon),
-            'geometry': {
+            'geometria': {
                 'type': 'multipolygon',
                 'coordinates': mun.geom.coords,
             },
@@ -144,7 +144,7 @@ def create_data_settlements():
             'tipo': bahra_types[settlement.bahra_type],
             'lat': str(settlement.lat),
             'lon': str(settlement.lon),
-            'geometry': {
+            'geometria': {
                 'type': 'multipoint',
                 'coordinates': settlement.geom.coords
             },
