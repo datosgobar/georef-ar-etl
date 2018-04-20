@@ -35,21 +35,17 @@ Ejemplo:
 
 ## Instalación
 
-1. Clonar repositorio
+1. Clonar repositorio:
 
     `$ git clone https://github.com/datosgobar/georef-etl.git`
 
-2. Crear entorno virtual e instalar dependencias con pip
+2. Copiar el archivo de ejemplo con las variables de entorno:
 
-    `$ python3.6 -m venv venv`
+    `$ cp environment.example.sh environment.sh`
 
-    `(venv)$ pip install -r requirements.txt`
+3. Completar el script `environment.sh` con los valores de configuración correspondientes:
 
-3. Copiar las variables de entorno
-
-    `(venv)$ cp environment.example.sh environment.sh`
-
-4. Completar el script `environment.sh` con los valores de configuración correspondientes:
+    `$ vi environment.sh`
 
     - Configuraciones de aplicación
 
@@ -73,30 +69,10 @@ Ejemplo:
         export POSTGRES_PASSWORD= # password
         ```
 
-5. Exportar las variables de entorno
+4. Para instalar Georef Etl, actualizar y generar los datos de entidades y vías de circulación:
 
-    `(venv)$ . environment.sh`
-
-6. Ejecutar el script `etl_indec_vias.sh` y `etl_ign_entities.sh` para descargar e importar los datos de INDEC e IGN:
-
-    ```bash
-    cd etl_scripts/
-    ./etl_ign_entidades.sh
-    ./etl_indec_vias.sh
-    ```
-
-7. Sincronizar la base de datos
-
-    `(venv)$ ./manage.py migrate`
-
-8. Cargar datos de entidades y vías
-
-    `(venv)$ ./manage.py runscript load_entities`
-
-    `(venv)$ ./manage.py runscript load_roads`
+    `$ make all`
     
-9. Generar datos de entidades y vías de circulación en formato Json
-
-    `(venv)$ ./manage.py runscript create_entities_data`
+    Otro comandos útiles:
     
-    `(venv)$ ./manage.py runscript create_roads_data`
+    `$ make help`

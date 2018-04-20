@@ -10,21 +10,33 @@ SHELL := /bin/bash
 
 .PHONY: all
 
-all: virtualenv \
- 	 install \
- 	 migrate_db \
- 	 etl_entities \
- 	 etl_roads \
- 	 load_entities \
- 	 load_roads \
- 	 create_entities_data \
- 	 create_roads_data
+.DEFAULT: help
+
+help:
+	@echo "make all			Instala Georef Etl, actualiza y genera los datos de entidades y vías de circulación "
+	@echo "make install    		Crea entorno virtual e instala dependencias con pip"
+	@echo "make update     		Sincroniza y carga la base de datos con entidades y vías de circulación"
+	@echo "make create_data 		Genera datos de entidades y vías de circulación en formato Json"
+
+all: install \
+ 	 update \
+ 	 create_data
+
+install: virtualenv \
+		 requirements
+
+update: migrate_db \
+		etl_entities \
+		etl_roads \
+		load_entities \
+		load_roads
+
+create_data: create_entities_data \
+ 	  create_roads_data
 
 virtualenv:
 	rm -rf venv
 	virtualenv -p python3.6 $(VENV_DIR)
-
-install: requirements
 
 requirements:
 	$(PIP) install -r $(PROJECT_DIR)/requirements.txt --no-warn-script-location
