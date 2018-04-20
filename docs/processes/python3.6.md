@@ -10,7 +10,7 @@
 
 - Descargando los archivos binarios
 
-  `$ wget https://www.python.org/ftp/python/3.6.2/Python-3.6.4.tgz`
+  `$ wget https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz`
 
   `$ tar xvf Python-3.6.4.tgz`
 
