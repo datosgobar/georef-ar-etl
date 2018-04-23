@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 export DEBUG=
 export DJANGO_SECRET_KEY=''
-export GEOREF_API_URL=
 export GEOREF_DB_HOST=
 export GEOREF_DB_NAME=
 export GEOREF_DB_USER=

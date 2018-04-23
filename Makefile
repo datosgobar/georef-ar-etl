@@ -36,10 +36,10 @@ create_data: create_entities_data \
 
 virtualenv:
 	rm -rf venv
-	virtualenv -p python3.6 $(VENV_DIR)
+	python3.6 -m venv $(VENV_DIR)
 
 requirements:
-	$(PIP) install -r $(PROJECT_DIR)/requirements.txt --no-warn-script-location
+	$(PIP) install -r $(PROJECT_DIR)/requirements.txt
 
 migrate_db:
 	$(ENVIROMENTS) && $(PYTHON) $(MANAGE) migrate
