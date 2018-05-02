@@ -1,0 +1,1 @@
+0 0 * * * cd $GEOREF_ETL_DIR && make update >> $GEOREF_ETL_DIR/logs/`date +\%Y\%m\%d\%H\%M\%S`-cron.log 2>&1

@@ -2,7 +2,7 @@ ENVIROMENTS=. $(PROJECT_DIR)/environment.sh
 MANAGE?=$(PROJECT_DIR)/manage.py
 PIP?=$(VENV_DIR)/bin/pip
 PROJECT_DIR=$(shell pwd)
-PYTHON?=$(VENV_DIR)/bin/python
+PYTHON?=$(VENV_DIR)/bin/python3.6
 RUNSCRIPT=$(MANAGE) runscript
 VENV_DIR?=$(PROJECT_DIR)/venv
 
@@ -15,8 +15,9 @@ SHELL := /bin/bash
 help:
 	@echo "make all			Instala Georef Etl, actualiza y genera los datos de entidades y vías de circulación "
 	@echo "make install    		Crea entorno virtual e instala dependencias con pip"
-	@echo "make update     		Sincroniza y carga la base de datos con entidades y vías de circulación"
+	@echo "make update     		Sincroniza y carga la base de datos con entidades y vías de circulación, y genera datos"
 	@echo "make create_data 		Genera datos de entidades y vías de circulación en formato Json"
+	@echo "make install_cron		Instala crontab para sincronizar y cargar la base de datos con entidades y vías de circulación, y genera datos"
 
 all: install \
  	 update \
@@ -29,7 +30,8 @@ update: migrate_db \
 		etl_entities \
 		etl_roads \
 		load_entities \
-		load_roads
+		load_roads \
+		create_data
 
 create_data: create_entities_data \
  	  create_roads_data
@@ -61,3 +63,9 @@ create_entities_data:
 
 create_roads_data:
 	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_roads_data
+
+install_cron: config/cron
+	@echo "GEOREF_ETL_DIR=$(PROJECT_DIR)" >> .cronfile
+	cat config/cron >> .cronfile
+	crontab .cronfile
+	rm .cronfile
