@@ -27,7 +27,7 @@ MESSAGES = {
 
 def run():
     try:
-        load_functions()
+        load_utilities()
         state_ids = load_states()
         department_ids = load_departments(state_ids)
         municipality_ids = load_municipalities(state_ids, department_ids)
@@ -44,7 +44,7 @@ def get_db_connection():
         password=os.environ.get('POSTGRES_PASSWORD'))
 
 
-def load_functions():
+def load_utilities():
     try:
         print('-- Cargando funciones SQL.')
 
@@ -53,6 +53,7 @@ def load_functions():
             BASE_DIR + '/etl_scripts/ign_entities_patch.sql',
             BASE_DIR + '/etl_scripts/function_get_department.sql',
             BASE_DIR + '/etl_scripts/function_get_municipality.sql',
+            BASE_DIR + '/etl_scripts/function_create_intersections.sql',
         ]
 
         for file in files_path:
