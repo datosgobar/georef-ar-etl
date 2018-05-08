@@ -34,7 +34,8 @@ update: migrate_db \
 		create_data
 
 create_data: create_entities_data \
- 	  create_roads_data
+ 	  create_roads_data \
+ 	  create_intersections_data
 
 virtualenv:
 	rm -rf venv
@@ -63,6 +64,9 @@ create_entities_data:
 
 create_roads_data:
 	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_roads_data
+
+create_intersections_data:
+	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_intersections_data
 
 install_cron: config/cron
 	@echo "GEOREF_ETL_DIR=$(PROJECT_DIR)" >> .cronfile

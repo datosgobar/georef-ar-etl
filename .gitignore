@@ -69,3 +69,4 @@ report.txt
 # data output
 data/entidades/*
 data/vias/*
+data/intersecciones/*
