@@ -1,6 +1,5 @@
 from georef.settings import BASE_DIR
 from geo_admin.models import State, Department, Municipality, Settlement
-import csv
 import os
 import psycopg2
 
@@ -15,7 +14,7 @@ MESSAGES = {
     'settlements_success': 'Los asentamientos fueron cargados exitosamente.',
     'settlements_error': 'Los asentamientos no pudieron cargarse.',
     'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
-                                   'antes de los asentamientos.',
+                                    'antes de los asentamientos.',
     'municipalities_success': 'Los municipios fueron cargados exitosamente.',
     'municipalities_error': 'Los municipios no pudieron cargarse.',
     'municipalities_dependency_error': 'Deben cargarse provincias y '
@@ -51,9 +50,10 @@ def load_utilities():
         files_path = [
             BASE_DIR + '/etl_scripts/ddl_tables.sql',
             BASE_DIR + '/etl_scripts/ign_entities_patch.sql',
-            BASE_DIR + '/etl_scripts/function_get_department.sql',
-            BASE_DIR + '/etl_scripts/function_get_municipality.sql',
-            BASE_DIR + '/etl_scripts/function_create_intersections.sql',
+            BASE_DIR + '/etl_scripts/function_states.sql',
+            BASE_DIR + '/etl_scripts/function_departments.sql',
+            BASE_DIR + '/etl_scripts/function_municipalities.sql',
+            BASE_DIR + '/etl_scripts/function_intersections.sql',
         ]
 
         for file in files_path:

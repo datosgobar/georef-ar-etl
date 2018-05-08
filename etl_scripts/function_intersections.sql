@@ -57,7 +57,8 @@ BEGIN
 
   sql_delete_types := 'DELETE' ||
                       ' FROM %s' ||
-                      ' WHERE ST_GeometryType(geom) = %L';
+                      ' WHERE ST_GeometryType(geom) = %L' ||
+                      ' OR ST_GeometryType(geom) = %L';
 
   sql_delete_duplicates := 'DELETE FROM %s' ||
                            ' WHERE id NOT IN (' ||
@@ -83,7 +84,7 @@ BEGIN
     EXECUTE format(sql_drop_tbl, tbl_name);
     EXECUTE format(sql_create_tbl, tbl_name);
     EXECUTE format(sql_insert, tbl_name, concat(code_state, '%'), concat(code_state, '%'), nam_filter, nam_filter, type_filter, type_filter);
-    EXECUTE format(sql_delete_types, tbl_name, 'ST_MultiLineString');
+    EXECUTE format(sql_delete_types, tbl_name, 'ST_MultiLineString', 'ST_LineString');
     EXECUTE format(sql_delete_duplicates, tbl_name, tbl_name);
     RETURN TRUE;
   EXCEPTION WHEN OTHERS THEN
