@@ -4,14 +4,20 @@ import os
 
 
 MESSAGES = {
-    'intersections_data_info': '-- Creando datos de intersecciones.',
-    'intersections_success': 'Los datos de intersecciones para la Provincia '
-                             'con código "%s" fueron creados exitosamente.',
+    'intersections_create_info': '-- Creando datos de intersecciones',
+    'intersections_create_success': 'Los datos de intersecciones para la '
+                                    'Provincia con código "%s" fueron creados '
+                                    'exitosamente.',
+    'intersections_export_info': '-- Exportando datos de intersecciones.',
+    'intersections_export_success': 'Los datos de intersecciones para la '
+                                    'Provincia con código "%s" fueron '
+                                    'exportados exitosamente.',
 }
 
 
 def run():
     try:
+        create_intersections_table()
         create_intersections_data()
     except Exception as e:
         print(e)
@@ -36,16 +42,14 @@ def run_query(query):
 
 
 def create_intersections_table():
-    query = """SELECT create_intersections(in1)
-               FROM ign_provincias
-               ORDER BY in1 ASC ;
-            """
-    intersections = run_query(query)
-    return intersections
+    print(MESSAGES['intersections_create_info'])
+    query = "SELECT process_intersections()"
+    run_query(query)
+    print(MESSAGES['intersections_create_success'])
 
 
 def create_intersections_data():
-    print(MESSAGES['intersections_data_info'])
+    print(MESSAGES['intersections_export_info'])
     entities_code = ['02', '06', '10', '14', '18', '22', '26', '30', '34', '38',
                      '42', '46', '50', '54', '58', '62', '66', '70', '74', '78',
                      '82', '86', '90', '94']
@@ -97,4 +101,4 @@ def create_intersections_data():
         with open(filename, 'w') as outfile:
             json.dump(data, outfile, ensure_ascii=False)
 
-        print(MESSAGES['intersections_success'] % code)
+        print(MESSAGES['intersections_export_success'] % code)
