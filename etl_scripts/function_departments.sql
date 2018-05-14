@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_department(code CHARACTER(5), OUT result VARCHAR)
+CREATE OR REPLACE FUNCTION get_department_by_code(code CHARACTER(5), OUT result VARCHAR)
 LANGUAGE plpgsql
 AS $$
   BEGIN

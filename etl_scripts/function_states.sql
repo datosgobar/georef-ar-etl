@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_state(code CHARACTER(2), OUT result VARCHAR)
+CREATE OR REPLACE FUNCTION get_state_by_code(code CHARACTER(2), OUT result VARCHAR)
 LANGUAGE plpgsql
 AS $$
   BEGIN

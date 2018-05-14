@@ -42,13 +42,13 @@ DECLARE
                   '   a.nomencla nomencla_a,' ||
                   '   a.nombre nombre_a,' ||
                   '   a.tipo tipo_a,' ||
-                  '   get_department(substr(a.nomencla, 1, 5)) departamento_a,' ||
-                  '   get_state(substr(a.nomencla, 1, 2)) provincia_a,' ||
+                  '   get_department_by_code(substr(a.nomencla, 1, 5)) departamento_a,' ||
+                  '   get_state_by_code(substr(a.nomencla, 1, 2)) provincia_a,' ||
                   '   b.nomencla nomencla_b,' ||
                   '   b.nombre nombre_b,' ||
                   '   b.tipo tipo_b,' ||
-                  '   get_department(substr(b.nomencla, 1, 5)) departamento_b,' ||
-                  '   get_state(substr(b.nomencla, 1, 2)) provincia_b,' ||
+                  '   get_department_by_code(substr(b.nomencla, 1, 5)) departamento_b,' ||
+                  '   get_state_by_code(substr(b.nomencla, 1, 2)) provincia_b,' ||
                   '   CASE WHEN ST_CoveredBy(a.geom, b.geom)' ||
                   '     THEN' ||
                   '       a.geom' ||
@@ -154,13 +154,13 @@ DECLARE
                       '    a.nomencla nomencla_a,' ||
                       '    a.nombre   nombre_a,' ||
                       '    a.tipo     tipo_a,' ||
-                      '    get_department(substr(a.nomencla, 1, 5)) departamento_a,' ||
-                      '    get_state(substr(a.nomencla, 1, 2)) provincia_a,' ||
+                      '    get_department_by_code(substr(a.nomencla, 1, 5)) departamento_a,' ||
+                      '    get_state_by_code(substr(a.nomencla, 1, 2)) provincia_a,' ||
                       '    b.nomencla nomencla_b,' ||
                       '    b.nombre   nombre_b,' ||
                       '    b.tipo     tipo_b,' ||
-                      '    get_department(substr(b.nomencla, 1, 5)) departamento_b,' ||
-                      '    get_state(substr(b.nomencla, 1, 2)) provincia_b,' ||
+                      '    get_department_by_code(substr(b.nomencla, 1, 5)) departamento_b,' ||
+                      '    get_state_by_code(substr(b.nomencla, 1, 2)) provincia_b,' ||
                       '    CASE WHEN ST_CoveredBy(a.geom, b.geom)' ||
                       '      THEN' ||
                       '        a.geom' ||
@@ -181,7 +181,7 @@ DECLARE
                       '  ON ST_Intersects(a.geom, b.geom)' ||
                       'WHERE a.nombre <> %L AND b.nombre <> %L' ||
                       'AND a.tipo <> %L AND b.tipo <> %L' ||
-                      'AND get_state(substr(a.nomencla, 1, 2)) <> get_state(substr(b.nomencla, 1, 2))';
+                      'AND get_state_by_code(substr(a.nomencla, 1, 2)) <> get_state_by_code(substr(b.nomencla, 1, 2))';
 
     sql_alter_tbl := 'ALTER TABLE indec_intersecciones_provincias ADD COLUMN id SERIAL PRIMARY KEY';
 
