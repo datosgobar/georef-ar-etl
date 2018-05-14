@@ -18,7 +18,8 @@ AS $$
   BEGIN
     SELECT d.in1
     INTO result
-    FROM ign_municipios m, ign_departamentos d
+    FROM ign_municipios m INNER JOIN ign_departamentos d
+      ON substr(m.in1, 1, 2) = substr(d.in1, 1, 2)
     WHERE m.in1 = code_muncipality
     ORDER BY st_area(st_intersection(m.geom, d.geom)) DESC
     LIMIT 1;
