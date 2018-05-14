@@ -4,10 +4,6 @@ import os
 
 
 MESSAGES = {
-    'intersections_create_info': '-- Creando datos de intersecciones',
-    'intersections_create_success': 'Los datos de intersecciones para la '
-                                    'Provincia con código "%s" fueron creados '
-                                    'exitosamente.',
     'intersections_export_info': '-- Exportando datos de intersecciones.',
     'intersections_export_success': 'Los datos de intersecciones para la '
                                     'Provincia con código "%s" fueron '
@@ -17,7 +13,6 @@ MESSAGES = {
 
 def run():
     try:
-        create_intersections_table()
         create_intersections_data()
     except Exception as e:
         print(e)
@@ -35,17 +30,9 @@ def run_query(query):
     try:
         with get_db_connection().cursor() as cursor:
             cursor.execute(query)
-            entities = cursor.fetchall()
-        return entities
+            return cursor.fetchall()
     except psycopg2.DatabaseError as e:
         print(e)
-
-
-def create_intersections_table():
-    print(MESSAGES['intersections_create_info'])
-    query = "SELECT process_intersections()"
-    run_query(query)
-    print(MESSAGES['intersections_create_success'])
 
 
 def create_intersections_data():

@@ -31,6 +31,7 @@ update: migrate_db \
 		etl_roads \
 		load_entities \
 		load_roads \
+		load_intersections \
 		create_data
 
 create_data: create_entities_data \
@@ -58,6 +59,9 @@ load_entities:
 
 load_roads:
 	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) load_roads
+
+load_intersections:
+	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) load_intersections
 
 create_entities_data:
 	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_entities_data
