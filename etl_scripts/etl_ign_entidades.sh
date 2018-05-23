@@ -26,7 +26,7 @@ then
 
     ogr2ogr -overwrite -progress -f "PostgreSQL" \
     PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
-    "${i}/${i}.shp" -nln "ign_${i}s" -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
+    "${i}/${i}.shp" -nln "ign_${i}s_tmp" -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 
     mkdir -p logs
     echo "--------------------------------------------------------------------------- $(date)" >> logs/ign_entidades.log
@@ -46,7 +46,7 @@ then
 
   ogr2ogr -overwrite -progress -f "PostgreSQL" \
   PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
-  bahra/bahra_27112014.shp -nln ign_bahra -nlt MULTIPOINT -lco GEOMETRY_NAME=geom -lco precision=NO
+  bahra/bahra_27112014.shp -nln ign_bahra_tmp -nlt MULTIPOINT -lco GEOMETRY_NAME=geom -lco precision=NO
 
   echo "--------------------------------------------------------------------------- $(date)" >> logs/ign_entidades.log
   ogrinfo -ro -so "bahra/bahra_27112014.shp" -al >> logs/ign_entidades.log

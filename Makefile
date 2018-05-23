@@ -29,6 +29,7 @@ install: virtualenv \
 update: migrate_db \
 		etl_entities \
 		etl_roads \
+		create_report_entities \
 		load_entities \
 		load_roads \
 		load_intersections \
@@ -71,6 +72,10 @@ create_roads_data:
 
 create_intersections_data:
 	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_intersections_data
+
+create_report_entities:
+	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) report_entities
+
 
 install_cron: config/cron
 	@echo "GEOREF_ETL_DIR=$(PROJECT_DIR)" >> .cronfile

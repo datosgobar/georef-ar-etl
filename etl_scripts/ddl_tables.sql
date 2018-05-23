@@ -30,3 +30,18 @@ CREATE TABLE IF NOT EXISTS public.indec_cuadras
 WITH (
   OIDS=FALSE
 );
+
+DROP TABLE IF EXISTS ign_provincias CASCADE;
+DROP TABLE IF EXISTS ign_departamentos CASCADE;
+DROP TABLE IF EXISTS ign_municipios CASCADE;
+DROP TABLE IF EXISTS ign_bahra CASCADE;
+
+ALTER TABLE IF EXISTS ign_provincias_tmp RENAME TO ign_provincias;
+ALTER TABLE IF EXISTS ign_departamentos_tmp RENAME TO ign_departamentos;
+ALTER TABLE IF EXISTS ign_municipios_tmp RENAME TO ign_municipios;
+ALTER TABLE IF EXISTS ign_bahra_tmp RENAME TO ign_bahra;
+
+ALTER INDEX IF EXISTS ign_provincias_tmp_geom_geom_idx RENAME TO ign_provincias_geom_geom_idx;
+ALTER INDEX IF EXISTS ign_departamentos_tmp_geom_geom_idx RENAME TO ign_departamentos_geom_geom_idx;
+ALTER INDEX IF EXISTS ign_municipios_tmp_geom_geom_idx RENAME TO ign_municipios_geom_geom_idx;
+ALTER INDEX IF EXISTS ign_bahra_tmp_geom_geom_idx RENAME TO ign_bahra_geom_geom_idx;

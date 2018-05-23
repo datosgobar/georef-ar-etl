@@ -64,6 +64,7 @@ environment.sh
 
 # reports
 flagged_roads.json
+entities_report.json
 report.txt
 
 # data output
