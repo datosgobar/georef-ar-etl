@@ -44,7 +44,7 @@ def create_report():
         os.makedirs(os.path.dirname(filename))
 
     with open(filename, 'w') as file:
-        json.dump(output, file, indent=2, ensure_ascii=False)
+        json.dump(output, file, indent=3, ensure_ascii=False)
 
 
 def create_report_by_entity(entity):
@@ -55,7 +55,8 @@ def create_report_by_entity(entity):
                 'nombres_actualizados': get_updates(entity, 'name'),
                 'geometrias_actualizadas': get_updates(entity, 'geom'),
                 'codigos_nulos': get_code_nulls_by_entities(entity),
-                'entidades_repetidas': get_entities_duplicates(entity)
+                'entidades_repetidas': get_entities_duplicates(entity),
+                'geometrias_invalidas': get_entities_invalid_geom(entity)
             }}
     report.append(result)
 
@@ -144,3 +145,19 @@ def get_entities_duplicates(entity):
                 'nombre': row['name']
             })
         return duplicates
+
+
+def get_entities_invalid_geom(entity):
+    column_code, column_name = set_fields(entity)
+
+    query = "SELECT get_entities_invalid_geom('{}', '{}', '{}')". \
+        format(entity, column_code, column_name)
+    results = run_query_entities(query)
+    if 'result' not in results:
+        invalid_geometries = []
+        for row in results:
+            invalid_geometries.append({
+                'código': row['code'],
+                'nombre': row['name']
+            })
+        return invalid_geometries

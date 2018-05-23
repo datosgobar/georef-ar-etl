@@ -200,3 +200,28 @@ BEGIN
   RETURN result;
 END;
 $$;
+
+
+CREATE OR REPLACE FUNCTION get_entities_invalid_geom(entity VARCHAR, column_code VARCHAR, column_name VARCHAR)
+  RETURNS JSONB
+  STRICT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  tbl_name TEXT;
+  sql TEXT;
+  result JSONB;
+BEGIN
+  tbl_name = 'ign_' || lower(entity) || '_tmp';
+  sql := 'SELECT json_agg(json_build_object(%L, %I, %L, %I))' ||
+         ' FROM %s' ||
+         ' WHERE st_isvalid(geom) = FALSE';
+  EXECUTE format(sql, 'code', column_code, 'name', column_name, tbl_name) INTO result;
+
+  IF result ISNULL THEN
+      RETURN json_build_object('result', NULL );
+  END IF;
+
+  RETURN result;
+END;
+$$;
