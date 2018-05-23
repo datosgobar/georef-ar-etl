@@ -53,18 +53,32 @@ def create_report_by_entity(entity):
                 'entidades_nuevas': get_new_entities(entity),
                 'codigos_actualizados': get_updates(entity, 'code'),
                 'nombres_actualizados': get_updates(entity, 'name'),
-                'geometrias_actualizadas': get_updates(entity, 'geom')
+                'geometrias_actualizadas': get_updates(entity, 'geom'),
+                'codigos_nulos': get_code_nulls_by_entities(entity),
+                'entidades_repetidas': get_entities_duplicates(entity)
             }}
     report.append(result)
 
 
-def get_new_entities(entity):
+def get_count(entity):
+    query = "SELECT get_quantities('{}')".format(entity)
+    results = run_query_entities(query)
+    return results
+
+
+def set_fields(entity):
     column_code = 'in1'
     column_name = 'nam'
 
     if entity is 'bahra':
         column_code = 'cod_bahra'
         column_name = 'nombre_bah'
+
+    return column_code, column_name
+
+
+def get_new_entities(entity):
+    column_code, column_name = set_fields(entity)
 
     query = "SELECT get_new_entities('{}', '{}', '{}')".\
         format(entity, column_code, column_name)
@@ -80,12 +94,7 @@ def get_new_entities(entity):
 
 
 def get_updates(entity, field):
-    column_code = 'in1'
-    column_name = 'nam'
-
-    if entity is 'bahra':
-        column_code = 'cod_bahra'
-        column_name = 'nombre_bah'
+    column_code, column_name = set_fields(entity)
 
     query = "SELECT get_entities_{}_updates('{}', '{}', '{}')".\
         format(field, entity, column_code, column_name)
@@ -104,7 +113,34 @@ def get_updates(entity, field):
         return updates
 
 
-def get_count(entity):
-    query = "SELECT get_quantities('{}')".format(entity)
+def get_code_nulls_by_entities(entity):
+    column_code, column_name = set_fields(entity)
+
+    query = "SELECT entities_code_null('{}', '{}', '{}')". \
+        format(entity, column_code, column_name)
     results = run_query_entities(query)
-    return results
+    if 'result' not in results:
+        code_nulls = []
+        for row in results:
+            code_nulls.append({
+                'id': row['id'],
+                'nombre': row['name']
+            })
+        return code_nulls
+
+
+def get_entities_duplicates(entity):
+    column_code, column_name = set_fields(entity)
+
+    query = "SELECT get_entities_duplicates('{}', '{}', '{}')". \
+        format(entity, column_code, column_name)
+    results = run_query_entities(query)
+    if 'result' not in results:
+        duplicates = []
+        for row in results:
+            duplicates.append({
+                'id': row['id'],
+                'código': row['code'],
+                'nombre': row['name']
+            })
+        return duplicates

@@ -8,8 +8,8 @@ ALTER TABLE ign_departamentos ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326
 ALTER TABLE ign_municipios ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326) using ST_Multi(geom);
 
 -- DEPARTAMENTOS
+DELETE FROM ign_departamentos WHERE in1 ISNULL ;
 DELETE FROM ign_departamentos WHERE ogc_fid = 530; -- duplicado
-DELETE FROM ign_departamentos WHERE  ogc_fid = 512; -- código nulo
 
 UPDATE ign_departamentos SET in1 = '54084' WHERE in1 = '55084';
 UPDATE ign_departamentos SET in1 = '06217' WHERE in1 = '06218';
@@ -23,6 +23,7 @@ UPDATE ign_municipios SET in1 = '820277' WHERE in1 = '800277';
 
 
 -- BARHA
+DELETE FROM ign_bahra_tmp WHERE cod_bahra ISNULL;
 DELETE FROM ign_bahra WHERE nombre_bah = 'EL FICAL'; -- duplicado
 
 UPDATE ign_bahra SET cod_depto = '007' WHERE nom_depto = 'COMUNA 1';

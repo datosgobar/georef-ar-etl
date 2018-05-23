@@ -172,3 +172,31 @@ BEGIN
   RETURN result;
 END;
 $$;
+
+
+CREATE OR REPLACE FUNCTION get_entities_duplicates(entity VARCHAR, column_code VARCHAR, column_name VARCHAR)
+  RETURNS JSONB
+  STRICT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  tbl_name TEXT;
+  sql TEXT;
+  result JSONB;
+BEGIN
+  tbl_name = 'ign_' || lower(entity) || '_tmp';
+  sql := 'SELECT json_agg(json_build_object(%L, ogc_fid, %L, %I, %L, %I))' ||
+         ' FROM %s' ||
+         ' GROUP BY %I' ||
+         ' HAVING count(%I) > 1';
+
+  EXECUTE format(sql, 'id', 'code', column_code, 'name', column_name,
+                 tbl_name, column_code, column_code) INTO result;
+
+  IF result ISNULL THEN
+      RETURN json_build_object('result', NULL );
+  END IF;
+
+  RETURN result;
+END;
+$$;
