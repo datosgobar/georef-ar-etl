@@ -48,16 +48,19 @@ def create_report():
 
 
 def create_report_by_entity(entity):
-    result = {entity: {
-                'cantidades': get_count(entity),
-                'entidades_nuevas': get_new_entities(entity),
-                'codigos_actualizados': get_updates(entity, 'code'),
-                'nombres_actualizados': get_updates(entity, 'name'),
-                'geometrias_actualizadas': get_updates(entity, 'geom'),
-                'codigos_nulos': get_code_nulls_by_entities(entity),
-                'entidades_repetidas': get_entities_duplicates(entity),
-                'geometrias_invalidas': get_entities_invalid_geom(entity)
-            }}
+    result = {
+        entity: {
+            'cantidades': get_count(entity),
+            'entidades_nuevas': get_new_entities(entity),
+            'codigos_actualizados': get_updates(entity, 'code'),
+            'nombres_actualizados': get_updates(entity, 'name'),
+            'geometrias_actualizadas': get_updates(entity, 'geom'),
+            'codigos_nulos': get_code_nulls_by_entities(entity),
+            'entidades_repetidas': get_entities_duplicates(entity),
+            'geometrias_invalidas': get_entities_invalid_geom(entity),
+            'provincias_invalidas': get_state_invalid_codes(entity),
+            'departamentos_invalidos': get_department_invalid_code(entity)
+        }}
     report.append(result)
 
 
@@ -161,3 +164,38 @@ def get_entities_invalid_geom(entity):
                 'nombre': row['name']
             })
         return invalid_geometries
+
+
+def get_state_invalid_codes(entity):
+    if entity is not 'provincias':
+        column_code, column_name = set_fields(entity)
+        query = "SELECT get_invalid_states_code('{}', '{}', '{}')".\
+            format(entity, column_code, column_name)
+    else:
+        query = "SELECT get_invalid_states_code()"
+
+    results = run_query_entities(query)
+    if 'result' not in results:
+        invalid_codes = []
+        for row in results:
+            invalid_codes.append({
+                'código': row['code'],
+                'nombre': row['name']
+            })
+        return invalid_codes
+
+
+def get_department_invalid_code(entity):
+    if entity is 'bahra':
+        query = "SELECT get_invalid_department_code()"
+        results = run_query_entities(query)
+        if 'result' not in results:
+            invalid_codes = []
+            for row in results:
+                invalid_codes.append({
+                    'código_dpto': row['code'],
+                    'nombre': row['name']
+                })
+            return invalid_codes
+
+    return 'no aplica'

@@ -225,3 +225,79 @@ BEGIN
   RETURN result;
 END;
 $$;
+
+
+CREATE OR REPLACE FUNCTION get_invalid_states_code()
+  RETURNS JSONB
+  STRICT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  result JSONB;
+BEGIN
+  SELECT json_agg(json_build_object('code', in1, 'name', nam)) INTO result
+  FROM ign_provincias
+  WHERE in1 NOT IN (
+    '02', '06', '10', '14', '18', '22', '26', '30', '34', '38',
+    '42', '46', '50', '54', '58', '62', '66', '70', '74', '78',
+    '82', '86', '90', '94'
+  );
+  IF result ISNULL THEN
+      RETURN json_build_object('result', NULL );
+  END IF;
+
+  RETURN result;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION get_invalid_states_code(entity VARCHAR, column_code VARCHAR, column_name VARCHAR)
+  RETURNS JSONB
+  STRICT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  tbl_name TEXT;
+  tbl_state TEXT;
+  sql TEXT;
+  result JSONB;
+BEGIN
+  tbl_name = 'ign_' || lower(entity) || '_tmp';
+  tbl_state = 'ign_provincias_tmp';
+  sql := 'SELECT json_agg(json_build_object(%L, t2.%I, %L, t2.%I))' ||
+         ' FROM %s t1 FULL OUTER JOIN %s t2' ||
+         ' ON t1.in1 = substr(t2.%I, 1, 2)' ||
+         ' WHERE t1.in1 ISNULL AND t2.%I NOTNULL';
+
+  EXECUTE format(sql, 'code', column_code, 'name', column_name,
+                 tbl_state, tbl_name, column_code, column_code) INTO result;
+
+  IF result ISNULL THEN
+      RETURN json_build_object('result', NULL );
+  END IF;
+
+  RETURN result;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION get_invalid_department_code()
+  RETURNS JSONB
+  STRICT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  result JSONB;
+BEGIN
+  SELECT json_agg(json_build_object('code', substr(t2.cod_bahra, 1, 5), 'name', t2.nombre_bah)) INTO result
+  FROM ign_departamentos_tmp t1 FULL OUTER JOIN ign_bahra_tmp t2
+    ON t1.in1 = substr(t2.cod_bahra, 1, 5)
+  WHERE t1.in1 ISNULL AND t2.cod_bahra NOTNULL ;
+
+  IF result ISNULL THEN
+      RETURN json_build_object('result', NULL );
+  END IF;
+
+  RETURN result;
+END;
+$$;
