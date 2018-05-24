@@ -1,7 +1,7 @@
-from georef.settings import BASE_DIR
-from geo_admin.models import State, Department, Municipality, Settlement
 import os
 import psycopg2
+from geo_admin.models import State, Department, Municipality, Settlement
+from georef.settings import BASE_DIR
 
 
 MESSAGES = {
@@ -19,14 +19,14 @@ MESSAGES = {
     'municipalities_error': 'Los municipios no pudieron cargarse.',
     'municipalities_dependency_error': 'Deben cargarse provincias y '
                                        'departamentos antes de los municipios.',
-    'functions_success': 'Las funciones SQL fueron cargadas exitosamente.',
-    'functions_error': 'Ocurrió un error al cargar las funciones SQL.'
+    'patch_success': 'El parche ha sido aplicado correctamente.',
+    'patch_error': 'Se produjo un error al aplicar el parche'
 }
 
 
 def run():
     try:
-        load_utilities()
+        apply_patch()
         state_ids = load_states()
         department_ids = load_departments(state_ids)
         municipality_ids = load_municipalities(state_ids, department_ids)
@@ -43,17 +43,23 @@ def get_db_connection():
         password=os.environ.get('POSTGRES_PASSWORD'))
 
 
-def load_utilities():
+def run_query_entities(query):
     try:
-        print('-- Cargando funciones SQL.')
+        with get_db_connection().cursor() as cursor:
+            cursor.execute(query)
+            entities = cursor.fetchall()
+        return entities
+    except psycopg2.DatabaseError as e:
+        print(e)
+
+
+def apply_patch():
+    try:
+        print('-- Aplicando parche.')
 
         files_path = [
             BASE_DIR + '/etl_scripts/ddl_tables.sql',
-            BASE_DIR + '/etl_scripts/ign_entities_patch.sql',
-            BASE_DIR + '/etl_scripts/function_states.sql',
-            BASE_DIR + '/etl_scripts/function_departments.sql',
-            BASE_DIR + '/etl_scripts/function_municipalities.sql',
-            BASE_DIR + '/etl_scripts/function_intersections.sql',
+            BASE_DIR + '/etl_scripts/ign_entities_patch.sql'
         ]
 
         for file in files_path:
@@ -62,20 +68,10 @@ def load_utilities():
             with get_db_connection() as connection:
                 with connection.cursor() as cursor:
                     cursor.execute(func)
-        
-        print(MESSAGES['functions_success'])
-    except psycopg2.DatabaseError as e:
-        print(MESSAGES['functions_error'])
-        print(e)
 
-
-def run_query_entities(query):
-    try:
-        with get_db_connection().cursor() as cursor:
-            cursor.execute(query)
-            entities = cursor.fetchall()
-        return entities
+        print(MESSAGES['patch_success'])
     except psycopg2.DatabaseError as e:
+        print(MESSAGES['patch_error'])
         print(e)
 
 

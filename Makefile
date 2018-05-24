@@ -13,22 +13,33 @@ SHELL := /bin/bash
 .DEFAULT: help
 
 help:
-	@echo "make all			Instala Georef Etl, actualiza y genera los datos de entidades y vías de circulación "
+	@echo "make all			Instala Georef Etl, carga y genera los datos de entidades y vías de circulación "
 	@echo "make install    		Crea entorno virtual e instala dependencias con pip"
-	@echo "make update     		Sincroniza y carga la base de datos con entidades y vías de circulación, y genera datos"
+	@echo "make update     		Sincroniza y carga la base de datos con entidades y vías de circulación. Genera datos"
 	@echo "make create_data 		Genera datos de entidades y vías de circulación en formato Json"
 	@echo "make install_cron		Instala crontab para sincronizar y cargar la base de datos con entidades y vías de circulación, y genera datos"
 
 all: install \
- 	 update \
+ 	 load \
  	 create_data
 
 install: virtualenv \
 		 requirements
 
+load:  migrate_db \
+		etl_entities \
+		etl_roads \
+		load_utilities \
+		load_entities \
+		load_roads \
+		load_intersections \
+		create_data
+
+
 update: migrate_db \
 		etl_entities \
 		etl_roads \
+		load_utilities \
 		create_report_entities \
 		load_entities \
 		load_roads \
@@ -74,7 +85,10 @@ create_intersections_data:
 	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_intersections_data
 
 create_report_entities:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) report_entities
+	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_report_entities
+
+load_utilities:
+	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) load_utilities
 
 
 install_cron: config/cron
