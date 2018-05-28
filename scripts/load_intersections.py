@@ -5,15 +5,17 @@ import os
 MESSAGES = {
     'intersections_create_info': '-- Creando datos de intersecciones',
     'intersections_create_success': 'Los datos de intersecciones fueron creados'
-                                    ' exitosamente.'
+                                    ' exitosamente.',
+    'intersections_error': 'Se produjo un error al crear los datos de '
+                           'intersecciones.'
 }
 
 
 def run():
     try:
         create_intersections_table()
-    except Exception as e:
-        print(e)
+    except (Exception, psycopg2.DatabaseError) as e:
+        print("{}: {}".format(MESSAGES['intersections_error'], e))
 
 
 def get_db_connection():
@@ -25,12 +27,9 @@ def get_db_connection():
 
 
 def run_query(query):
-    try:
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(query)
-    except psycopg2.DatabaseError as e:
-        print(e)
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
 
 
 def create_intersections_table():

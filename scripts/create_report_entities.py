@@ -6,14 +6,18 @@ import datetime
 entities = ['provincias', 'departamentos', 'municipios', 'bahra']
 report = []
 
+MESSAGES = {
+    'report_error': 'Se produjo un error al crear el reporte de entidades'
+}
+
 
 def run():
     try:
         for entity in entities:
             create_report_by_entity(entity)
         create_report()
-    except Exception as e:
-        print("{0}:", e)
+    except (Exception, psycopg2.DatabaseError) as e:
+        print("{0}: {1}", MESSAGES['report_error'], e)
 
 
 def get_db_connection():
@@ -25,12 +29,9 @@ def get_db_connection():
 
 
 def run_query_entities(query):
-    try:
-        with get_db_connection().cursor() as cursor:
-            cursor.execute(query)
-            return cursor.fetchall()[0][0]
-    except psycopg2.DatabaseError as e:
-        print(e)
+    with get_db_connection().cursor() as cursor:
+        cursor.execute(query)
+        return cursor.fetchall()[0][0]
 
 
 def create_report():
