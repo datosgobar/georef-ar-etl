@@ -26,6 +26,7 @@ MESSAGES = {
 
 def run():
     try:
+        replace_tables()
         apply_patch()
         state_ids = load_states()
         department_ids = load_departments(state_ids)
@@ -43,14 +44,20 @@ def get_db_connection():
         password=os.environ.get('POSTGRES_PASSWORD'))
 
 
-def run_query_entities(query):
+def run_query(query):
     try:
-        with get_db_connection().cursor() as cursor:
-            cursor.execute(query)
-            entities = cursor.fetchall()
-        return entities
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                results = cursor.fetchall()
+            return results
     except psycopg2.DatabaseError as e:
         print(e)
+
+
+def replace_tables():
+    query = "SELECT replace_tables()"
+    run_query(query)
 
 
 def apply_patch():
@@ -86,7 +93,7 @@ def load_states():
                     FROM  ign_provincias \
                     ORDER BY code;
                 """
-        states = run_query_entities(query)
+        states = run_query(query)
         states_list = []
         for row in states:
             (code, name, lat, lon, geom) = row
@@ -117,7 +124,7 @@ def load_departments(state_ids):
                         FROM  ign_departamentos \
                         ORDER BY code;
                     """
-            departments = run_query_entities(query)
+            departments = run_query(query)
             departments_list = []
             for row in departments:
                 (code, name, lat, lon, geom, state_code) = row
@@ -153,7 +160,7 @@ def load_municipalities(state_ids, department_ids):
                         FROM ign_municipios \
                         ORDER BY code;
                     """
-            municipalities = run_query_entities(query)
+            municipalities = run_query(query)
             municipalities_list = []
             for row in municipalities:
                 code, name, lat, lon, geom, dept_code, state_code = row
@@ -193,7 +200,7 @@ def load_settlements(state_ids, department_ids, municipality_ids):
                        WHERE tipo_bahra IN ('LS', 'E', 'LC') \
                        ORDER BY code;
                     """
-            settlements = run_query_entities(query)
+            settlements = run_query(query)
             settlements_list = []
             for row in settlements:
                 (code, name, bahra_type, mun_code, dep_code, state_code,
