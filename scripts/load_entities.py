@@ -5,29 +5,35 @@ from georef.settings import BASE_DIR
 
 
 MESSAGES = {
+    'states_info': '-- Cargando la entidad Provincia.',
     'states_success': 'Las provincias fueron cargadas exitosamente.',
     'states_error': 'Las provincias no pudieron cargarse.',
+    'departments_info': '-- Cargando la entidad Departamento.',
     'departments_success': 'Los departamentos fueron cargados exitosamente.',
     'departments_error': 'Los departamentos no pudieron cargarse.',
     'departments_dependency_error': 'Deben cargarse las provincias antes de '
                                     'los departamentos.',
-    'settlements_success': 'Los asentamientos fueron cargados exitosamente.',
-    'settlements_error': 'Los asentamientos no pudieron cargarse.',
-    'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
-                                    'antes de los asentamientos.',
+    'municipalities_info': '-- Cargando la entidad Municipalidad.',
     'municipalities_success': 'Los municipios fueron cargados exitosamente.',
     'municipalities_error': 'Los municipios no pudieron cargarse.',
     'municipalities_dependency_error': 'Deben cargarse provincias y '
                                        'departamentos antes de los municipios.',
-    'patch_success': 'El parche ha sido aplicado correctamente.',
-    'patch_error': 'Se produjo un error al aplicar el parche'
+    'settlements_info': '-- Cargando la entidad Asentamientos.',
+    'settlements_success': 'Los asentamientos fueron cargados exitosamente.',
+    'settlements_error': 'Los asentamientos no pudieron cargarse.',
+    'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
+                                    'antes de los asentamientos.',
+    'script_info': '-- Cargando script SQL.',
+    'script_success': 'El script "%s" fue cargado exitosamente.',
+    'script_error': 'Ocurrió un error al cargar el script SQL.'
 }
 
 
 def run():
     try:
+        load_script('functions_load_entities.sql')
         replace_tables()
-        apply_patch()
+        load_script('ign_entities_patch.sql')
         state_ids = load_states()
         department_ids = load_departments(state_ids)
         municipality_ids = load_municipalities(state_ids, department_ids)
@@ -60,31 +66,24 @@ def replace_tables():
     run_query(query)
 
 
-def apply_patch():
+def load_script(file):
     try:
-        print('-- Aplicando parche.')
+        print(MESSAGES['script_info'])
+        files_path = BASE_DIR + '/etl_scripts/' + file
 
-        files_path = [
-            BASE_DIR + '/etl_scripts/ddl_tables.sql',
-            BASE_DIR + '/etl_scripts/ign_entities_patch.sql'
-        ]
-
-        for file in files_path:
-            with open(file, 'r') as f:
-                func = f.read()
-            with get_db_connection() as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute(func)
-
-        print(MESSAGES['patch_success'])
+        with open(files_path, 'r') as f:
+            func = f.read()
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(func)
+        print(MESSAGES['script_success'] % file)
     except psycopg2.DatabaseError as e:
-        print(MESSAGES['patch_error'])
-        print(e)
+        print("{0}: {1}".format(MESSAGES['script_error'], e))
 
 
 def load_states():
     try:
-        print('-- Cargando la entidad Provincia.')
+        print(MESSAGES['states_info'])
         query = """SELECT in1 AS code, \
                           upper(nam) AS name, \
                           st_y(st_centroid(geom)) as lat, \
@@ -114,7 +113,7 @@ def load_departments(state_ids):
         Department.objects.get_or_create(name=caba.name, code='02000',
                                          state=caba, lat=0.0, lon=0.0)
         try:
-            print('-- Cargando la entidad Departamento.')
+            print(MESSAGES['departments_info'])
             query = """SELECT in1 as code, \
                               upper(nam) as name, \
                               st_y(st_centroid(geom)) as lat, \
@@ -149,7 +148,7 @@ def load_departments(state_ids):
 def load_municipalities(state_ids, department_ids):
     if state_ids:
         try:
-            print('-- Cargando la entidad Municipalidad.')
+            print(MESSAGES['municipalities_info'])
             query = """SELECT in1 as code, \
                                upper(nam) as name, \
                                st_y(st_centroid(geom)) as lat, \
@@ -186,7 +185,7 @@ def load_municipalities(state_ids, department_ids):
 def load_settlements(state_ids, department_ids, municipality_ids):
     if state_ids and department_ids and municipality_ids:
         try:
-            print('-- Cargando la entidad Asentamientos.')
+            print(MESSAGES['settlements_info'])
             query = """SELECT cod_bahra as code, \
                           upper(nombre_bah) as name, \
                           tipo_bahra as bahra_type, \

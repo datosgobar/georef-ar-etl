@@ -1,21 +1,25 @@
 import psycopg2
 import os
-
+from georef.settings import BASE_DIR
 
 MESSAGES = {
     'intersections_create_info': '-- Creando datos de intersecciones',
     'intersections_create_success': 'Los datos de intersecciones fueron creados'
                                     ' exitosamente.',
     'intersections_error': 'Se produjo un error al crear los datos de '
-                           'intersecciones.'
+                           'intersecciones.',
+    'script_info': '-- Cargando script SQL.',
+    'script_success': 'El script "%s" fue cargado exitosamente.',
+    'script_error': 'Ocurrió un error al cargar el script SQL.'
 }
 
 
 def run():
     try:
+        load_functions()
         create_intersections_table()
     except (Exception, psycopg2.DatabaseError) as e:
-        print("{}: {}".format(MESSAGES['intersections_error'], e))
+        print("{0}: {1}".format(MESSAGES['intersections_error'], e))
 
 
 def get_db_connection():
@@ -30,6 +34,21 @@ def run_query(query):
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(query)
+
+
+def load_functions():
+    try:
+        print(MESSAGES['script_info'])
+        file = BASE_DIR + '/etl_scripts/functions_intersections.sql'
+
+        with open(file, 'r') as f:
+            func = f.read()
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(func)
+        print(MESSAGES['script_success'] % file)
+    except psycopg2.DatabaseError as e:
+        print("{0}: {1}".format(MESSAGES['script_error'], e))
 
 
 def create_intersections_table():

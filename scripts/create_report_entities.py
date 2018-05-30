@@ -2,17 +2,24 @@ import json
 import psycopg2
 import os
 import datetime
+from georef.settings import BASE_DIR
 
 entities = ['provincias', 'departamentos', 'municipios', 'bahra']
 report = []
 
 MESSAGES = {
-    'report_error': 'Se produjo un error al crear el reporte de entidades'
+    'report_info': '-- Generando reporte de para la entidad "%s".',
+    'report_success': 'Se genero el reporte para la entidad "%s" correctamente.',
+    'report_error': 'Se produjo un error al crear el reporte de entidades.',
+    'script_info': '-- Cargando funciones SQL.',
+    'script_success': 'El script "%s" fue cargado exitosamente.',
+    'script_error': 'Ocurrió un error al cargar las funciones SQL.'
 }
 
 
 def run():
     try:
+        load_functions()
         for entity in entities:
             create_report_by_entity(entity)
         create_report()
@@ -26,6 +33,21 @@ def get_db_connection():
         dbname=os.environ.get('POSTGRES_DBNAME'),
         user=os.environ.get('POSTGRES_USER'),
         password=os.environ.get('POSTGRES_PASSWORD'))
+
+
+def load_functions():
+    try:
+        print(MESSAGES['script_info'])
+
+        file = BASE_DIR + '/etl_scripts/functions_report_entities.sql'
+        with open(file, 'r') as f:
+            func = f.read()
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(func)
+        print(MESSAGES['script_success'] % file)
+    except psycopg2.DatabaseError as e:
+        print("{0}: {1}".format(MESSAGES['script_error'], e))
 
 
 def run_query_entities(query):
@@ -49,6 +71,7 @@ def create_report():
 
 
 def create_report_by_entity(entity):
+    print(MESSAGES['report_info'] % entity)
     result = {
         entity: {
             'cantidades': get_count(entity),
@@ -63,6 +86,7 @@ def create_report_by_entity(entity):
             'departamentos_invalidos': get_department_invalid_code(entity)
         }}
     report.append(result)
+    print(MESSAGES['report_success'] % entity)
 
 
 def get_count(entity):
@@ -190,6 +214,7 @@ def get_department_invalid_code(entity):
     if entity is 'bahra':
         query = "SELECT get_invalid_department_code()"
         results = run_query_entities(query)
+
         if 'result' not in results:
             invalid_codes = []
             for row in results:
@@ -198,5 +223,4 @@ def get_department_invalid_code(entity):
                     'nombre': row['name']
                 })
             return invalid_codes
-
     return 'no aplica'
