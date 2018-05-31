@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from geo_admin.models import State, Department, Municipality, Settlement
 import json
 import os

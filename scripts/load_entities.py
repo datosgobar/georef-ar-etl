@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import psycopg2
 from geo_admin.models import State, Department, Municipality, Settlement

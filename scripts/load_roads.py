@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from geo_admin.models import Road, State, Department
 from datetime import datetime
 import psycopg2

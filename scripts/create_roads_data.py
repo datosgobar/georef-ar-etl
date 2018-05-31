@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from geo_admin.models import Department, State, Road
 import json
 import os
