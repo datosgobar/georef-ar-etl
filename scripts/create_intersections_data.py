@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import json
 import psycopg2
 import os
-
+from datetime import datetime
 
 MESSAGES = {
     'intersections_export_info': '-- Exportando datos de intersecciones.',
@@ -12,12 +13,17 @@ MESSAGES = {
                                     'exportados exitosamente.',
 }
 
+logging.basicConfig(
+    filename='logs/etl_intersecciones_{:%Y%m%d}.log'.format(datetime.now()),
+    level=logging.DEBUG, datefmt='%H:%M:%S',
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
 
 def run():
     try:
         create_intersections_data()
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
 def get_db_connection():
@@ -34,11 +40,11 @@ def run_query(query):
             cursor.execute(query)
             return cursor.fetchall()
     except psycopg2.DatabaseError as e:
-        print(e)
+        logging.error(e)
 
 
 def create_intersections_data():
-    print(MESSAGES['intersections_export_info'])
+    logging.info(MESSAGES['intersections_export_info'])
     entities_code = ['02', '06', '10', '14', '18', '22', '26', '30', '34', '38',
                      '42', '46', '50', '54', '58', '62', '66', '70', '74', '78',
                      '82', '86', '90', '94']
@@ -90,4 +96,4 @@ def create_intersections_data():
         with open(filename, 'w') as outfile:
             json.dump(data, outfile, ensure_ascii=False)
 
-        print(MESSAGES['intersections_export_success'] % code)
+        logging.info(MESSAGES['intersections_export_success'] % code)

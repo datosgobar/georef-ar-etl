@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from geo_admin.models import Department, State, Road
+import logging
 import json
 import os
+from datetime import datetime
+from geo_admin.models import Department, State, Road
 
 
 MESSAGES = {
@@ -12,16 +14,21 @@ MESSAGES = {
     'road_data_error': 'Los datos de "%s" no pudieron ser creados.'
 }
 
+logging.basicConfig(
+    filename='logs/etl_vias_{:%Y%m%d}.log'.format(datetime.now()),
+    level=logging.DEBUG, datefmt='%H:%M:%S',
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
 
 def run():
     try:
         index_roads()
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
 def index_roads():
-    print(MESSAGES['roads_data_info'])
+    logging.info(MESSAGES['roads_data_info'])
     departments = {dept.id: dept.name for dept in Department.objects.all()}
     
     for state in State.objects.all():
@@ -30,7 +37,7 @@ def index_roads():
         roads_filtered = Road.objects.filter(state_id=state.id)
         
         roads_count = roads_filtered.count()
-        print(MESSAGES['roads_state_info'] % (index_name, roads_count))
+        logging.info(MESSAGES['roads_state_info'] % (index_name, roads_count))
 
         for road in roads_filtered:
             document = {
@@ -60,6 +67,6 @@ def index_roads():
         with open(filename.format(index_name), 'w') as outfile:
             json.dump(data, outfile)
         if data:
-            print(MESSAGES['road_data_success'] % index_name)
+            logging.info(MESSAGES['road_data_success'] % index_name)
         else:
-            print(MESSAGES['road_data_error'] % index_name)
+            logging.error(MESSAGES['road_data_error'] % index_name)

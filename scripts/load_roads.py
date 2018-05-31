@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+import json
+import psycopg2
+import os
 from geo_admin.models import Road, State, Department
 from datetime import datetime
-import psycopg2
-import json
-import os
 
 
 roads = []
@@ -12,18 +13,25 @@ flagged_roads = []
 states = {state.code: state.id for state in State.objects.all()}
 depts = {dept.code: dept.id for dept in Department.objects.all()}
 
+
+logging.basicConfig(
+    filename='logs/etl_vias_{:%Y%m%d}.log'.format(datetime.now()),
+    level=logging.DEBUG, datefmt='%H:%M:%S',
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
+
 def run():
-    print('-- Procesando vías --')
+    logging.info('-- Procesando vías --')
     try:
         streets = run_query()
         for row in streets:
             process_street(row)
-        print('-- Insertando vías --')
+        logging.info('-- Insertando vías --')
         Road.objects.bulk_create(roads)
-        print('-- Proceso completo --')
+        logging.info('-- Proceso completo --')
         generate_report()
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
 def get_db_connection():
@@ -52,7 +60,7 @@ def run_query():
             streets = cursor.fetchall()
         return streets
     except psycopg2.DatabaseError as e:
-        print(e)
+        logging.error(e)
 
 
 def generate_report():
@@ -61,20 +69,20 @@ def generate_report():
     ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
     failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
 
-    with open('logs/load_roads.log', 'a') as report:
-        print('-- Generando reporte --')
+    with open('logs/etl_vias_{:%Y%m%d}.log'.format(datetime.now()), 'a') as report:
+        logging.info('-- Generando reporte --')
         report.write(heading)
         report.write(ok_roads_msg + '\n')
         report.write(failed_roads_msg + '\n\n')
 
     if flagged_roads:
-        print('-- Generando log de errores --')
+        logging.info('-- Generando log de errores --')
         with open('logs/flagged_roads.json', 'w') as report:
             json.dump(flagged_roads, report, indent=2)
 
-    print('** Resultado del proceso **')
-    print(ok_roads_msg)
-    print(failed_roads_msg)
+    logging.info('** Resultado del proceso **')
+    logging.info(ok_roads_msg)
+    logging.info(failed_roads_msg)
 
 
 def process_street(row):

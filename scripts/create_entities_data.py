@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from geo_admin.models import State, Department, Municipality, Settlement
+import logging
 import json
 import os
+from datetime import datetime
+from geo_admin.models import State, Department, Municipality, Settlement
 
 
 MESSAGES = {
@@ -20,6 +22,11 @@ MESSAGES = {
                           'fueron creados exitosamente.'
 }
 
+logging.basicConfig(
+    filename='logs/etl_entidades_{:%Y%m%d}.log'.format(datetime.now()),
+    level=logging.DEBUG, datefmt='%H:%M:%S',
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
 
 def run():
     try:
@@ -28,11 +35,11 @@ def run():
         create_data_municipalities()
         create_data_settlements()
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
 def create_data_states():
-    print(MESSAGES['states_info'])
+    logging.info(MESSAGES['states_info'])
     data = []
     for state in State.objects.all():
         data.append({
@@ -53,11 +60,11 @@ def create_data_states():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    print(MESSAGES['states_success'])
+    logging.info(MESSAGES['states_success'])
 
 
 def create_data_departments():
-    print(MESSAGES['departments_info'])
+    logging.info(MESSAGES['departments_info'])
     data = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
@@ -84,11 +91,11 @@ def create_data_departments():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile)
-    print(MESSAGES['departments_success'])
+    logging.info(MESSAGES['departments_success'])
 
 
 def create_data_municipalities():
-    print(MESSAGES['municipality_info'])
+    logging.info(MESSAGES['municipality_info'])
     data = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
@@ -120,11 +127,11 @@ def create_data_municipalities():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    print(MESSAGES['municipality_success'])
+    logging.info(MESSAGES['municipality_success'])
 
 
 def create_data_settlements():
-    print(MESSAGES['settlement_info'])
+    logging.info(MESSAGES['settlement_info'])
     bahra_types = {
         'E': 'Entidad (E)',
         'LC': 'Componente de localidad compuesta (LC)',
@@ -173,4 +180,4 @@ def create_data_settlements():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    print(MESSAGES['settlement_success'])
+    logging.info(MESSAGES['settlement_success'])

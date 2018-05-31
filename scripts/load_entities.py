@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import psycopg2
+from datetime import datetime
 from geo_admin.models import State, Department, Municipality, Settlement
 from georef.settings import BASE_DIR
 
@@ -31,6 +33,12 @@ MESSAGES = {
 }
 
 
+logging.basicConfig(
+    filename='logs/etl_entidades_{:%Y%m%d}.log'.format(datetime.now()),
+    level=logging.DEBUG, datefmt='%H:%M:%S',
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
+
 def run():
     try:
         load_script('functions_load_entities.sql')
@@ -41,7 +49,7 @@ def run():
         municipality_ids = load_municipalities(state_ids, department_ids)
         load_settlements(state_ids, department_ids, municipality_ids)
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
 def get_db_connection():
@@ -60,7 +68,7 @@ def run_query(query):
                 results = cursor.fetchall()
             return results
     except psycopg2.DatabaseError as e:
-        print(e)
+        logging.error(e)
 
 
 def replace_tables():
@@ -70,7 +78,7 @@ def replace_tables():
 
 def load_script(file):
     try:
-        print(MESSAGES['script_info'])
+        logging.info(MESSAGES['script_info'])
         files_path = BASE_DIR + '/etl_scripts/' + file
 
         with open(files_path, 'r') as f:
@@ -78,14 +86,14 @@ def load_script(file):
         with get_db_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(func)
-        print(MESSAGES['script_success'] % file)
+        logging.info(MESSAGES['script_success'] % file)
     except psycopg2.DatabaseError as e:
-        print("{0}: {1}".format(MESSAGES['script_error'], e))
+        logging.error("{0}: {1}".format(MESSAGES['script_error'], e))
 
 
 def load_states():
     try:
-        print(MESSAGES['states_info'])
+        logging.info(MESSAGES['states_info'])
         query = """SELECT in1 AS code, \
                           upper(nam) AS name, \
                           st_y(st_centroid(geom)) as lat, \
@@ -102,9 +110,9 @@ def load_states():
                                      lon=lon, geom=geom))
         State.objects.all().delete()
         State.objects.bulk_create(states_list)
-        print(MESSAGES['states_success'])
+        logging.info(MESSAGES['states_success'])
     except Exception as e:
-        print("{0}: {1}".format(MESSAGES['states_error'], e))
+        logging.error("{0}: {1}".format(MESSAGES['states_error'], e))
     finally:
         return {state.code: state.id for state in State.objects.all()}
 
@@ -115,7 +123,7 @@ def load_departments(state_ids):
         Department.objects.get_or_create(name=caba.name, code='02000',
                                          state=caba, lat=0.0, lon=0.0)
         try:
-            print(MESSAGES['departments_info'])
+            logging.info(MESSAGES['departments_info'])
             query = """SELECT in1 as code, \
                               upper(nam) as name, \
                               st_y(st_centroid(geom)) as lat, \
@@ -138,19 +146,19 @@ def load_departments(state_ids):
                     state_id=state_ids[state_code]
                 ))
             Department.objects.bulk_create(departments_list)
-            print(MESSAGES['departments_success'])
+            logging.info(MESSAGES['departments_success'])
         except Exception as e:
-            print("{0}: {1}".format(MESSAGES['departments_error'], e))
+            logging.error("{0}: {1}".format(MESSAGES['departments_error'], e))
         finally:
             return {dept.code: dept.id for dept in Department.objects.all()}
     else:
-        print(MESSAGES['departments_dependency_error'])
+        logging.error(MESSAGES['departments_dependency_error'])
 
 
 def load_municipalities(state_ids, department_ids):
     if state_ids:
         try:
-            print(MESSAGES['municipalities_info'])
+            logging.info(MESSAGES['municipalities_info'])
             query = """SELECT in1 as code, \
                                upper(nam) as name, \
                                st_y(st_centroid(geom)) as lat, \
@@ -175,19 +183,19 @@ def load_municipalities(state_ids, department_ids):
                     state_id=state_ids[state_code]
                 ))
             Municipality.objects.bulk_create(municipalities_list)
-            print(MESSAGES['municipalities_success'])
+            logging.info(MESSAGES['municipalities_success'])
         except Exception as e:
-            print("{0}: {1}".format(MESSAGES['municipalities_error'], e))
+            logging.error("{0}: {1}".format(MESSAGES['municipalities_error'], e))
         finally:
             return {mun.code: mun.id for mun in Municipality.objects.all()}
     else:
-        print(MESSAGES['municipalities_dependency_error'])
+        logging.error(MESSAGES['municipalities_dependency_error'])
 
 
 def load_settlements(state_ids, department_ids, municipality_ids):
     if state_ids and department_ids and municipality_ids:
         try:
-            print(MESSAGES['settlements_info'])
+            logging.info(MESSAGES['settlements_info'])
             query = """SELECT cod_bahra as code, \
                           upper(nombre_bah) as name, \
                           tipo_bahra as bahra_type, \
@@ -218,8 +226,8 @@ def load_settlements(state_ids, department_ids, municipality_ids):
                     geom=geom
                 ))
             Settlement.objects.bulk_create(settlements_list)
-            print(MESSAGES['settlements_success'])
+            logging.info(MESSAGES['settlements_success'])
         except Exception as e:
-            print("{0}: {1}".format(MESSAGES['settlements_error'], e))
+            logging.error("{0}: {1}".format(MESSAGES['settlements_error'], e))
     else:
-        print(MESSAGES['settlements_dependency_error'])
+        logging.error(MESSAGES['settlements_dependency_error'])

@@ -32,6 +32,7 @@ update: migrate_db \
 		create_report_entities \
 		load_entities \
 		load_roads \
+		create_data
 
 create_data: create_entities_data \
  	  create_roads_data

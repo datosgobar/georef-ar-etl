@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import json
 import psycopg2
 import os
-import datetime
+from datetime import datetime
 from georef.settings import BASE_DIR
 
 entities = ['provincias', 'departamentos', 'municipios', 'bahra']
@@ -18,6 +19,11 @@ MESSAGES = {
     'script_error': 'Ocurrió un error al cargar las funciones SQL.'
 }
 
+logging.basicConfig(
+    filename='logs/etl_entidades_{:%Y%m%d}.log'.format(datetime.now()),
+    level=logging.DEBUG, datefmt='%H:%M:%S',
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
 
 def run():
     try:
@@ -26,7 +32,7 @@ def run():
             create_report_by_entity(entity)
         create_report()
     except (Exception, psycopg2.DatabaseError) as e:
-        print("{0}: {1}", MESSAGES['report_error'], e)
+        logging.error("{0}: {1}", MESSAGES['report_error'], e)
 
 
 def get_db_connection():
@@ -39,17 +45,17 @@ def get_db_connection():
 
 def load_functions():
     try:
-        print(MESSAGES['script_info'])
-
-        file = BASE_DIR + '/etl_scripts/functions_report_entities.sql'
-        with open(file, 'r') as f:
+        logging.info(MESSAGES['script_info'])
+        file = 'functions_report_entities.sql'
+        file_path = BASE_DIR + '/etl_scripts/' + file
+        with open(file_path, 'r') as f:
             func = f.read()
         with get_db_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(func)
-        print(MESSAGES['script_success'] % file)
+        logging.info(MESSAGES['script_success'] % file)
     except psycopg2.DatabaseError as e:
-        print("{0}: {1}".format(MESSAGES['script_error'], e))
+        logging.error("{0}: {1}".format(MESSAGES['script_error'], e))
 
 
 def run_query_entities(query):
@@ -60,7 +66,7 @@ def run_query_entities(query):
 
 def create_report():
     output = [{
-        'fecha_actualizacion': str(datetime.datetime.now()),
+        'fecha_actualizacion': str(datetime.now()),
         'entidades': report
     }]
     filename = 'logs/entities_report.json'
@@ -73,7 +79,7 @@ def create_report():
 
 
 def create_report_by_entity(entity):
-    print(MESSAGES['report_info'] % entity)
+    logging.info(MESSAGES['report_info'] % entity)
     result = {
         entity: {
             'cantidades': get_count(entity),
@@ -88,7 +94,7 @@ def create_report_by_entity(entity):
             'departamentos_invalidos': get_department_invalid_code(entity)
         }}
     report.append(result)
-    print(MESSAGES['report_success'] % entity)
+    logging.info(MESSAGES['report_success'] % entity)
 
 
 def get_count(entity):

@@ -34,9 +34,10 @@ then
 
   # Genera log de actividad
   mkdir -p logs
-  echo "--------------------------------------------------------------------------- $(date)" >> logs/indec_vias.log
-  ogrinfo -ro -so vias/vias.shp -al >> logs/indec_vias.log
+  echo "--------------------------------------------------------------------------- $(date)" >> logs/etl_vias_$(date '+%Y%m%d').log
+  ogrinfo -ro -so vias/vias.shp -al >> logs/etl_vias_$(date '+%Y%m%d').log
   rm ${FILE}; rm -rf vias;
+  echo "--------------------------------------------------------------------------- $(date)" >> logs/etl_vias_$(date '+%Y%m%d').log
 
   echo "Terminado!"
   fi
