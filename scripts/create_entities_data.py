@@ -41,8 +41,11 @@ def run():
 def create_data_states():
     logging.info(MESSAGES['states_info'])
     data = []
+    entities = []
+    data.append({'fecha_creacion': str(datetime.now())})
+
     for state in State.objects.all():
-        data.append({
+        entities.append({
             'id': state.code,
             'nombre': state.name,
             'lat': str(state.lat),
@@ -52,6 +55,7 @@ def create_data_states():
                 'coordinates': state.geom.coords
             }
         })
+    data.append({'entidades': entities})
 
     filename = 'data/entidades/provincias.json'
 
@@ -66,13 +70,16 @@ def create_data_states():
 def create_data_departments():
     logging.info(MESSAGES['departments_info'])
     data = []
+    entities = []
+    data.append({'fecha_creacion': str(datetime.now())})
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
+
     for dept in Department.objects.all():
         geometry = {}
         if dept.geom is not None:
             geometry = {'type': 'multipolygon', 'coordinates': dept.geom.coords}
-        data.append({
+        entities.append({
             'id': dept.code,
             'nombre': dept.name,
             'lat': str(dept.lat),
@@ -83,6 +90,7 @@ def create_data_departments():
                 'nombre': states[dept.state_id][1]
             }
         })
+    data.append({'entidades': entities})
 
     filename = 'data/entidades/departamentos.json'
 
@@ -97,12 +105,15 @@ def create_data_departments():
 def create_data_municipalities():
     logging.info(MESSAGES['municipality_info'])
     data = []
+    entities = []
+    data.append({'fecha_creacion': str(datetime.now())})
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in
                    Department.objects.all()}
+
     for mun in Municipality.objects.all():
-        data.append({
+        entities.append({
             'id': mun.code,
             'nombre': mun.name,
             'lat': str(mun.lat),
@@ -120,6 +131,7 @@ def create_data_municipalities():
                 'nombre': states[mun.state_id][1]
             }
         })
+    data.append({'entidades': entities})
 
     filename = 'data/entidades/municipios.json'
     if not os.path.exists(os.path.dirname(filename)):
@@ -139,6 +151,8 @@ def create_data_settlements():
     }
 
     data = []
+    entities = []
+    data.append({'fecha_creacion': str(datetime.now())})
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in
@@ -147,7 +161,7 @@ def create_data_settlements():
                       for mun in Municipality.objects.all()}
 
     for settlement in Settlement.objects.all():
-        data.append({
+        entities.append({
             'id': settlement.code,
             'nombre': settlement.name,
             'tipo': bahra_types[settlement.bahra_type],
@@ -172,6 +186,7 @@ def create_data_settlements():
                 'nombre': states[settlement.state_id][1]
             }
         })
+    data.append({'entidades': entities})
 
     filename = 'data/entidades/asentamientos.json'
 

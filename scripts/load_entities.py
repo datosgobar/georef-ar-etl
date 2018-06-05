@@ -119,6 +119,9 @@ def load_states():
 
 def load_departments(state_ids):
     if state_ids:
+        caba = State.objects.get(code='02')
+        Department.objects.get_or_create(name=caba.name, code='02000',
+                                         state=caba, lat=0.0, lon=0.0)
         try:
             logging.info(MESSAGES['departments_info'])
             query = """SELECT in1 as code, \
