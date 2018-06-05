@@ -56,3 +56,5 @@ EMAIL_REPORT_RECIPIENTS = os.environ.get('EMAIL_RECIPIENTS')
 EMAIL_REPORT_FROM = 'datos@modernizacion.gobar'
 EMAIL_REPORT_SUBJECT = 'GEOREF ETL – Reporte de entidades'
 PATH_REPORT_FILE = 'logs/entities_report.json'
+
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
