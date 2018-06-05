@@ -45,3 +45,14 @@ GEOREF = {
 }
 
 DATABASES = {'default': GEOREF}
+
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
+
+EMAIL_REPORT_RECIPIENTS = os.environ.get('EMAIL_RECIPIENTS')
+EMAIL_REPORT_FROM = 'datos@modernizacion.gobar'
+EMAIL_REPORT_SUBJECT = 'GEOREF ETL – Reporte de entidades'
+PATH_REPORT_FILE = 'logs/entities_report.json'

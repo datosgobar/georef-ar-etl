@@ -3,12 +3,15 @@
 import logging
 import json
 import psycopg2
-import os
+import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.utils import formatdate
 from datetime import datetime
-from georef.settings import BASE_DIR
+from georef.settings import *
 
-entities = ['provincias', 'departamentos', 'municipios', 'bahra']
 report = []
+entities = ['provincias', 'departamentos', 'municipios', 'bahra']
 
 MESSAGES = {
     'report_info': '-- Generando reporte de para la entidad "%s".',
@@ -16,7 +19,11 @@ MESSAGES = {
     'report_error': 'Se produjo un error al crear el reporte de entidades.',
     'script_info': '-- Cargando funciones SQL.',
     'script_success': 'El script "%s" fue cargado exitosamente.',
-    'script_error': 'Ocurrió un error al cargar las funciones SQL.'
+    'script_error': 'Ocurrió un error al cargar las funciones SQL.',
+    'send_report_info': '-- Enviando reporte de entidades.',
+    'send_report_file_error': 'El archivo "%s" no existe',
+    'send_report_success': 'Se envió exitosamente un reporte a ',
+    'recipients_empty': 'La lista de destinarios está vacía.'
 }
 
 logging.basicConfig(
@@ -31,6 +38,7 @@ def run():
         for entity in entities:
             create_report_by_entity(entity)
         create_report()
+        send_report()
     except (Exception, psycopg2.DatabaseError) as e:
         logging.error("{0}: {1}", MESSAGES['report_error'], e)
 
@@ -232,3 +240,45 @@ def get_department_invalid_code(entity):
                 })
             return invalid_codes
     return 'no aplica'
+
+
+def send_report():
+    try:
+        logging.info(MESSAGES['send_report_info'])
+        msg = MIMEMultipart()
+        msg["Subject"] = EMAIL_REPORT_SUBJECT
+        msg["From"] = EMAIL_REPORT_FROM
+        msg["To"] = ", ".join([EMAIL_REPORT_RECIPIENTS])
+        msg["Date"] = formatdate(localtime=True)
+        file = PATH_REPORT_FILE
+        recipients = EMAIL_REPORT_RECIPIENTS.split(',')
+
+        if not len(EMAIL_REPORT_RECIPIENTS):
+            logging.warning(MESSAGES['recipients_empty'])
+
+        if file:
+            if os.path.isfile(file):
+                with open(file, "rb") as fil:
+                    part = MIMEApplication(
+                        fil.read(), Name=os.path.basename(file))
+                    part['Content-Disposition'] = (
+                        'attachment; filename="%s"' % os.path.basename(file)
+                    )
+                    msg.attach(part)
+            else:
+                logging.warning(MESSAGES['send_report_file_error'] % file)
+        if EMAIL_USE_SSL is 'True':
+            s = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
+        else:
+            s = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+            s.ehlo()
+            s.starttls()
+
+        s.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
+        s.sendmail(EMAIL_HOST_USER, recipients, msg.as_string())
+        s.close()
+
+        logging.info(MESSAGES['send_report_success'] + ","
+                     .join([EMAIL_REPORT_RECIPIENTS]))
+    except smtplib.SMTPException as e:
+        logging.error(e)
