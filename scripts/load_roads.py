@@ -15,9 +15,9 @@ depts = {dept.code: dept.id for dept in Department.objects.all()}
 
 
 logging.basicConfig(
-    filename='logs/etl_vias_{:%Y%m%d}.log'.format(datetime.now()),
+    filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+    format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
 def run():
@@ -69,7 +69,7 @@ def generate_report():
     ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
     failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
 
-    with open('logs/etl_vias_{:%Y%m%d}.log'.format(datetime.now()), 'a') as report:
+    with open('logs/etl_{:%Y%m%d}.log'.format(datetime.now()), 'a') as report:
         logging.info('-- Generando reporte --')
         report.write(heading)
         report.write(ok_roads_msg + '\n')

@@ -15,9 +15,9 @@ MESSAGES = {
 }
 
 logging.basicConfig(
-    filename='logs/etl_vias_{:%Y%m%d}.log'.format(datetime.now()),
+    filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+    format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
 def run():

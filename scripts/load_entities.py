@@ -9,34 +9,28 @@ from georef.settings import BASE_DIR
 
 
 MESSAGES = {
-    'states_info': '-- Cargando la entidad Provincia.',
-    'states_success': 'Las provincias fueron cargadas exitosamente.',
-    'states_error': 'Las provincias no pudieron cargarse.',
-    'departments_info': '-- Cargando la entidad Departamento.',
-    'departments_success': 'Los departamentos fueron cargados exitosamente.',
-    'departments_error': 'Los departamentos no pudieron cargarse.',
+    'entity_load_info': '-- Cargando la entidad %s.',
+    'entity_load_success': 'Los datos para la entidad %s fueron cargados '
+                           'exitosamente.',
+    'entity_load_error': 'Los datos para la entidad %s no pudieron cargarse.',
     'departments_dependency_error': 'Deben cargarse las provincias antes de '
                                     'los departamentos.',
-    'municipalities_info': '-- Cargando la entidad Municipalidad.',
-    'municipalities_success': 'Los municipios fueron cargados exitosamente.',
-    'municipalities_error': 'Los municipios no pudieron cargarse.',
     'municipalities_dependency_error': 'Deben cargarse provincias y '
                                        'departamentos antes de los municipios.',
-    'settlements_info': '-- Cargando la entidad Asentamientos.',
-    'settlements_success': 'Los asentamientos fueron cargados exitosamente.',
-    'settlements_error': 'Los asentamientos no pudieron cargarse.',
     'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
                                     'antes de los asentamientos.',
     'script_info': '-- Cargando script SQL.',
     'script_success': 'El script "%s" fue cargado exitosamente.',
-    'script_error': 'Ocurrió un error al cargar el script SQL.'
+    'script_error': 'Ocurrió un error al cargar el script SQL.',
+    'replace_table_info': '-- Reemplazando datos temporales.',
+    'replace_table_success': 'Se actualizaron los datos de la entidades'
 }
 
 
 logging.basicConfig(
-    filename='logs/etl_entidades_{:%Y%m%d}.log'.format(datetime.now()),
+    filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+    format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
 def run():
@@ -72,8 +66,10 @@ def run_query(query):
 
 
 def replace_tables():
+    logging.info(MESSAGES['replace_table_info'])
     query = "SELECT replace_tables()"
     run_query(query)
+    logging.info(MESSAGES['replace_table_success'])
 
 
 def load_script(file):
@@ -93,7 +89,7 @@ def load_script(file):
 
 def load_states():
     try:
-        logging.info(MESSAGES['states_info'])
+        logging.info(MESSAGES['entity_load_info'] % 'Provincia')
         query = """SELECT in1 AS code, \
                           upper(nam) AS name, \
                           st_y(st_centroid(geom)) as lat, \
@@ -110,9 +106,10 @@ def load_states():
                                      lon=lon, geom=geom))
         State.objects.all().delete()
         State.objects.bulk_create(states_list)
-        logging.info(MESSAGES['states_success'])
+        logging.info(MESSAGES['entity_load_success'] % 'Provincia')
     except Exception as e:
-        logging.error("{0}: {1}".format(MESSAGES['states_error'], e))
+        logging.error("{0}: {1}".format(MESSAGES['entity_load_error'] %
+                                        'Provincia', e))
     finally:
         return {state.code: state.id for state in State.objects.all()}
 
@@ -123,7 +120,7 @@ def load_departments(state_ids):
         Department.objects.get_or_create(name=caba.name, code='02000',
                                          state=caba, lat=0.0, lon=0.0)
         try:
-            logging.info(MESSAGES['departments_info'])
+            logging.info(MESSAGES['entity_load_info'] % 'Departamento')
             query = """SELECT in1 as code, \
                               upper(nam) as name, \
                               st_y(st_centroid(geom)) as lat, \
@@ -146,9 +143,10 @@ def load_departments(state_ids):
                     state_id=state_ids[state_code]
                 ))
             Department.objects.bulk_create(departments_list)
-            logging.info(MESSAGES['departments_success'])
+            logging.info(MESSAGES['entity_load_success'] % 'Departamento')
         except Exception as e:
-            logging.error("{0}: {1}".format(MESSAGES['departments_error'], e))
+            logging.error("{0}: {1}".format(MESSAGES['entity_load_error']
+                                            % 'Departamento', e))
         finally:
             return {dept.code: dept.id for dept in Department.objects.all()}
     else:
@@ -158,7 +156,7 @@ def load_departments(state_ids):
 def load_municipalities(state_ids, department_ids):
     if state_ids:
         try:
-            logging.info(MESSAGES['municipalities_info'])
+            logging.info(MESSAGES['entity_load_info'] % 'Municipio')
             query = """SELECT in1 as code, \
                                upper(nam) as name, \
                                st_y(st_centroid(geom)) as lat, \
@@ -183,9 +181,10 @@ def load_municipalities(state_ids, department_ids):
                     state_id=state_ids[state_code]
                 ))
             Municipality.objects.bulk_create(municipalities_list)
-            logging.info(MESSAGES['municipalities_success'])
+            logging.info(MESSAGES['entity_load_success'] % 'Municipio')
         except Exception as e:
-            logging.error("{0}: {1}".format(MESSAGES['municipalities_error'], e))
+            logging.error("{0}: {1}".format(MESSAGES['entity_load_error']
+                                            % 'Municipio', e))
         finally:
             return {mun.code: mun.id for mun in Municipality.objects.all()}
     else:
@@ -195,7 +194,7 @@ def load_municipalities(state_ids, department_ids):
 def load_settlements(state_ids, department_ids, municipality_ids):
     if state_ids and department_ids and municipality_ids:
         try:
-            logging.info(MESSAGES['settlements_info'])
+            logging.info(MESSAGES['entity_load_info'] % 'Asentamiento')
             query = """SELECT cod_bahra as code, \
                           upper(nombre_bah) as name, \
                           tipo_bahra as bahra_type, \
@@ -226,8 +225,9 @@ def load_settlements(state_ids, department_ids, municipality_ids):
                     geom=geom
                 ))
             Settlement.objects.bulk_create(settlements_list)
-            logging.info(MESSAGES['settlements_success'])
+            logging.info(MESSAGES['entity_load_success'] % 'Asentamiento')
         except Exception as e:
-            logging.error("{0}: {1}".format(MESSAGES['settlements_error'], e))
+            logging.error("{0}: {1}".format(MESSAGES['entity_load_error']
+                                            % 'Asentamiento', e))
     else:
         logging.error(MESSAGES['settlements_dependency_error'])

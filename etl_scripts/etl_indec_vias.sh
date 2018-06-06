@@ -3,42 +3,59 @@
 set -o errexit
 set -o nounset
 
-echo '-- Verificando paquetes requeridos --\n'
-if  ogr2ogr --version; then echo "---"; fi
-if  psql --version; then echo "---"; fi
-if  wget --version | grep 'GNU Wget' ; then echo "---"; fi
-if  unzip -v | grep Info-ZIP ; then echo "---"; else exit 1; fi
+function output_message (){
+    echo "$(date '+%H:%M:%S') | $1 | ${USER} | etl_indec_vias | $2" >> logs/etl_$(date '+%Y%m%d').log
+}
 
-# Valida que las variables estén decladaras
+function check_library(){
+    if [[ -n $1 ]]
+    then
+        output_message "INFO" "$1"
+    else
+        output_message "ERROR" "Error de dependecias"
+        exit 1
+    fi
+}
+output_message "INFO" "Iniciando el proceso de ETL VÍAS DE CIRCULACIÓN"
+output_message "INFO" "Verificando paquetes requeridos"
+check_library "$(ogr2ogr --version)"
+check_library "$(psql --version)"
+check_library "$(wget --version | grep 'GNU Wget')"
+check_library "$(unzip -v | grep Info-ZIP)"
+
+output_message "INFO" "Verificando parámetros"
 if [ -n ${POSTGRES_HOST} ] && [ -n ${POSTGRES_USER} ] && [ -n ${POSTGRES_DBNAME} ] && [ -n ${POSTGRES_PASSWORD} ]
 then
- # Valida la conexión a la base de datos
  if ogrinfo "PG:host=${POSTGRES_HOST} dbname=${POSTGRES_DBNAME} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}" | grep "successful"
  then
-  # Geoserver INDEC
   URL='https://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:vias&outputFormat=SHAPE-ZIP'
   FILE='vias.zip'
 
-  # Descarga la capa "Vías de circulación" en formato SHAPEFILE
-  wget --progress=dot -e dotbytes=1M -O ${FILE} ${URL} --no-check-certificate
+  output_message "INFO" "Verificando disponibilidad del archivo remoto ${FILE}"
+  if [[ `wget -S --spider ${URL}  2>&1 | grep 'HTTP/1.1 200 OK'` ]];
+  then
+      output_message "INFO" "Descargando ${FILE} de ${URL}"
+      wget -c --progress=dot -e dotbytes=1M -O ${FILE} ${URL} --no-check-certificate
+      unzip ${FILE} -d vias
 
-  # Descomprime
-  unzip ${FILE} -d vias
+      output_message "INFO" "Importando ${FILE}"
+      export SHAPE_ENCODING="LATIN1"
+      ogr2ogr -overwrite -progress -f "PostgreSQL" \
+         PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
+         vias/vias.shp -nln indec_vias -nlt MULTILINESTRING -lco GEOMETRY_NAME=geom
 
-  # Carga la capa Vías a PostgreSQL
-  export SHAPE_ENCODING="LATIN1"
-
-  ogr2ogr -overwrite -progress -f "PostgreSQL" \
-     PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
-     vias/vias.shp -nln indec_vias -nlt MULTILINESTRING -lco GEOMETRY_NAME=geom
-
-  # Genera log de actividad
-  mkdir -p logs
-  echo "--------------------------------------------------------------------------- $(date)" >> logs/etl_vias_$(date '+%Y%m%d').log
-  ogrinfo -ro -so vias/vias.shp -al >> logs/etl_vias_$(date '+%Y%m%d').log
-  rm ${FILE}; rm -rf vias;
-  echo "--------------------------------------------------------------------------- $(date)" >> logs/etl_vias_$(date '+%Y%m%d').log
-
-  echo "Terminado!"
+      mkdir -p logs
+      output_message "INFO" "$(ogrinfo -ro -so vias/vias.shp -al)"
+      rm ${FILE}; rm -rf vias;
+      output_message "INFO" "El proceso de ETL VÍAS DE CIRCULACIÓN finalizó exitosamente"
+  else
+      output_message "WARNING" "El fichero ${FILE} remoto no existe o no se pudo establecer la conexión"
   fi
+  else
+    output_message "ERROR" "No se pudo establecer la conexión"
+    exit 1
+  fi
+else
+  output_message "WARNING" "Verifique los parámetros de conexión"
+  exit 1
 fi

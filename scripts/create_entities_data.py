@@ -8,24 +8,15 @@ from geo_admin.models import State, Department, Municipality, Settlement
 
 
 MESSAGES = {
-    'states_info': '-- Creando datos de la entidad Provincia.',
-    'states_success': 'Los datos de la entidad Provincia '
-                      'fueron creados exitosamente.',
-    'departments_info': '-- Creando datos de la entidad Departamento.',
-    'departments_success': 'Los datos de la entidad Departamento '
-                           'fueron creados exitosamente.',
-    'municipality_info': '-- Creando datos de la entidad Municipio.',
-    'municipality_success': 'Los datos de la entidad Municipio '
-                            'fueron creados exitosamente.',
-    'settlement_info': '-- Creando datos de la entidad Asentamiento.',
-    'settlement_success': 'Los datos de la entidad Asentamiento '
-                          'fueron creados exitosamente.'
+    'entity_info': '-- Creando datos de la entidad %s.',
+    'entity_succes': 'Los datos de la entidad %s fueron creados exitosamente.'
+                     'fueron creados exitosamente.'
 }
 
 logging.basicConfig(
-    filename='logs/etl_entidades_{:%Y%m%d}.log'.format(datetime.now()),
+    filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+    format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
 def run():
@@ -39,7 +30,7 @@ def run():
 
 
 def create_data_states():
-    logging.info(MESSAGES['states_info'])
+    logging.info(MESSAGES['entity_info'] % 'Provincia')
     data = []
     entities = []
     data.append({'fecha_creacion': str(datetime.now())})
@@ -64,11 +55,11 @@ def create_data_states():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    logging.info(MESSAGES['states_success'])
+    logging.info(MESSAGES['entity_succes'] % 'Provincia')
 
 
 def create_data_departments():
-    logging.info(MESSAGES['departments_info'])
+    logging.info(MESSAGES['entity_info'] % 'Departamento')
     data = []
     entities = []
     data.append({'fecha_creacion': str(datetime.now())})
@@ -99,11 +90,11 @@ def create_data_departments():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile)
-    logging.info(MESSAGES['departments_success'])
+    logging.info(MESSAGES['entity_succes'] % 'Departamento')
 
 
 def create_data_municipalities():
-    logging.info(MESSAGES['municipality_info'])
+    logging.info(MESSAGES['entity_info'] % 'Municipio')
     data = []
     entities = []
     data.append({'fecha_creacion': str(datetime.now())})
@@ -139,11 +130,11 @@ def create_data_municipalities():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    logging.info(MESSAGES['municipality_success'])
+    logging.info(MESSAGES['entity_succes'] % 'Municipio')
 
 
 def create_data_settlements():
-    logging.info(MESSAGES['settlement_info'])
+    logging.info(MESSAGES['entity_info'] % 'Asentamiento')
     bahra_types = {
         'E': 'Entidad (E)',
         'LC': 'Componente de localidad compuesta (LC)',
@@ -195,4 +186,4 @@ def create_data_settlements():
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    logging.info(MESSAGES['settlement_success'])
+    logging.info(MESSAGES['entity_succes'] % 'Asentamiento')

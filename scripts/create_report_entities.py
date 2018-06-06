@@ -14,8 +14,8 @@ report = []
 entities = ['provincias', 'departamentos', 'municipios', 'bahra']
 
 MESSAGES = {
-    'report_info': '-- Generando reporte de para la entidad "%s".',
-    'report_success': 'Se genero el reporte para la entidad "%s" correctamente.',
+    'report_info': '-- Generando reporte de la entidad %s.',
+    'report_success': 'Se genero el reporte de la entidad %s correctamente.',
     'report_error': 'Se produjo un error al crear el reporte de entidades.',
     'script_info': '-- Cargando funciones SQL.',
     'script_success': 'El script "%s" fue cargado exitosamente.',
@@ -27,9 +27,9 @@ MESSAGES = {
 }
 
 logging.basicConfig(
-    filename='logs/etl_entidades_{:%Y%m%d}.log'.format(datetime.now()),
+    filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
-    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+    format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
 def run():
@@ -87,7 +87,7 @@ def create_report():
 
 
 def create_report_by_entity(entity):
-    logging.info(MESSAGES['report_info'] % entity)
+    logging.info(MESSAGES['report_info'] % entity.title())
     result = {
         entity: {
             'cantidades': get_count(entity),
@@ -102,7 +102,7 @@ def create_report_by_entity(entity):
             'departamentos_invalidos': get_department_invalid_code(entity)
         }}
     report.append(result)
-    logging.info(MESSAGES['report_success'] % entity)
+    logging.info(MESSAGES['report_success'] % entity.title())
 
 
 def get_count(entity):
