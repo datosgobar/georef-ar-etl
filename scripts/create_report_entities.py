@@ -23,6 +23,7 @@ MESSAGES = {
     'send_report_info': '-- Enviando reporte de entidades.',
     'send_report_file_error': 'El archivo "%s" no existe',
     'send_report_success': 'Se envió exitosamente un reporte a ',
+    'send_report_error': 'No se pudo enviar el reporte',
     'recipients_empty': 'La lista de destinarios está vacía.'
 }
 
@@ -40,7 +41,7 @@ def run():
         create_report()
         send_report()
     except (Exception, psycopg2.DatabaseError) as e:
-        logging.error("{0}: {1}", MESSAGES['report_error'], e)
+        logging.error("{0}: {1}".format(MESSAGES['report_error'], e))
 
 
 def get_db_connection():
@@ -280,5 +281,5 @@ def send_report():
 
         logging.info(MESSAGES['send_report_success'] + ","
                      .join([EMAIL_REPORT_RECIPIENTS]))
-    except smtplib.SMTPException as e:
-        logging.error(e)
+    except (Exception, smtplib.SMTPException) as e:
+        logging.error("{0}: {1}".format(MESSAGES['send_report_error'], e))
