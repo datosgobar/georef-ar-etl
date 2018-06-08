@@ -20,7 +20,6 @@ function check_library(){
 output_message "INFO" "Iniciando el proceso de ETL ENTIDADES"
 output_message "INFO" "Verificando paquetes requeridos"
 check_library "$(ogr2ogr --version)"
-check_library "$(psql --version)"
 check_library "$(wget --version | grep 'GNU Wget')"
 check_library "$(unzip -v | grep Info-ZIP)"
 

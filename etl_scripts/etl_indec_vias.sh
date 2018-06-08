@@ -19,13 +19,13 @@ function check_library(){
 output_message "INFO" "Iniciando el proceso de ETL VÍAS DE CIRCULACIÓN"
 output_message "INFO" "Verificando paquetes requeridos"
 check_library "$(ogr2ogr --version)"
-check_library "$(psql --version)"
 check_library "$(wget --version | grep 'GNU Wget')"
 check_library "$(unzip -v | grep Info-ZIP)"
 
 output_message "INFO" "Verificando parámetros"
 if [ -n ${POSTGRES_HOST} ] && [ -n ${POSTGRES_USER} ] && [ -n ${POSTGRES_DBNAME} ] && [ -n ${POSTGRES_PASSWORD} ]
 then
+ output_message "INFO" "Verificando conexión"
  if ogrinfo "PG:host=${POSTGRES_HOST} dbname=${POSTGRES_DBNAME} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}" | grep "successful"
  then
   URL='https://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:vias&outputFormat=SHAPE-ZIP'
