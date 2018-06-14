@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""Módulo 'load_roads' de georef-etl
+
+Contiene funciones para popular la base de datos integrada con georef-etl desde
+una base datos intermedia con datos de vías de circulación.
+
+"""
+
 import logging
 import json
 import psycopg2
@@ -21,6 +28,11 @@ logging.basicConfig(
 
 
 def run():
+    """Contiene las funciones a llamar cuando se ejecuta el script.
+
+    Returns:
+        None
+    """
     logging.info('-- Procesando vías --')
     try:
         streets = run_query()
@@ -35,6 +47,11 @@ def run():
 
 
 def get_db_connection():
+    """Se conecta a una base de datos especificada en variables de entorno.
+
+    Returns:
+        connection: Conexión a base de datos.
+    """
     return psycopg2.connect(
         host=os.environ.get('POSTGRES_HOST'),
         dbname=os.environ.get('POSTGRES_DBNAME'),
@@ -43,6 +60,12 @@ def get_db_connection():
 
 
 def run_query():
+    """Ejecuta una consulta sobre la base de datos intermedia para obtener las
+       vías de circulación.
+
+    Returns:
+        streets (dict): Diccionario con vías de circulación.
+    """
     query = """SELECT nomencla as code, \
                     nombre as name, \
                     tipo as road_type, \
@@ -53,7 +76,7 @@ def run_query():
                     geom \
             FROM  indec_vias \
             WHERE tipo <> 'OTRO';
-        """
+            """
     try:
         with get_db_connection().cursor() as cursor:
             cursor.execute(query)
@@ -63,29 +86,16 @@ def run_query():
         logging.error(e)
 
 
-def generate_report():
-    timestamp = datetime.now().strftime('%d-%m-%Y a las %H:%M:%S')
-    heading = 'Proceso ETL de datos INDEC ejecutado el %s.\n' % timestamp
-    ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
-    failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
-
-    with open('logs/etl_{:%Y%m%d}.log'.format(datetime.now()), 'a') as report:
-        logging.info('-- Generando reporte --')
-        report.write(heading)
-        report.write(ok_roads_msg + '\n')
-        report.write(failed_roads_msg + '\n\n')
-
-    if flagged_roads:
-        logging.info('-- Generando log de errores --')
-        with open('logs/flagged_roads.json', 'w') as report:
-            json.dump(flagged_roads, report, indent=2)
-
-    logging.info('** Resultado del proceso **')
-    logging.info(ok_roads_msg)
-    logging.info(failed_roads_msg)
-
-
 def process_street(row):
+    """Procesa y valida cada vía de circulación para insertar, en caso de cumplir
+       con las condiciones dadas, en la base de datos integrada con georef-etl.
+
+    Args:
+        row: Objeto con información de una vía de circulación.
+
+    Returns:
+        None
+    """
     (code, name, road_type, start_left, start_right,
         end_left, end_right, geom) = row
     
@@ -121,6 +131,18 @@ def process_street(row):
 
 
 def validate_boundaries(start_left, start_right, end_left, end_right):
+    """Procesa y valida las alturas de una vías de circulación para obtener
+       metrícas sobre la fidelidad del dato.
+
+    Args:
+        start_left (str): Altura inicial lado izquierdo.
+        start_right (str): Altura inicial lado derecho.
+        end_left (str): Altura final lado izquierdo.
+        end_right (str): Altura final lado derecho.
+
+    Returns:
+        obs (list): Resultado del proceso.
+    """
     obs = []
     if start_left == start_right:
         obs.append('Derecha e izquierda iniciales coinciden: %s' % start_left)
@@ -131,3 +153,31 @@ def validate_boundaries(start_left, start_right, end_left, end_right):
     if start_right == end_right:
         obs.append('Inicial y final derechas coinciden: %s' % end_right)
     return obs
+
+
+def generate_report():
+    """Genera reporte e imprime en formato JSON el proceso de carga de vías de
+       circulación.
+
+    Return:
+        None
+    """
+    timestamp = datetime.now().strftime('%d-%m-%Y a las %H:%M:%S')
+    heading = 'Proceso ETL de datos INDEC ejecutado el %s.\n' % timestamp
+    ok_roads_msg = '-- Calles procesadas exitosamente: %s' % len(roads)
+    failed_roads_msg = '-- Calles con errores: %s' % len(flagged_roads)
+
+    with open('logs/etl_{:%Y%m%d}.log'.format(datetime.now()), 'a') as report:
+        logging.info('-- Generando reporte --')
+        report.write(heading)
+        report.write(ok_roads_msg + '\n')
+        report.write(failed_roads_msg + '\n\n')
+
+    if flagged_roads:
+        logging.info('-- Generando log de errores --')
+        with open('logs/flagged_roads.json', 'w') as report:
+            json.dump(flagged_roads, report, indent=2)
+
+    logging.info('** Resultado del proceso **')
+    logging.info(ok_roads_msg)
+    logging.info(failed_roads_msg)

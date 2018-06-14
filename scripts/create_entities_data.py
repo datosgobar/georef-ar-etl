@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""Módulo 'create_entities_data' de georef-etl
+
+Contiene funciones para la impresión de datos correspondientes a entidades
+políticas (asentamientos, municipios, departamentos y provincias) en formato
+JSON.
+"""
+
 import logging
 import json
 import os
@@ -8,9 +15,10 @@ from geo_admin.models import State, Department, Municipality, Settlement
 
 
 MESSAGES = {
-    'entity_info': '-- Creando datos de la entidad %s.',
-    'entity_succes': 'Los datos de la entidad %s fueron creados exitosamente.'
-                     'fueron creados exitosamente.'
+    'entity_info_get': '-- Obteniendo de datos de la entidad %s',
+    'entity_info_generate': '-- Creando datos de la entidad %s',
+    'entity_succes_generate': 'Los datos de la entidad %s fueron creados '
+                              'exitosamente.'
 }
 
 logging.basicConfig(
@@ -20,6 +28,11 @@ logging.basicConfig(
 
 
 def run():
+    """Contiene las funciones a llamar cuando se ejecuta el script.
+
+    Returns:
+        None
+    """
     try:
         create_data_states()
         create_data_departments()
@@ -30,7 +43,12 @@ def run():
 
 
 def create_data_states():
-    logging.info(MESSAGES['entity_info'] % 'Provincia')
+    """Obtiene y genera datos de la entidad Provincia.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_get'] % '{}'.format('Provincia'))
     data = []
     entities = []
     data.append({'fecha_creacion': str(datetime.now())})
@@ -47,19 +65,16 @@ def create_data_states():
             }
         })
     data.append({'entidades': entities})
-
-    filename = 'data/entidades/provincias.json'
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile, ensure_ascii=False)
-    logging.info(MESSAGES['entity_succes'] % 'Provincia')
+    create_data_file('provincia', data)
 
 
 def create_data_departments():
-    logging.info(MESSAGES['entity_info'] % 'Departamento')
+    """Obtiene y genera datos de la entidad Departamento.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_get'] % '{}'.format('Departamento'))
     data = []
     entities = []
     data.append({'fecha_creacion': str(datetime.now())})
@@ -82,19 +97,16 @@ def create_data_departments():
             }
         })
     data.append({'entidades': entities})
-
-    filename = 'data/entidades/departamentos.json'
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile)
-    logging.info(MESSAGES['entity_succes'] % 'Departamento')
+    create_data_file('departamento', data)
 
 
 def create_data_municipalities():
-    logging.info(MESSAGES['entity_info'] % 'Municipio')
+    """Obtiene y genera datos de la entidad Municipio.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_get'] % '{}'.format('Municipio'))
     data = []
     entities = []
     data.append({'fecha_creacion': str(datetime.now())})
@@ -123,18 +135,16 @@ def create_data_municipalities():
             }
         })
     data.append({'entidades': entities})
-
-    filename = 'data/entidades/municipios.json'
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile, ensure_ascii=False)
-    logging.info(MESSAGES['entity_succes'] % 'Municipio')
+    create_data_file('municipio', data)
 
 
 def create_data_settlements():
-    logging.info(MESSAGES['entity_info'] % 'Asentamiento')
+    """Obtiene y genera datos de la entidad Asentamiento.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_get'] % '{}'.format('Asentamiento'))
     bahra_types = {
         'E': 'Entidad (E)',
         'LC': 'Componente de localidad compuesta (LC)',
@@ -178,12 +188,26 @@ def create_data_settlements():
             }
         })
     data.append({'entidades': entities})
+    create_data_file('asentamiento', data)
 
-    filename = 'data/entidades/asentamientos.json'
+
+def create_data_file(entity, data):
+    """Imprime datos de una entidad en formato JSON.
+
+    Args:
+        entity (str): Nombre de la entidad.
+        data (list): Datos de la entidad a imprimir.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_generate'] % '{}'.format(entity.title()))
+    filename = 'data/entidades/{}s.json'.format(entity)
 
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
 
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-    logging.info(MESSAGES['entity_succes'] % 'Asentamiento')
+    logging.info(MESSAGES['entity_succes_generate'] % '{}'.
+                 format(entity.title()))

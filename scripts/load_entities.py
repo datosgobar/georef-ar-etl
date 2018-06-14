@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+"""
+Módulo 'load_entities' de georef-etl
+
+Contiene funciones para popular la base de datos integrada con georef-etl desde
+una base datos intermedia con entidades políticas (asentamientos, municipios,
+departamentos y provincias).
+"""
+
 import logging
 import os
 import psycopg2
@@ -9,7 +17,7 @@ from georef.settings import BASE_DIR
 
 
 MESSAGES = {
-    'entity_load_info': '-- Cargando la entidad %s.',
+    'entity_load_info': '-- Cargando la entidad %s',
     'entity_load_success': 'Los datos para la entidad %s fueron cargados '
                            'exitosamente.',
     'entity_load_error': 'Los datos para la entidad %s no pudieron cargarse.',
@@ -19,11 +27,11 @@ MESSAGES = {
                                        'departamentos antes de los municipios.',
     'settlements_dependency_error': 'Deben cargarse provincias y departamentos '
                                     'antes de los asentamientos.',
-    'script_info': '-- Cargando script SQL.',
+    'script_info': '-- Cargando script SQL',
     'script_success': 'El script "%s" fue cargado exitosamente.',
     'script_error': 'Ocurrió un error al cargar el script SQL.',
-    'replace_table_info': '-- Reemplazando datos temporales.',
-    'replace_table_success': 'Se actualizaron los datos de la entidades'
+    'update_entities_info': '-- Reemplazando datos temporales',
+    'update_entities_success': 'Se actualizaron los datos de las entidades.'
 }
 
 
@@ -34,9 +42,14 @@ logging.basicConfig(
 
 
 def run():
+    """Contiene las funciones a llamar cuando se ejecuta el script.
+
+    Returns:
+        None
+    """
     try:
         load_script('functions_load_entities.sql')
-        replace_tables()
+        update_entities_data()
         load_script('ign_entities_patch.sql')
         state_ids = load_states()
         department_ids = load_departments(state_ids)
@@ -47,6 +60,11 @@ def run():
 
 
 def get_db_connection():
+    """Se conecta a una base de datos especificada en variables de entorno.
+
+    Returns:
+        connection: Conexión a base de datos.
+    """
     return psycopg2.connect(
         host=os.environ.get('POSTGRES_HOST'),
         dbname=os.environ.get('POSTGRES_DBNAME'),
@@ -55,6 +73,14 @@ def get_db_connection():
 
 
 def run_query(query):
+    """Procesa y ejecuta una consulta en la base de datos especificada.
+
+    Args:
+        query (str): Consulta a ejecutar.
+
+    Returns:
+        list: Resultado de la consulta.
+    """
     try:
         with get_db_connection() as connection:
             with connection.cursor() as cursor:
@@ -65,14 +91,12 @@ def run_query(query):
         logging.error(e)
 
 
-def replace_tables():
-    logging.info(MESSAGES['replace_table_info'])
-    query = "SELECT replace_tables()"
-    run_query(query)
-    logging.info(MESSAGES['replace_table_success'])
-
-
 def load_script(file):
+    """Se conecta a la base datos especificada y realiza la carga de scripts SQL.
+
+    Returns:
+        None
+    """
     try:
         logging.info(MESSAGES['script_info'])
         files_path = BASE_DIR + '/etl_scripts/' + file
@@ -87,7 +111,28 @@ def load_script(file):
         logging.error("{0}: {1}".format(MESSAGES['script_error'], e))
 
 
+def update_entities_data():
+    """Ejecuta la llamada de la función 'update_entities' que reemplaza los
+      datos de la base de datos intermedia con los datos descargados desde los
+      correspondientes portales.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['update_entities_info'])
+    query = "SELECT update_entities_data()"
+    run_query(query)
+    logging.info(MESSAGES['update_entities_success'])
+
+
 def load_states():
+    """Ejecuta una consulta sobre la base de datos intermedia para obtener los
+       datos de la entidad Provincia, e inserta los resultados en la base de
+       datos integrada con georef-etl.
+
+    Returns:
+       dict: Diccionario con códigos de la entidad Provincia.
+    """
     try:
         logging.info(MESSAGES['entity_load_info'] % 'Provincia')
         query = """SELECT in1 AS code, \
@@ -115,6 +160,13 @@ def load_states():
 
 
 def load_departments(state_ids):
+    """Ejecuta una consulta sobre la base de datos intermedia para obtener los
+       datos de la entidad Departamento, e inserta los resultados en la base de
+       datos integrada con georef-etl.
+
+    Returns:
+       dict: Diccionario con códigos de la entidad Departamento.
+    """
     if state_ids:
         caba = State.objects.get(code='02')
         Department.objects.get_or_create(name=caba.name, code='02000',
@@ -154,6 +206,13 @@ def load_departments(state_ids):
 
 
 def load_municipalities(state_ids, department_ids):
+    """Ejecuta una consulta sobre la base de datos intermedia para obtener los
+       datos de la entidad Municipio, e inserta los resultados en la base de
+       datos integrada con georef-etl.
+
+    Returns:
+       dict: Diccionario con códigos de la entidad Municipio.
+    """
     if state_ids:
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Municipio')
@@ -192,6 +251,13 @@ def load_municipalities(state_ids, department_ids):
 
 
 def load_settlements(state_ids, department_ids, municipality_ids):
+    """Ejecuta una consulta sobre la base de datos intermedia para obtener los
+       datos de la entidad Asentamiento, e inserta los resultados en la base de
+       datos integrada con georef-etl.
+
+    Returns:
+       dict: Diccionario con códigos de la entidad Asentamiento.
+    """
     if state_ids and department_ids and municipality_ids:
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Asentamiento')

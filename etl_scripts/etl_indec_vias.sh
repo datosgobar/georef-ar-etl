@@ -28,6 +28,7 @@ then
  output_message "INFO" "Verificando conexión"
  if ogrinfo "PG:host=${POSTGRES_HOST} dbname=${POSTGRES_DBNAME} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}" | grep "successful"
  then
+  output_message "INFO" "Conexión establecida"
   URL='https://geoservicios.indec.gov.ar/geoserver/sig/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=sig:vias&outputFormat=SHAPE-ZIP'
   FILE='vias.zip'
 

@@ -8,7 +8,7 @@ from geo_admin.models import Department, State, Road
 
 
 MESSAGES = {
-    'roads_data_info': '-- Creando datos de Calles.',
+    'roads_data_info': '-- Creando datos de Calles',
     'roads_state_info': '-- Cargando datos para: %s, cantidad: %d',
     'road_data_success': 'Los datos de "%s" fueron creados correctamente.',
     'road_data_error': 'Los datos de "%s" no pudieron ser creados.'
@@ -21,6 +21,11 @@ logging.basicConfig(
 
 
 def run():
+    """ Contiene las funciones a llamar cuando se ejecuta el script
+
+    Returns:
+        None
+    """
     try:
         index_roads()
     except Exception as e:

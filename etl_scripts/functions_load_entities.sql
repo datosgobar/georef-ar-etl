@@ -32,7 +32,7 @@ END;
 $$;
 
 
-CREATE OR REPLACE FUNCTION replace_tables()
+CREATE OR REPLACE FUNCTION update_entities_data()
   RETURNS BOOLEAN
 STRICT
 LANGUAGE plpgsql
