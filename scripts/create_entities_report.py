@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Módulo 'create_report_entities' de georef-etl
+"""Módulo 'create_entities_report' de georef-etl
 
 Contiene funciones para la generación, impresión y posterior envío de un reporte
 en formato JSON sobre métricas de las entidades políticas (asentamientos,
