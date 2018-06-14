@@ -32,7 +32,7 @@ MESSAGES = {
     'send_report_info': '-- Enviando reporte de entidades',
     'send_report_file_error': 'El archivo "%s" no existe.',
     'send_report_success': 'Se envió exitosamente un reporte a ',
-    'send_report_error': 'No se pudo enviar el reporte.',
+    'send_report_error': 'No se pudo enviar el reporte',
     'recipients_empty': 'La lista de destinarios está vacía.'
 }
 
