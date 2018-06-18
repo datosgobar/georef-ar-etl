@@ -49,9 +49,8 @@ def create_data_states():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Provincia'))
-    data = []
+    data = {}
     entities = []
-    data.append({'fecha_creacion': str(datetime.now())})
 
     for state in State.objects.all():
         entities.append({
@@ -64,7 +63,8 @@ def create_data_states():
                 'coordinates': state.geom.coords
             }
         })
-    data.append({'entidades': entities})
+    data['fecha_actualizacion'] = str(datetime.now())
+    data['entidades'] = entities
     create_data_file('provincia', data)
 
 
@@ -75,9 +75,9 @@ def create_data_departments():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Departamento'))
-    data = []
+    data = {}
     entities = []
-    data.append({'fecha_creacion': str(datetime.now())})
+
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
 
@@ -96,7 +96,8 @@ def create_data_departments():
                 'nombre': states[dept.state_id][1]
             }
         })
-    data.append({'entidades': entities})
+    data['fecha_actualizacion'] = str(datetime.now())
+    data['entidades'] = entities
     create_data_file('departamento', data)
 
 
@@ -107,9 +108,8 @@ def create_data_municipalities():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Municipio'))
-    data = []
+    data = {}
     entities = []
-    data.append({'fecha_creacion': str(datetime.now())})
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in
@@ -134,7 +134,9 @@ def create_data_municipalities():
                 'nombre': states[mun.state_id][1]
             }
         })
-    data.append({'entidades': entities})
+
+    data['fecha_actualizacion'] = str(datetime.now())
+    data['entidades'] = entities
     create_data_file('municipio', data)
 
 
@@ -151,9 +153,8 @@ def create_data_settlements():
         'LS': 'Localidad simple (LS)'
     }
 
-    data = []
+    data = {}
     entities = []
-    data.append({'fecha_creacion': str(datetime.now())})
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
     departments = {dept.id: (dept.code, dept.name) for dept in
@@ -187,7 +188,8 @@ def create_data_settlements():
                 'nombre': states[settlement.state_id][1]
             }
         })
-    data.append({'entidades': entities})
+    data['fecha_actualizacion'] = str(datetime.now())
+    data['entidades'] = entities
     create_data_file('asentamiento', data)
 
 
@@ -196,7 +198,7 @@ def create_data_file(entity, data):
 
     Args:
         entity (str): Nombre de la entidad.
-        data (list): Datos de la entidad a imprimir.
+        data (dic): Datos de la entidad a imprimir.
 
     Returns:
         None

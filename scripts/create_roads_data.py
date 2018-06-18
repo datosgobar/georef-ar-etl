@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 
+"""Módulo 'create_roads_data' de georef-etl
+
+Contiene funciones para la impresión de datos correspondientes a vías de
+circulación.
+"""
+
 import logging
 import json
 import os
+import subprocess
 from datetime import datetime
 from geo_admin.models import Department, State, Road
 
@@ -38,7 +45,8 @@ def index_roads():
     
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
-        data = []
+        data = {}
+        roads = []
         roads_filtered = Road.objects.filter(state_id=state.id)
         
         roads_count = roads_filtered.count()
@@ -62,7 +70,9 @@ def index_roads():
                 'departamento': departments[road.dept_id],
                 'provincia': state.name
             }
-            data.append(document)
+            roads.append(document)
+        data['fecha_actualizacion'] = str(datetime.now())
+        data['vias'] = roads
 
         filename = 'data/vias/{}.json'
 
