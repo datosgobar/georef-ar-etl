@@ -10,6 +10,7 @@ JSON.
 import logging
 import json
 import os
+import subprocess
 from datetime import datetime
 from geo_admin.models import State, Department, Municipality, Settlement
 
@@ -25,6 +26,10 @@ logging.basicConfig(
     filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
     format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
+
+
+version = subprocess.check_output('git describe --always --dirty --tag',
+                                  shell=True, encoding="utf-8").rstrip('\n')
 
 
 def run():
@@ -64,6 +69,7 @@ def create_data_states():
             }
         })
     data['fecha_actualizacion'] = str(datetime.now())
+    data['version'] = version
     data['entidades'] = entities
     create_data_file('provincia', data)
 
@@ -97,6 +103,7 @@ def create_data_departments():
             }
         })
     data['fecha_actualizacion'] = str(datetime.now())
+    data['version'] = version
     data['entidades'] = entities
     create_data_file('departamento', data)
 
@@ -136,6 +143,7 @@ def create_data_municipalities():
         })
 
     data['fecha_actualizacion'] = str(datetime.now())
+    data['version'] = version
     data['entidades'] = entities
     create_data_file('municipio', data)
 
@@ -189,6 +197,7 @@ def create_data_settlements():
             }
         })
     data['fecha_actualizacion'] = str(datetime.now())
+    data['version'] = version
     data['entidades'] = entities
     create_data_file('asentamiento', data)
 

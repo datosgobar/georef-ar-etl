@@ -27,6 +27,10 @@ logging.basicConfig(
     format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
+version = subprocess.check_output('git describe --always --dirty --tag',
+                                  shell=True, encoding="utf-8").rstrip('\n')
+
+
 def run():
     """ Contiene las funciones a llamar cuando se ejecuta el script
 
@@ -72,6 +76,7 @@ def index_roads():
             }
             roads.append(document)
         data['fecha_actualizacion'] = str(datetime.now())
+        data['version'] = version
         data['vias'] = roads
 
         filename = 'data/vias/{}.json'
