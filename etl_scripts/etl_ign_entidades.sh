@@ -17,6 +17,7 @@ function check_library(){
     fi
 }
 
+mkdir -p logs
 output_message "INFO" "Iniciando el proceso de ETL ENTIDADES"
 output_message "INFO" "Verificando paquetes requeridos"
 check_library "$(ogr2ogr --version)"
@@ -51,7 +52,6 @@ then
         PG:"host=${POSTGRES_HOST} user=${POSTGRES_USER} dbname=${POSTGRES_DBNAME} password=${POSTGRES_PASSWORD}" \
         "${i}/${i}.shp" -nln "ign_${i}s_tmp" -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 
-        mkdir -p logs
         output_message "INFO" "$(ogrinfo -ro -so "${i}/${i}.shp" -al)"
         rm ${FILE}; rm -rf ${i}
     else

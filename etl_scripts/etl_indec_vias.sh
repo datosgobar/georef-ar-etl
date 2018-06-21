@@ -16,6 +16,8 @@ function check_library(){
         exit 1
     fi
 }
+
+mkdir -p logs
 output_message "INFO" "Iniciando el proceso de ETL VÍAS DE CIRCULACIÓN"
 output_message "INFO" "Verificando paquetes requeridos"
 check_library "$(ogr2ogr --version)"
