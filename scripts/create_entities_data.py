@@ -211,7 +211,7 @@ def add_metadata(data):
     """
     now = datetime.now(timezone.utc)
     data['fecha_actualizacion'] = str(now)
-    data['timestamp'] = now.timestamp()
+    data['timestamp'] = int(now.timestamp())
     data['version'] = version
 
 
