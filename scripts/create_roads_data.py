@@ -9,7 +9,7 @@ circulación.
 import logging
 import json
 import os
-import subprocess
+from scripts import create_entities_data
 from datetime import datetime
 from geo_admin.models import Department, State, Road
 
@@ -25,10 +25,6 @@ logging.basicConfig(
     filename='logs/etl_{:%Y%m%d}.log'.format(datetime.now()),
     level=logging.DEBUG, datefmt='%H:%M:%S',
     format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
-
-
-version = subprocess.check_output('git describe --always --dirty --tag',
-                                  shell=True, encoding="utf-8").rstrip('\n')
 
 
 def run():
@@ -75,8 +71,8 @@ def index_roads():
                 'provincia': state.name
             }
             roads.append(document)
-        data['fecha_actualizacion'] = str(datetime.now())
-        data['version'] = version
+
+        create_entities_data.add_metadata(data)
         data['vias'] = roads
 
         filename = 'data/vias/{}.json'

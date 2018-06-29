@@ -12,6 +12,7 @@ import json
 import os
 import subprocess
 from datetime import datetime
+from datetime import timezone
 from geo_admin.models import State, Department, Municipality, Settlement
 
 
@@ -68,8 +69,8 @@ def create_data_states():
                 'coordinates': state.geom.coords
             }
         })
-    data['fecha_actualizacion'] = str(datetime.now())
-    data['version'] = version
+
+    add_metadata(data)
     data['entidades'] = entities
     create_data_file('provincia', data)
 
@@ -102,8 +103,8 @@ def create_data_departments():
                 'nombre': states[dept.state_id][1]
             }
         })
-    data['fecha_actualizacion'] = str(datetime.now())
-    data['version'] = version
+
+    add_metadata(data)
     data['entidades'] = entities
     create_data_file('departamento', data)
 
@@ -142,8 +143,7 @@ def create_data_municipalities():
             }
         })
 
-    data['fecha_actualizacion'] = str(datetime.now())
-    data['version'] = version
+    add_metadata(data)
     data['entidades'] = entities
     create_data_file('municipio', data)
 
@@ -196,10 +196,24 @@ def create_data_settlements():
                 'nombre': states[settlement.state_id][1]
             }
         })
-    data['fecha_actualizacion'] = str(datetime.now())
-    data['version'] = version
+
+    add_metadata(data)
     data['entidades'] = entities
     create_data_file('asentamiento', data)
+
+
+def add_metadata(data):
+    """Agrega metadatos (fecha, commit) a un diccionario con
+    datos de entidades.
+
+    Args:
+        data (dic): Diccionario que contiene una lista de entidades.
+    """
+    now = datetime.now(timezone.utc)
+    data['fecha_actualizacion'] = str(now)
+    data['timestamp'] = now.timestamp()
+    data['version'] = version
+
 
 
 def create_data_file(entity, data):
