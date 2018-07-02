@@ -15,7 +15,10 @@ BEGIN
        SELECT count(table_name)
        FROM information_schema.tables
        WHERE table_schema = 'public'
-             AND table_name = tbl_name
+             AND table_name IN (
+                tbl_name,
+                tbl_name_tmp
+             )
   ) = 2
   THEN
     sql := 'SELECT json_agg(json_build_object(%L, t1.%I, %L, t1.%I))' ||
@@ -387,8 +390,8 @@ BEGIN
        FROM information_schema.tables
        WHERE table_schema = 'public'
              AND table_name IN (
-         'ign_provincias',
-         'ign_provincias_tmp'
+               'ign_provincias',
+               'ign_provincias_tmp'
        )
      ) = 2
   THEN
@@ -460,7 +463,7 @@ BEGIN
            'ign_provincias_tmp',
            'ign_departamentos_tmp',
            'ign_municipios_tmp',
-           'ign_bahra_temp'
+           'ign_bahra_tmp'
          )
   ) = 4
   THEN

@@ -38,17 +38,17 @@ STRICT
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  IF exists(
-      SELECT 1
+  IF (
+      SELECT count(table_name)
       FROM information_schema.tables
       WHERE table_schema = 'public'
-            AND table_name IN (
-              'ign_provincias_tmp',
-              'ign_departamentos_tmp',
-              'ign_municipios_tmp',
-              'ign_bahra_temp'
-            )
-  )
+           AND table_name IN (
+             'ign_provincias_tmp',
+             'ign_departamentos_tmp',
+             'ign_municipios_tmp',
+             'ign_bahra_tmp'
+           )
+  ) = 4
   THEN
     DROP TABLE IF EXISTS ign_provincias CASCADE;
     DROP TABLE IF EXISTS ign_departamentos CASCADE;
