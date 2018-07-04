@@ -41,22 +41,24 @@ def run():
 
 def index_roads():
     logging.info(MESSAGES['roads_data_info'])
-    departments = {dept.id: dept.name for dept in Department.objects.all()}
+    departments = {dept.id: dept for dept in Department.objects.all()}
     
     for state in State.objects.all():
         index_name = '-'.join(['calles', state.code])
         data = {}
         roads = []
         roads_filtered = Road.objects.filter(state_id=state.id)
-        
+
         roads_count = roads_filtered.count()
         logging.info(MESSAGES['roads_state_info'] % (index_name, roads_count))
 
         for road in roads_filtered:
+            dept = departments[road.dept_id]
+
             document = {
                 'nomenclatura': ', '.join([
                     road.name,
-                    departments[road.dept_id],
+                    dept.name,
                     state.name]),
                 'id': road.code,
                 'nombre': road.name,
@@ -67,8 +69,14 @@ def index_roads():
                 'fin_izquierda': road.end_left,
                 'geometria': road.geom,
                 'codigo_postal': road.postal_code,
-                'departamento': departments[road.dept_id],
-                'provincia': state.name
+                'departamento': {
+                    'id': dept.code,
+                    'nombre': dept.name
+                },
+                'provincia': {
+                    'id': state.code,
+                    'nombre': state.name
+                }
             }
             roads.append(document)
 
