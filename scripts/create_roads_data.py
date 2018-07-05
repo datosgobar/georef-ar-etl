@@ -15,10 +15,10 @@ from geo_admin.models import Department, State, Road
 
 
 MESSAGES = {
-    'roads_data_info': '-- Creando datos de Calles',
-    'roads_state_info': '-- Cargando datos para: %s, cantidad: %d',
-    'road_data_success': 'Los datos de "%s" fueron creados correctamente.',
-    'road_data_error': 'Los datos de "%s" no pudieron ser creados.'
+    'roads_data_info': '-- Creando datos de vías de circulación',
+    'roads_state_info': '-- Cargando datos de vías para: %s, cantidad: %d',
+    'road_data_success': 'Los datos de vías fueron creados correctamente.',
+    'road_data_error': 'Los datos de vías no pudieron ser creados.'
 }
 
 logging.basicConfig(
@@ -42,15 +42,15 @@ def run():
 def index_roads():
     logging.info(MESSAGES['roads_data_info'])
     departments = {dept.id: dept for dept in Department.objects.all()}
-    
-    for state in State.objects.all():
-        index_name = '-'.join(['calles', state.code])
-        data = {}
-        roads = []
-        roads_filtered = Road.objects.filter(state_id=state.id)
 
+    filename = 'data/vias/calles.json'
+    data = {}
+    roads = []
+
+    for state in State.objects.all():
+        roads_filtered = Road.objects.filter(state_id=state.id)
         roads_count = roads_filtered.count()
-        logging.info(MESSAGES['roads_state_info'] % (index_name, roads_count))
+        logging.info(MESSAGES['roads_state_info'] % (state.name, roads_count))
 
         for road in roads_filtered:
             dept = departments[road.dept_id]
@@ -80,17 +80,15 @@ def index_roads():
             }
             roads.append(document)
 
-        create_entities_data.add_metadata(data)
-        data['vias'] = roads
+    create_entities_data.add_metadata(data)
+    data['vias'] = roads
 
-        filename = 'data/vias/{}.json'
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
 
-        if not os.path.exists(os.path.dirname(filename)):
-            os.makedirs(os.path.dirname(filename))
-
-        with open(filename.format(index_name), 'w') as outfile:
-            json.dump(data, outfile)
-        if data:
-            logging.info(MESSAGES['road_data_success'] % index_name)
-        else:
-            logging.error(MESSAGES['road_data_error'] % index_name)
+    with open(filename, 'w') as outfile:
+        json.dump(data, outfile)
+    if data:
+        logging.info(MESSAGES['road_data_success'])
+    else:
+        logging.error(MESSAGES['road_data_error'])
