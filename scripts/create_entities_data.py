@@ -215,7 +215,6 @@ def add_metadata(data):
     data['version'] = version
 
 
-
 def create_data_file(entity, data):
     """Imprime datos de una entidad en formato JSON.
 

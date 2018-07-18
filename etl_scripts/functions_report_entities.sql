@@ -385,18 +385,18 @@ DECLARE
   sql       TEXT;
   result    JSONB;
 BEGIN
+  tbl_name = 'ign_' || lower(entity) || '_tmp';
+  tbl_state = 'ign_provincias_tmp';
   IF (
        SELECT count(table_name)
        FROM information_schema.tables
        WHERE table_schema = 'public'
              AND table_name IN (
-               'ign_provincias',
-               'ign_provincias_tmp'
+                tbl_name,
+                tbl_state
        )
      ) = 2
   THEN
-    tbl_name = 'ign_' || lower(entity) || '_tmp';
-    tbl_state = 'ign_provincias_tmp';
     sql := 'SELECT json_agg(json_build_object(%L, t2.%I, %L, t2.%I))' ||
            ' FROM %s t1 FULL OUTER JOIN %s t2' ||
            ' ON t1.in1 = substr(t2.%I, 1, 2)' ||
@@ -424,13 +424,20 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   result JSONB;
+  tbl_department  TEXT;
+  tbl_bahra TEXT;
 BEGIN
-  IF exists(
-      SELECT 1
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-            AND table_name = 'ign_provincias_tmp'
-  )
+  tbl_department = 'ign_departamentos_tmp';
+  tbl_bahra = 'ign_bahra_tmp';
+  IF (
+       SELECT count(table_name)
+       FROM information_schema.tables
+       WHERE table_schema = 'public'
+             AND table_name IN (
+                tbl_department,
+                tbl_bahra
+       )
+     ) = 2
   THEN
     SELECT json_agg(json_build_object('code', substr(t2.cod_bahra, 1, 5), 'name', t2.nombre_bah))
     INTO result
