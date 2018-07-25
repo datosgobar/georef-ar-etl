@@ -136,7 +136,7 @@ def load_states():
     try:
         logging.info(MESSAGES['entity_load_info'] % 'Provincia')
         query = """SELECT in1 AS code, \
-                          upper(nam) AS name, \
+                          nam AS name, \
                           st_y(st_centroid(geom)) as lat, \
                           st_x(st_centroid(geom)) as lon, \
                           geom \
@@ -173,8 +173,8 @@ def load_departments(state_ids):
                                          state=caba, lat=0.0, lon=0.0)
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Departamento')
-            query = """SELECT in1 as code, \
-                              upper(nam) as name, \
+            query = """SELECT in1 AS code, \
+                              nam AS name, \
                               st_y(st_centroid(geom)) as lat, \
                               st_x(st_centroid(geom)) as lon, \
                               geom, \
@@ -216,13 +216,13 @@ def load_municipalities(state_ids, department_ids):
     if state_ids:
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Municipio')
-            query = """SELECT in1 as code, \
-                               upper(nam) as name, \
-                               st_y(st_centroid(geom)) as lat, \
-                               st_x(st_centroid(geom)) as lon, \
+            query = """SELECT in1 AS code, \
+                               nam AS name, \
+                               st_y(st_centroid(geom)) AS lat, \
+                               st_x(st_centroid(geom)) AS lon, \
                                geom, \
-                               get_department(in1) as department_id, \
-                               substring(in1, 1, 2) as state_id \
+                               get_department(in1) AS department_id, \
+                               substring(in1, 1, 2) AS state_id \
                         FROM ign_municipios \
                         ORDER BY code;
                     """
@@ -261,14 +261,14 @@ def load_settlements(state_ids, department_ids, municipality_ids):
     if state_ids and department_ids and municipality_ids:
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Asentamiento')
-            query = """SELECT cod_bahra as code, \
-                          upper(nombre_bah) as name, \
-                          tipo_bahra as bahra_type, \
-                          get_municipality(cod_bahra) as municipality_id, \
-                          cod_depto as dep_code, \
-                          cod_prov as state_code, \
-                          st_y(st_centroid(geom)) as lat, \
-                          st_x(st_centroid(geom)) as lon, \
+            query = """SELECT cod_bahra AS code, \
+                          nombre_bah AS name, \
+                          tipo_bahra AS bahra_type, \
+                          get_municipality(cod_bahra) AS municipality_id, \
+                          cod_depto AS dep_code, \
+                          cod_prov AS state_code, \
+                          st_y(st_centroid(geom)) AS lat, \
+                          st_x(st_centroid(geom)) AS lon, \
                           geom \
                        FROM ign_bahra \
                        WHERE tipo_bahra IN ('LS', 'E', 'LC') \
