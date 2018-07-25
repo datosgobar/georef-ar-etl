@@ -62,8 +62,8 @@ def create_data_states():
         entities.append({
             'id': state.code,
             'nombre': state.name,
-            'lat': str(state.lat),
-            'lon': str(state.lon),
+            'lat': float(state.lat),
+            'lon': float(state.lon),
             'geometria': {
                 'type': 'multipolygon',
                 'coordinates': state.geom.coords
@@ -95,8 +95,8 @@ def create_data_departments():
         entities.append({
             'id': dept.code,
             'nombre': dept.name,
-            'lat': str(dept.lat),
-            'lon': str(dept.lon),
+            'lat': float(dept.lat),
+            'lon': float(dept.lon),
             'geometria': geometry,
             'provincia': {
                 'id': states[dept.state_id][0],
@@ -127,8 +127,8 @@ def create_data_municipalities():
         entities.append({
             'id': mun.code,
             'nombre': mun.name,
-            'lat': str(mun.lat),
-            'lon': str(mun.lon),
+            'lat': float(mun.lat),
+            'lon': float(mun.lon),
             'geometria': {
                 'type': 'multipolygon',
                 'coordinates': mun.geom.coords,
@@ -175,8 +175,8 @@ def create_data_settlements():
             'id': settlement.code,
             'nombre': settlement.name,
             'tipo': bahra_types[settlement.bahra_type],
-            'lat': str(settlement.lat),
-            'lon': str(settlement.lon),
+            'lat': float(settlement.lat),
+            'lon': float(settlement.lon),
             'geometria': {
                 'type': 'multipoint',
                 'coordinates': settlement.geom.coords
