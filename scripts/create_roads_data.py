@@ -9,6 +9,7 @@ circulación.
 import logging
 import json
 import os
+import subprocess
 from scripts import create_entities_data
 from datetime import datetime
 from geo_admin.models import Department, State, Road
@@ -27,6 +28,10 @@ logging.basicConfig(
     format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
+version = subprocess.check_output('git describe --abbrev=0 --tags',
+                                  shell=True, encoding="utf-8").rstrip('\n')
+
+
 def run():
     """ Contiene las funciones a llamar cuando se ejecuta el script
 
@@ -43,7 +48,7 @@ def index_roads():
     logging.info(MESSAGES['roads_data_info'])
     departments = {dept.id: dept for dept in Department.objects.all()}
 
-    filename = 'data/vias/calles.json'
+    filename = 'data/{}/calles.json'.format(version)
     data = {}
     roads = []
 

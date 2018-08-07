@@ -29,7 +29,7 @@ logging.basicConfig(
     format='%(asctime)s | %(levelname)s | %(name)s | %(module)s | %(message)s')
 
 
-version = subprocess.check_output('git describe --always --dirty --tag',
+version = subprocess.check_output('git describe --abbrev=0 --tags',
                                   shell=True, encoding="utf-8").rstrip('\n')
 
 
@@ -226,7 +226,7 @@ def create_data_file(entity, data):
         None
     """
     logging.info(MESSAGES['entity_info_generate'] % '{}'.format(entity.title()))
-    filename = 'data/entidades/{}s.json'.format(entity)
+    filename = 'data/{}/{}s.json'.format(version, entity)
 
     if not os.path.exists(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
