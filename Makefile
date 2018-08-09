@@ -32,7 +32,8 @@ update: migrate_db \
 		create_entities_report \
 		load_entities \
 		load_roads \
-		create_data
+		create_data \
+		custom_steps
 
 create_data: create_entities_data \
  	  create_roads_data
@@ -79,3 +80,8 @@ install_cron: config/cron
 	cat config/cron >> .cronfile
 	crontab .cronfile
 	rm .cronfile
+
+custom_steps:
+	if [[ -f scripts/custom_steps.sh ]]; then \
+		bash scripts/custom_steps.sh; \
+	fi;

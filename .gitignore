@@ -71,3 +71,6 @@ report.txt
 data/entidades/*
 data/vias/*
 data/intersecciones/*
+
+# custom scripts
+scripts/custom_steps.sh
