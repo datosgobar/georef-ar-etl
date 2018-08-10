@@ -68,9 +68,8 @@ entities_report.json
 report.txt
 
 # data output
-data/entidades/*
-data/vias/*
-data/intersecciones/*
+/data/
 
-# custom scripts
+# custom scripts and deployment
 scripts/custom_steps.sh
+*.ovpn
