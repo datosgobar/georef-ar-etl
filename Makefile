@@ -5,6 +5,7 @@ PROJECT_DIR=$(shell pwd)
 PYTHON?=$(VENV_DIR)/bin/python3.6
 RUNSCRIPT=$(MANAGE) runscript
 VENV_DIR?=$(PROJECT_DIR)/venv
+GIT_BRANCH?=master
 
 SHELL := /bin/bash
 
@@ -26,7 +27,8 @@ all: install \
 install: virtualenv \
 		 requirements
 
-update: migrate_db \
+update:	pull \
+		migrate_db \
 		etl_entities \
 		etl_roads \
 		create_entities_report \
@@ -37,6 +39,9 @@ update: migrate_db \
 
 create_data: create_entities_data \
  	  create_roads_data
+
+pull:
+	git pull origin $(GIT_BRANCH)
 
 virtualenv:
 	rm -rf venv
