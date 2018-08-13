@@ -226,12 +226,17 @@ def create_data_file(entity, data):
         None
     """
     logging.info(MESSAGES['entity_info_generate'] % '{}'.format(entity.title()))
-    filename = 'data/{}/{}s.json'.format(version, entity)
+    filenames = [
+        'data/{}/{}s.json'.format(version, entity),
+        'data/latest/{}s.json'.format(entity)
+    ]
 
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
+    for filename in filenames:
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
 
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile, ensure_ascii=False)
+        with open(filename, 'w') as outfile:
+            json.dump(data, outfile, ensure_ascii=False)
+
     logging.info(MESSAGES['entity_succes_generate'] % '{}'.
                  format(entity.title()))

@@ -48,7 +48,6 @@ def index_roads():
     logging.info(MESSAGES['roads_data_info'])
     departments = {dept.id: dept for dept in Department.objects.all()}
 
-    filename = 'data/{}/calles.json'.format(version)
     data = {}
     roads = []
 
@@ -88,11 +87,18 @@ def index_roads():
     create_entities_data.add_metadata(data)
     data['vias'] = roads
 
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
+    filenames = [
+        'data/{}/calles.json'.format(version),
+        'data/latest/calles.json'
+    ]
 
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile)
+    for filename in filenames:
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+
+        with open(filename, 'w') as outfile:
+            json.dump(data, outfile)
+
     if data:
         logging.info(MESSAGES['road_data_success'])
     else:
