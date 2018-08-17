@@ -199,7 +199,7 @@ def create_data_settlements():
 
     add_metadata(data)
     data['entidades'] = entities
-    create_data_file('asentamiento', data)
+    create_data_file('localidad', data)
 
 
 def add_metadata(data):
@@ -227,8 +227,8 @@ def create_data_file(entity, data):
     """
     logging.info(MESSAGES['entity_info_generate'] % '{}'.format(entity.title()))
     filenames = [
-        'data/{}/{}s.json'.format(version, entity),
-        'data/latest/{}s.json'.format(entity)
+        'data/{}/{}.json'.format(version, plural_entity_level(entity)),
+        'data/latest/{}.json'.format(plural_entity_level(entity))
     ]
 
     for filename in filenames:
@@ -240,3 +240,19 @@ def create_data_file(entity, data):
 
     logging.info(MESSAGES['entity_succes_generate'] % '{}'.
                  format(entity.title()))
+
+
+def plural_entity_level(entity_level):
+    """Pluraliza el nombre de una unidad territorial.
+
+    Args:
+        entity_level (str): Nivel de la unidad territorial a pluralizar.
+
+    Return:
+        entity_level (str): Nombre pluralizado.
+    """
+    if 'localidad' not in entity_level:
+        entity_level = entity_level + 's'
+    else:
+        entity_level = entity_level + 'es'
+    return entity_level
