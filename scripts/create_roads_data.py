@@ -67,10 +67,16 @@ def index_roads():
                 'id': road.code,
                 'nombre': road.name,
                 'tipo': road.road_type,
-                'altura_inicio_derecha': road.start_right,
-                'altura_inicio_izquierda': road.start_left,
-                'altura_fin_derecha': road.end_right,
-                'altura_fin_izquierda': road.end_left,
+                'altura': {
+                    'inicio': {
+                        'derecha': road.start_right,
+                        'izquierda': road.start_left
+                    },
+                    'fin': {
+                        'derecha': road.end_right,
+                        'izquierda': road.end_left
+                    }
+                },
                 'geometria': road.geom,
                 'codigo_postal': road.postal_code,
                 'departamento': {
