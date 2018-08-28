@@ -60,7 +60,7 @@ then
     fi
   done
 
-  declare URL_SHP_BARHA='http://wms.ign.gob.ar/bahra/descargas/BAHRA_2014_version_1.1_shape.tar.gz'
+  declare URL_SHP_BARHA='http://www.bahra.gob.ar/descargas/BAHRA_2014_version_1.1_shape.tar.gz'
   declare FILE_BARHA='bahra.tar.gz'
 
   output_message "INFO" "Verificando disponibilidad del archivo remoto ${FILE_BARHA}"
