@@ -20,6 +20,9 @@ DELETE FROM ign_municipios WHERE in1 ISNULL ;
 UPDATE ign_municipios SET in1 = '540287' WHERE in1 = '550287';
 UPDATE ign_municipios SET in1 = '540343' WHERE in1 = '550343';
 UPDATE ign_municipios SET in1 = '820277' WHERE in1 = '800277';
+UPDATE ign_municipios SET in1 = '585070' WHERE in1 = '545070';
+UPDATE ign_municipios SET in1 = '589999' WHERE in1 = '549999';
+UPDATE ign_municipios SET in1 = '629999' WHERE in1 = '829999';
 
 
 -- BARHA
