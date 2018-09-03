@@ -47,6 +47,10 @@ class Municipality(models.Model):
                             verbose_name='nombre')
     department = models.ForeignKey(Department, blank=True, null=True,
                                    verbose_name='departamento')
+    department_area_percentage = models.FloatField(blank=True, null=True,
+                                                   verbose_name='porcentaje '
+                                                                'área '
+                                                                'departamento')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
     geom = models.MultiPolygonField(blank=True, null=True)
@@ -105,8 +109,6 @@ class Road(models.Model):
     end_right = models.IntegerField(blank=True, null=True,
                                     verbose_name='fin derecha')
     geom = models.TextField(blank=True, null=True, verbose_name='geometría')
-    postal_code = models.CharField(max_length=8, blank=True, null=True,
-                                   verbose_name='código postal')
     dept = models.ForeignKey(Department, blank=True, null=True,
                              verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True,
