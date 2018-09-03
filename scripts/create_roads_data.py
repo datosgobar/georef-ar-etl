@@ -78,7 +78,6 @@ def index_roads():
                     }
                 },
                 'geometria': road.geom,
-                'codigo_postal': road.postal_code,
                 'departamento': {
                     'id': dept.code,
                     'nombre': dept.name
@@ -91,7 +90,7 @@ def index_roads():
             roads.append(document)
 
     create_entities_data.add_metadata(data)
-    data['vias'] = roads
+    data['datos'] = roads
 
     filenames = [
         'data/{}/calles.json'.format(version),

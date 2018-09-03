@@ -32,6 +32,32 @@ END;
 $$;
 
 
+CREATE OR REPLACE FUNCTION get_percentage_municipality(code_mun VARCHAR, code_dep VARCHAR)
+   RETURNS FLOAT
+STRICT
+LANGUAGE plpgsql
+AS $$
+ DECLARE
+  result FLOAT;
+BEGIN
+  SELECT
+    st_area(st_intersection(t1.geom, t2.geom)) / st_area(t1.geom) * 100 INTO result
+  FROM (
+    SELECT
+      st_union(m.geom) as geom
+    FROM ign_municipios m
+    WHERE m.in1 = code_mun
+  ) t1,
+  (
+    SELECT d.nam, d.geom
+    FROM ign_departamentos d
+    WHERE d.in1 = code_dep
+  ) t2;
+  RETURN result;
+END
+$$;
+
+
 CREATE OR REPLACE FUNCTION update_entities_data()
   RETURNS BOOLEAN
 STRICT

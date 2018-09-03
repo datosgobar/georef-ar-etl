@@ -73,7 +73,7 @@ def create_data_states():
         })
 
     add_metadata(data)
-    data['entidades'] = entities
+    data['datos'] = entities
     create_data_file('provincia', data)
 
 
@@ -109,7 +109,7 @@ def create_data_departments():
         })
 
     add_metadata(data)
-    data['entidades'] = entities
+    data['datos'] = entities
     create_data_file('departamento', data)
 
 
@@ -141,7 +141,8 @@ def create_data_municipalities():
             },
             'departamento': {
                 'id': departments[mun.department_id][0],
-                'nombre': departments[mun.department_id][1]
+                'nombre': departments[mun.department_id][1],
+                'porcentaje_area_municipio': mun.department_area_percentage
             },
             'provincia': {
                 'id': states[mun.state_id][0],
@@ -150,7 +151,7 @@ def create_data_municipalities():
         })
 
     add_metadata(data)
-    data['entidades'] = entities
+    data['datos'] = entities
     create_data_file('municipio', data)
 
 
@@ -206,7 +207,7 @@ def create_data_settlements():
         })
 
     add_metadata(data)
-    data['entidades'] = entities
+    data['datos'] = entities
     create_data_file('localidad', data)
 
 
