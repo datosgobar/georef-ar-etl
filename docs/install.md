@@ -1,4 +1,4 @@
-# Deploy Georef
+# Deploy georef-ar-etl
 
 ## Dependencias
 
@@ -13,7 +13,7 @@
 
 ## Base de datos
 
-Crear **dos** bases de datos en PostgreSQL, ambas con la extensión Postgis. No es requerido que se encuentren en el mismo clúster ni alojadas en el mismo _host_ de la aplicación.
+Crear **dos bases de datos** en PostgreSQL, ambas con la extensión Postgis. No es requerido que se encuentren en el mismo clúster.
 
 Ejemplo:
 
@@ -37,13 +37,13 @@ Ejemplo:
 
 1. Clonar repositorio:
 
-    `$ git clone https://github.com/datosgobar/georef-etl.git`
+    `$ git clone https://github.com/datosgobar/georef-ar-etl.git`
 
 2. Copiar el archivo de ejemplo con las variables de entorno:
 
     `$ cp environment.example.sh environment.sh`
 
-3. Completar el script `environment.sh` con los valores de configuración correspondientes:
+3. Completar el _script_ `environment.sh` con los valores de configuración correspondientes:
 
     `$ vi environment.sh`
 
@@ -69,7 +69,7 @@ Ejemplo:
         export POSTGRES_PASSWORD= # password
         ```
 
-4. Para instalar Georef Etl, actualizar y generar los datos de entidades y vías de circulación:
+4. Para instalar georef-ar-etl, actualizar y generar los datos de unidades territoriales y vías de circulación, ejecutar el siguiente comando:
 
     `$ make all`
     

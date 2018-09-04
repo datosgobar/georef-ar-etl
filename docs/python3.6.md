@@ -2,13 +2,13 @@
 
 ## Instalación
 
-- Librerias requeridas:
+- Instalar librerías requeridas:
 
   `$ sudo apt install build-essential libssl-dev zlib1g-dev`
 
   `$ sudo apt install libbz2-dev libreadline-dev libsqlite3-dev`
 
-- Descargando los archivos binarios
+- Descargar y descomprimir el _tarball_:
 
   `$ wget https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz`
 
@@ -16,13 +16,13 @@
 
   `$ cd Python-3.6.4`
 
-- Instalación
+- Compilar el paquete e instalar sus componentes en el sistema:
 
   `# ./configure --enable-optimizations`
 
   `# make altinstall`
 
-- Crear un link simbólico para `python3.6`
+- Crear un link simbólico para `python3.6`:
 
   `# ln -s /usr/local/bin/python3.6 /usr/bin/python3.6`
 
@@ -32,21 +32,21 @@
 
 ## Entorno virtuales
 
-- Instalación de Virtualenv
+- Instalación de la herramienta _Virtualenv_:
 
   `$ sudo apt-get install virtualenv python-virtualenv`
 
-- Crear entorno
+- Crear entorno:
 
   `$ python3.6 -m venv <name-venv>`
 
-- Activar entorno virtual
+- Activar el entorno virtual:
 
   `$ . venv/bin/activate`
 
 ## Secret key
 
-- Generar _secret key_
+- Generar _secret key_:
 
   ```python
   from django.utils.crypto import get_random_string
