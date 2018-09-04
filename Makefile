@@ -14,7 +14,7 @@ SHELL := /bin/bash
 .DEFAULT: help
 
 help:
-	@echo "make all			Instala Georef Etl, carga y genera los datos de entidades y vías de circulación"
+	@echo "make all			Instala georef-ar-etl, carga y genera los datos de entidades y vías de circulación"
 	@echo "make install    		Crea entorno virtual e instala dependencias con pip"
 	@echo "make update     		Sincroniza y carga la base de datos con entidades y vías de circulación"
 	@echo "make create_data 		Genera datos de entidades y vías de circulación en formato Json"
