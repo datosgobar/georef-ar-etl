@@ -222,8 +222,10 @@ def load_municipalities(state_ids, department_ids):
                                st_x(st_centroid(geom)) AS lon, \
                                geom, \
                                get_department(in1) AS department_id, \
-                               round(get_percentage_municipality( \
-                               in1, get_department(in1))::NUMERIC, 3), \
+                               get_percentage_intersection_dept( \
+                               in1, get_department(in1)), \
+                               get_percentage_area_dept( \
+                               in1, get_department(in1)), \
                                substring(in1, 1, 2) AS state_id
                         FROM ign_municipios \
                         ORDER BY code;
@@ -231,8 +233,8 @@ def load_municipalities(state_ids, department_ids):
             municipalities = run_query(query)
             municipalities_list = []
             for row in municipalities:
-                code, name, lat, lon, geom, dept_code, dept_area, \
-                    state_code = row
+                code, name, lat, lon, geom, dept_code, dept_intersection, \
+                    dept_area, state_code = row
                 municipalities_list.append(Municipality(
                     code=code,
                     name=name,
@@ -240,6 +242,7 @@ def load_municipalities(state_ids, department_ids):
                     lon=lon,
                     geom=geom,
                     department_id=department_ids[dept_code] or None,
+                    department_intersection_percentage=dept_intersection,
                     department_area_percentage=dept_area,
                     state_id=state_ids[state_code]
                 ))

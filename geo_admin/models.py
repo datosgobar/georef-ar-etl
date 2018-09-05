@@ -47,6 +47,11 @@ class Municipality(models.Model):
                             verbose_name='nombre')
     department = models.ForeignKey(Department, blank=True, null=True,
                                    verbose_name='departamento')
+    department_intersection_percentage = models.FloatField(blank=True, null=True,
+                                                           verbose_name=
+                                                           'porcentaje '
+                                                           'intersección '
+                                                           'departamento')
     department_area_percentage = models.FloatField(blank=True, null=True,
                                                    verbose_name='porcentaje '
                                                                 'área '
