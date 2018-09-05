@@ -141,8 +141,10 @@ def create_data_municipalities():
             },
             'departamento': {
                 'id': departments[mun.department_id][0],
-                'nombre': departments[mun.department_id][1],
-                'porcentaje_area_municipio': mun.department_area_percentage
+                'nombre': departments[mun.department_id][1]
+                # TODO: Re-incorporar información de áreas cuando se resuelva
+                # el issue 104 de georef-ar-etl.
+                # 'porcentaje_area_municipio': mun.department_area_percentage
             },
             'provincia': {
                 'id': states[mun.state_id][0],
