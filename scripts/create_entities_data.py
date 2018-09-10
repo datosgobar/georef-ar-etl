@@ -21,8 +21,8 @@ from geo_admin.models import State, Department, Municipality, Settlement
 MESSAGES = {
     'entity_info_get': '-- Obteniendo de datos de la entidad %s',
     'entity_info_generate': '-- Creando datos de la entidad %s',
-    'entity_succes_generate': 'Los datos de la entidad %s fueron creados '
-                              'exitosamente.'
+    'entity_succes_generate': 'Los datos de la entidad %s en formato %s fueron '
+                              'creados exitosamente.'
 }
 
 logging.basicConfig(
@@ -282,8 +282,7 @@ def create_data_file(entity, file_format, data):
             else:
                 json.dump(data, outfile, ensure_ascii=False)
 
-    logging.info(MESSAGES['entity_succes_generate'] % '{}'.
-                 format(entity.title()))
+    logging.info(MESSAGES['entity_succes_generate'] % ('{}'.format(entity.title()), file_format))
 
 
 def flatten_list(entity, data):
