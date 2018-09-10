@@ -8,8 +8,9 @@ JSON.
 """
 
 import csv
-import logging
+import geojson
 import json
+import logging
 import os
 import subprocess
 from datetime import datetime
@@ -78,6 +79,19 @@ def create_data_states():
     data['datos'] = entities
     create_data_file('provincia', 'json', data)
     create_data_file('provincia', 'csv', flatten_list('provincia', entities))
+    create_data_file('provincia', 'geojson', build_to_geojson(entities))
+
+
+def build_to_geojson(data):
+    features = []
+    for item in data:
+        lat = item['centroide']['lat']
+        lon = item['centroide']['lon']
+        item.pop('centroide')
+
+        point = geojson.Point((lat, lon))
+        features.append(geojson.Feature(geometry=point, properties=item))
+    return geojson.FeatureCollection(features)
 
 
 def create_data_departments():
@@ -117,6 +131,7 @@ def create_data_departments():
     create_data_file('departamento', 'json', data)
     create_data_file('departamento', 'csv', flatten_list('departamento',
                                                          entities))
+    create_data_file('departamento', 'geojson', build_to_geojson(entities))
 
 
 def create_data_municipalities():
@@ -163,6 +178,7 @@ def create_data_municipalities():
     data['datos'] = entities
     create_data_file('municipio', 'json', data)
     create_data_file('municipio', 'csv', flatten_list('municipio', entities))
+    create_data_file('municipio', 'geojson', build_to_geojson(entities))
 
 
 def create_data_settlements():
@@ -221,6 +237,7 @@ def create_data_settlements():
     data['datos'] = entities
     create_data_file('localidad', 'json', data)
     create_data_file('localidad', 'csv', flatten_list('localidad', entities))
+    create_data_file('localidad', 'geojson', build_to_geojson(entities))
 
 
 def add_metadata(data):
@@ -252,19 +269,18 @@ def create_data_file(entity, file_format, data):
         'data/{}/{}.{}'.format(version, plural_entity_level(entity), file_format),
         'data/latest/{}.{}'.format(plural_entity_level(entity), file_format)
     ]
-
     for filename in filenames:
         if not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
         with open(filename, 'w', newline='') as outfile:
-            if file_format in 'json':
-                json.dump(data, outfile, ensure_ascii=False)
             if file_format in 'csv':
                 keys = data[0].keys()
                 dict_writer = csv.DictWriter(outfile, keys)
                 dict_writer.writeheader()
                 dict_writer.writerows(data)
+            else:
+                json.dump(data, outfile, ensure_ascii=False)
 
     logging.info(MESSAGES['entity_succes_generate'] % '{}'.
                  format(entity.title()))
