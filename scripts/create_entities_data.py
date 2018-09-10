@@ -7,6 +7,7 @@ políticas (asentamientos, municipios, departamentos y provincias) en formato
 JSON.
 """
 
+import csv
 import logging
 import json
 import os
@@ -69,12 +70,14 @@ def create_data_states():
             'geometria': {
                 'type': 'multipolygon',
                 'coordinates': state.geom.coords
-            }
+            },
+            'fuente': 'IGN'
         })
 
     add_metadata(data)
     data['datos'] = entities
-    create_data_file('provincia', data)
+    create_data_file('provincia', 'json', data)
+    create_data_file('provincia', 'csv', flatten_list('provincia', entities))
 
 
 def create_data_departments():
@@ -105,12 +108,15 @@ def create_data_departments():
             'provincia': {
                 'id': states[dept.state_id][0],
                 'nombre': states[dept.state_id][1]
-            }
+            },
+            'fuente': 'IGN'
         })
 
     add_metadata(data)
     data['datos'] = entities
-    create_data_file('departamento', data)
+    create_data_file('departamento', 'json', data)
+    create_data_file('departamento', 'csv', flatten_list('departamento',
+                                                         entities))
 
 
 def create_data_municipalities():
@@ -149,12 +155,14 @@ def create_data_municipalities():
             'provincia': {
                 'id': states[mun.state_id][0],
                 'nombre': states[mun.state_id][1]
-            }
+            },
+            'fuente': 'IGN'
         })
 
     add_metadata(data)
     data['datos'] = entities
-    create_data_file('municipio', data)
+    create_data_file('municipio', 'json', data)
+    create_data_file('municipio', 'csv', flatten_list('municipio', entities))
 
 
 def create_data_settlements():
@@ -205,12 +213,14 @@ def create_data_settlements():
             'provincia': {
                 'id': states[settlement.state_id][0],
                 'nombre': states[settlement.state_id][1]
-            }
+            },
+            'fuente': 'BAHRA'
         })
 
     add_metadata(data)
     data['datos'] = entities
-    create_data_file('localidad', data)
+    create_data_file('localidad', 'json', data)
+    create_data_file('localidad', 'csv', flatten_list('localidad', entities))
 
 
 def add_metadata(data):
@@ -226,31 +236,72 @@ def add_metadata(data):
     data['version'] = version
 
 
-def create_data_file(entity, data):
-    """Imprime datos de una entidad en formato JSON.
+def create_data_file(entity, file_format, data):
+    """Imprime datos de una entidad en un formato específico.
 
     Args:
         entity (str): Nombre de la entidad.
         data (dic): Datos de la entidad a imprimir.
+        file_format (str): Formato del archivo a imprimir.
 
     Returns:
         None
     """
     logging.info(MESSAGES['entity_info_generate'] % '{}'.format(entity.title()))
     filenames = [
-        'data/{}/{}.json'.format(version, plural_entity_level(entity)),
-        'data/latest/{}.json'.format(plural_entity_level(entity))
+        'data/{}/{}.{}'.format(version, plural_entity_level(entity), file_format),
+        'data/latest/{}.{}'.format(plural_entity_level(entity), file_format)
     ]
 
     for filename in filenames:
         if not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
 
-        with open(filename, 'w') as outfile:
-            json.dump(data, outfile, ensure_ascii=False)
+        with open(filename, 'w', newline='') as outfile:
+            if file_format in 'json':
+                json.dump(data, outfile, ensure_ascii=False)
+            if file_format in 'csv':
+                keys = data[0].keys()
+                dict_writer = csv.DictWriter(outfile, keys)
+                dict_writer.writeheader()
+                dict_writer.writerows(data)
 
     logging.info(MESSAGES['entity_succes_generate'] % '{}'.
                  format(entity.title()))
+
+
+def flatten_list(entity, data):
+    """Aplana un lista.
+
+    Args:
+        entity (str): Nombre de la entidad.
+        data (dic): Datos de la entidad a imprimir.
+
+    Returns:
+        entities (list): Resultado aplanado.
+    """
+    entities = []
+    for row in data:
+        row.pop('geometria')
+        entities.append(flatten_dict(row, prefix=entity))
+    return entities
+
+
+def flatten_dict(dd, separator='_', prefix=''):
+    """Aplana un diccionario.
+
+    Args:
+        dd (dic): Diccionario a aplanar.
+        separator (str): Separador entre palabras.
+        prefix (str): Prefijo.
+
+    Returns:
+        dict: Diccionario aplanado.
+    """
+    return {prefix + separator + k if prefix else k: v
+            for kk, vv in dd.items()
+            for k, v in flatten_dict(vv, separator, kk).items()
+            } if isinstance(dd, dict) else {prefix: dd}
 
 
 def plural_entity_level(entity_level):
