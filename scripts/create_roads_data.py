@@ -134,6 +134,7 @@ def flatten_list(data):
     """
     entities = []
     for row in data:
+        row.pop('geometria')
         entities.append(flatten_dict(row))
     return entities
 
