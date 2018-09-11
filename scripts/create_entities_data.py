@@ -79,19 +79,7 @@ def create_data_states():
     data['datos'] = entities
     create_data_file('provincia', 'json', data)
     create_data_file('provincia', 'csv', flatten_list('provincia', entities))
-    create_data_file('provincia', 'geojson', build_to_geojson(entities))
-
-
-def build_to_geojson(data):
-    features = []
-    for item in data:
-        lat = item['centroide']['lat']
-        lon = item['centroide']['lon']
-        item.pop('centroide')
-
-        point = geojson.Point((lat, lon))
-        features.append(geojson.Feature(geometry=point, properties=item))
-    return geojson.FeatureCollection(features)
+    create_data_file('provincia', 'geojson', convert_to_geojson(entities))
 
 
 def create_data_departments():
@@ -131,7 +119,7 @@ def create_data_departments():
     create_data_file('departamento', 'json', data)
     create_data_file('departamento', 'csv', flatten_list('departamento',
                                                          entities))
-    create_data_file('departamento', 'geojson', build_to_geojson(entities))
+    create_data_file('departamento', 'geojson', convert_to_geojson(entities))
 
 
 def create_data_municipalities():
@@ -178,7 +166,7 @@ def create_data_municipalities():
     data['datos'] = entities
     create_data_file('municipio', 'json', data)
     create_data_file('municipio', 'csv', flatten_list('municipio', entities))
-    create_data_file('municipio', 'geojson', build_to_geojson(entities))
+    create_data_file('municipio', 'geojson', convert_to_geojson(entities))
 
 
 def create_data_settlements():
@@ -237,7 +225,7 @@ def create_data_settlements():
     data['datos'] = entities
     create_data_file('localidad', 'json', data)
     create_data_file('localidad', 'csv', flatten_list('localidad', entities))
-    create_data_file('localidad', 'geojson', build_to_geojson(entities))
+    create_data_file('localidad', 'geojson', convert_to_geojson(entities))
 
 
 def add_metadata(data):
@@ -245,7 +233,7 @@ def add_metadata(data):
     datos de entidades.
 
     Args:
-        data (dic): Diccionario que contiene una lista de entidades.
+        data (dict): Diccionario que contiene una lista de entidades.
     """
     now = datetime.now(timezone.utc)
     data['fecha_actualizacion'] = str(now)
@@ -258,8 +246,8 @@ def create_data_file(entity, file_format, data):
 
     Args:
         entity (str): Nombre de la entidad.
-        data (dic): Datos de la entidad a imprimir.
         file_format (str): Formato del archivo a imprimir.
+        data (list,  dict): Datos de la entidad.
 
     Returns:
         None
@@ -282,41 +270,8 @@ def create_data_file(entity, file_format, data):
             else:
                 json.dump(data, outfile, ensure_ascii=False)
 
-    logging.info(MESSAGES['entity_succes_generate'] % ('{}'.format(entity.title()), file_format))
-
-
-def flatten_list(entity, data):
-    """Aplana un lista.
-
-    Args:
-        entity (str): Nombre de la entidad.
-        data (dic): Datos de la entidad a imprimir.
-
-    Returns:
-        entities (list): Resultado aplanado.
-    """
-    entities = []
-    for row in data:
-        row.pop('geometria')
-        entities.append(flatten_dict(row, prefix=entity))
-    return entities
-
-
-def flatten_dict(dd, separator='_', prefix=''):
-    """Aplana un diccionario.
-
-    Args:
-        dd (dic): Diccionario a aplanar.
-        separator (str): Separador entre palabras.
-        prefix (str): Prefijo.
-
-    Returns:
-        dict: Diccionario aplanado.
-    """
-    return {prefix + separator + k if prefix else k: v
-            for kk, vv in dd.items()
-            for k, v in flatten_dict(vv, separator, kk).items()
-            } if isinstance(dd, dict) else {prefix: dd}
+    logging.info(MESSAGES['entity_succes_generate'] %
+                 ('{}'.format(entity.title()), file_format))
 
 
 def plural_entity_level(entity_level):
@@ -333,3 +288,57 @@ def plural_entity_level(entity_level):
     else:
         entity_level = entity_level + 'es'
     return entity_level
+
+
+def flatten_list(entity, data):
+    """Aplana un lista y le agrega como prefijo el nombre de la entidad.
+
+    Args:
+        entity (str): Nombre de la entidad.
+        data (list): Datos de la entidad a imprimir.
+
+    Returns:
+        entities (list): Resultado aplanado.
+    """
+    entities = []
+    for row in data:
+        row.pop('geometria')
+        entities.append(flatten_dict(row, prefix=entity))
+    return entities
+
+
+def flatten_dict(dd, separator='_', prefix=''):
+    """Aplana un diccionario.
+
+    Args:
+        dd (dict): Diccionario a aplanar.
+        separator (str): Separador entre palabras.
+        prefix (str): Prefijo.
+
+    Returns:
+        dict: Diccionario aplanado.
+    """
+    return {prefix + separator + k if prefix else k: v
+            for kk, vv in dd.items()
+            for k, v in flatten_dict(vv, separator, kk).items()
+            } if isinstance(dd, dict) else {prefix: dd}
+
+
+def convert_to_geojson(data):
+    """Convierte un diccionario con datos de una entidad a formato geojson.
+
+    Args:
+        data (list): Diccionario con datos de la unidad territorial.
+
+    Returns:
+        entities (list): Resultado en formato geojson.
+    """
+    features = []
+    for item in data:
+        lat = item['centroide']['lat']
+        lon = item['centroide']['lon']
+        item.pop('centroide')
+
+        point = geojson.Point((lat, lon))
+        features.append(geojson.Feature(geometry=point, properties=item))
+    return geojson.FeatureCollection(features)
