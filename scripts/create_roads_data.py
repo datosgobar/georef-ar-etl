@@ -6,8 +6,9 @@ Contiene funciones para la impresión de datos correspondientes a vías de
 circulación.
 """
 
-import logging
+import csv
 import json
+import logging
 import os
 import subprocess
 from scripts import create_entities_data
@@ -18,7 +19,8 @@ from geo_admin.models import Department, State, Road
 MESSAGES = {
     'roads_data_info': '-- Creando datos de vías de circulación',
     'roads_state_info': '-- Cargando datos de vías para: %s, cantidad: %d',
-    'road_data_success': 'Los datos de vías fueron creados correctamente.',
+    'road_data_success': 'Los datos de vías en formato %s fueron creados '
+                         'correctamente.',
     'road_data_error': 'Los datos de vías no pudieron ser creados.'
 }
 
@@ -92,9 +94,14 @@ def index_roads():
     create_entities_data.add_metadata(data)
     data['datos'] = roads
 
+    create_data_file('json', data)
+    create_data_file('csv', flatten_list(roads))
+
+
+def create_data_file(file_format, data):
     filenames = [
-        'data/{}/calles.json'.format(version),
-        'data/latest/calles.json'
+        'data/{}/calles.{}'.format(version, file_format),
+        'data/latest/calles.{}'.format(file_format)
     ]
 
     for filename in filenames:
@@ -102,9 +109,49 @@ def index_roads():
             os.makedirs(os.path.dirname(filename))
 
         with open(filename, 'w') as outfile:
-            json.dump(data, outfile)
+            if file_format in 'csv':
+                keys = data[0].keys()
+                dict_writer = csv.DictWriter(outfile, keys)
+                dict_writer.writeheader()
+                dict_writer.writerows(data)
+            else:
+                json.dump(data, outfile, ensure_ascii=False)
 
     if data:
-        logging.info(MESSAGES['road_data_success'])
+        logging.info(MESSAGES['road_data_success'] % file_format)
     else:
         logging.error(MESSAGES['road_data_error'])
+
+
+def flatten_list(data):
+    """Aplana un lista.
+
+    Args:
+        data (dic): Datos de la entidad a imprimir.
+
+    Returns:
+        entities (list): Resultado aplanado.
+    """
+    entities = []
+    for row in data:
+        row.pop('geometria')
+        entities.append(flatten_dict(row))
+    return entities
+
+
+def flatten_dict(dd, separator='_', prefix=''):
+    """Aplana un diccionario.
+
+    Args:
+        dd (dic): Diccionario a aplanar.
+        separator (str): Separador entre palabras.
+        prefix (str): Prefijo.
+
+    Returns:
+        dict: Diccionario aplanado.
+    """
+    return {prefix + separator + k if prefix else k: v
+            for kk, vv in dd.items()
+            for k, v in flatten_dict(vv, separator, kk).items()
+            } if isinstance(dd, dict) else {prefix: dd}
+
