@@ -45,17 +45,6 @@ class Municipality(models.Model):
                             verbose_name='código')
     name = models.CharField(max_length=100, blank=True, null=True,
                             verbose_name='nombre')
-    department = models.ForeignKey(Department, blank=True, null=True,
-                                   verbose_name='departamento')
-    department_intersection_percentage = models.FloatField(blank=True, null=True,
-                                                           verbose_name=
-                                                           'porcentaje '
-                                                           'intersección '
-                                                           'departamento')
-    department_area_percentage = models.FloatField(blank=True, null=True,
-                                                   verbose_name='porcentaje '
-                                                                'área '
-                                                                'departamento')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
     geom = models.MultiPolygonField(blank=True, null=True)

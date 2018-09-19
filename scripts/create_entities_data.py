@@ -55,7 +55,7 @@ def create_data_states():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Provincia'))
-    data = {}
+    data = {'fuente': 'IGN'}
     entities = []
 
     for state in State.objects.all():
@@ -84,7 +84,7 @@ def create_data_departments():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Departamento'))
-    data = {}
+    data = {'fuente': 'IGN'}
     entities = []
 
     states = {state.id: (state.code, state.name) for state in
@@ -120,12 +120,10 @@ def create_data_municipalities():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Municipio'))
-    data = {}
+    data = {'fuente': 'IGN'}
     entities = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
-    departments = {dept.id: (dept.code, dept.name) for dept in
-                   Department.objects.all()}
 
     for mun in Municipality.objects.all():
         entities.append({
@@ -138,13 +136,6 @@ def create_data_municipalities():
             'geometria': {
                 'type': 'multipolygon',
                 'coordinates': mun.geom.coords,
-            },
-            'departamento': {
-                'id': departments[mun.department_id][0],
-                'nombre': departments[mun.department_id][1],
-                'porcentaje_interseccion':
-                    mun.department_intersection_percentage,
-                'porcentaje_area': mun.department_area_percentage
             },
             'provincia': {
                 'id': states[mun.state_id][0],
@@ -170,7 +161,7 @@ def create_data_settlements():
         'LS': 'Localidad simple (LS)'
     }
 
-    data = {}
+    data = {'fuente': 'BAHRA'}
     entities = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
@@ -221,7 +212,7 @@ def add_metadata(data):
         data (dic): Diccionario que contiene una lista de entidades.
     """
     now = datetime.now(timezone.utc)
-    data['fecha_actualizacion'] = str(now)
+    data['fecha_creacion'] = str(now)
     data['timestamp'] = int(now.timestamp())
     data['version'] = version
 
