@@ -53,7 +53,7 @@ def run():
         load_script('ign_entities_patch.sql')
         state_ids = load_states()
         department_ids = load_departments(state_ids)
-        municipality_ids = load_municipalities(state_ids, department_ids)
+        municipality_ids = load_municipalities(state_ids)
         load_settlements(state_ids, department_ids, municipality_ids)
     except Exception as e:
         logging.error(e)
@@ -205,7 +205,7 @@ def load_departments(state_ids):
         logging.error(MESSAGES['departments_dependency_error'])
 
 
-def load_municipalities(state_ids, department_ids):
+def load_municipalities(state_ids):
     """Ejecuta una consulta sobre la base de datos intermedia para obtener los
        datos de la entidad Municipio, e inserta los resultados en la base de
        datos integrada con georef-etl.

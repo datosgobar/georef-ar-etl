@@ -71,8 +71,7 @@ def create_data_states():
             'geometria': {
                 'type': 'multipolygon',
                 'coordinates': state.geom.coords
-            },
-            'fuente': 'IGN'
+            }
         })
 
     add_metadata(data)
@@ -110,8 +109,7 @@ def create_data_departments():
             'provincia': {
                 'id': states[dept.state_id][0],
                 'nombre': states[dept.state_id][1]
-            },
-            'fuente': 'IGN'
+            }
         })
 
     add_metadata(data)
@@ -149,8 +147,7 @@ def create_data_municipalities():
             'provincia': {
                 'id': states[mun.state_id][0],
                 'nombre': states[mun.state_id][1]
-            },
-            'fuente': 'IGN'
+            }
         })
 
     add_metadata(data)
@@ -208,8 +205,7 @@ def create_data_settlements():
             'provincia': {
                 'id': states[settlement.state_id][0],
                 'nombre': states[settlement.state_id][1]
-            },
-            'fuente': 'BAHRA'
+            }
         })
 
     add_metadata(data)
