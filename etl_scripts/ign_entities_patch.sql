@@ -8,11 +8,13 @@ ALTER TABLE IF EXISTS ign_departamentos ALTER COLUMN geom TYPE geometry(MultiPol
 ALTER TABLE IF EXISTS ign_municipios ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326) using ST_Multi(geom);
 
 -- DEPARTAMENTOS
-DELETE FROM ign_departamentos WHERE in1 ISNULL ;
 DELETE FROM ign_departamentos WHERE ogc_fid = 530; -- duplicado
 
 UPDATE ign_departamentos SET in1 = '54084' WHERE in1 = '55084';
 UPDATE ign_departamentos SET in1 = '06217' WHERE in1 = '06218';
+UPDATE ign_departamentos SET in1 = '94008' WHERE in1 = '94007';
+UPDATE ign_departamentos SET in1 = '94015' WHERE in1 = '94014';
+UPDATE ign_departamentos SET in1 = '94011' WHERE fna = 'Departamento Río Grande' AND nam = 'Tolhuin';
 
 -- MUNICIPIOS
 DELETE FROM ign_municipios WHERE in1 ISNULL ;
