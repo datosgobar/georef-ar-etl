@@ -1,21 +1,3 @@
-CREATE OR REPLACE FUNCTION get_department(code_muncipality TEXT, OUT result TEXT)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  SELECT d.in1
-  INTO result
-  FROM ign_municipios m INNER JOIN ign_departamentos d
-      ON substr(m.in1, 1, 2) = substr(d.in1, 1, 2)
-  WHERE m.in1 = code_muncipality
-  ORDER BY st_area(st_intersection(m.geom, d.geom)) DESC
-  LIMIT 1;
-  EXCEPTION WHEN OTHERS
-    THEN
-      result := SQLERRM;
-END;
-$$;
-
-
 CREATE OR REPLACE FUNCTION get_municipality(code_bahra TEXT, OUT result TEXT)
 LANGUAGE plpgsql
 AS $$
@@ -31,57 +13,6 @@ BEGIN
 END;
 $$;
 
-
-CREATE OR REPLACE FUNCTION get_percentage_intersection_dept(code_mun VARCHAR, code_dep VARCHAR)
-   RETURNS FLOAT
-STRICT
-LANGUAGE plpgsql
-AS $$
- DECLARE
-  result FLOAT;
-BEGIN
-  SELECT
-    round((st_area(st_intersection(t1.geom, t2.geom)) / st_area(t1.geom) * 100)::NUMERIC, 3) INTO result
-  FROM (
-    SELECT
-      st_union(m.geom) as geom
-    FROM ign_municipios m
-    WHERE m.in1 = code_mun
-  ) t1,
-  (
-    SELECT d.nam, d.geom
-    FROM ign_departamentos d
-    WHERE d.in1 = code_dep
-  ) t2;
-  RETURN result;
-END
-$$;
-
-
-CREATE OR REPLACE FUNCTION get_percentage_area_dept(code_mun VARCHAR, code_dep VARCHAR)
-   RETURNS FLOAT
-STRICT
-LANGUAGE plpgsql
-AS $$
- DECLARE
-  result FLOAT;
-BEGIN
-  SELECT
-    round((st_area(st_intersection(t1.geom, t2.geom)) / st_area(t1.geom) * 100)::NUMERIC, 3) INTO result
-  FROM (
-    SELECT d.nam, d.geom
-    FROM ign_departamentos d
-    WHERE d.in1 = code_dep
-  ) t1,
-  (
-    SELECT
-      st_union(m.geom) as geom
-    FROM ign_municipios m
-    WHERE m.in1 = code_mun
-  ) t2;
-  RETURN result;
-END
-$$;
 
 CREATE OR REPLACE FUNCTION update_entities_data()
   RETURNS BOOLEAN
