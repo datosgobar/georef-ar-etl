@@ -56,3 +56,23 @@ BEGIN
     RETURN FALSE;
 END
 $$;
+
+
+CREATE OR REPLACE FUNCTION get_percentage_intersection_state(geom_entity GEOMETRY, code_state VARCHAR)
+   RETURNS FLOAT
+STRICT
+LANGUAGE plpgsql
+AS $$
+ DECLARE
+  result FLOAT;
+BEGIN
+  SELECT
+    round((st_area(st_intersection(t2.geom, geom_entity)) / st_area(t2.geom))::NUMERIC, 6) INTO result
+  FROM (
+    SELECT p.nam, p.geom
+    FROM ign_provincias p
+    WHERE p.in1 = code_state
+  ) t2;
+  RETURN result;
+END
+$$;
