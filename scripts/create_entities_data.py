@@ -108,7 +108,8 @@ def create_data_departments():
             'geometria': geometry,
             'provincia': {
                 'id': states[dept.state_id][0],
-                'nombre': states[dept.state_id][1]
+                'nombre': states[dept.state_id][1],
+                'interseccion': dept.state_intersection
             }
         })
 
@@ -146,7 +147,8 @@ def create_data_municipalities():
             },
             'provincia': {
                 'id': states[mun.state_id][0],
-                'nombre': states[mun.state_id][1]
+                'nombre': states[mun.state_id][1],
+                'interseccion': mun.state_intersection
             }
         })
 
