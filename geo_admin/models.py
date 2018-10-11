@@ -27,6 +27,8 @@ class Department(models.Model):
                             verbose_name='nombre')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
+    state_intersection = models.FloatField(blank=True, null=True,
+                                           verbose_name="intersección")
     geom = models.MultiPolygonField(blank=True, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
@@ -47,6 +49,8 @@ class Municipality(models.Model):
                             verbose_name='nombre')
     state = models.ForeignKey(State, blank=True, null=True,
                               verbose_name='provincia')
+    state_intersection = models.FloatField(blank=True, null=True,
+                                           verbose_name="intersección")
     geom = models.MultiPolygonField(blank=True, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
