@@ -1,4 +1,4 @@
-ENVIROMENTS=. $(PROJECT_DIR)/environment.sh
+ENVIRONMENTS=. $(PROJECT_DIR)/environment.sh
 MANAGE?=$(PROJECT_DIR)/manage.py
 PIP?=$(VENV_DIR)/bin/pip
 PROJECT_DIR=$(shell pwd)
@@ -21,24 +21,25 @@ help:
 	@echo "make install_cron		Instala crontab para sincronizar y cargar la base de datos con entidades y vías de circulación, y generar datos"
 
 all: install \
- 	 update \
- 	 create_data
+ update \
+ create_data
 
 install: virtualenv \
-		 requirements
+ requirements
 
 update:	pull \
-		migrate_db \
-		etl_entities \
-		etl_roads \
-		create_entities_report \
-		load_entities \
-		load_roads \
-		create_data \
-		custom_steps
+ migrate_db \
+ etl_entities \
+ etl_roads \
+ create_entities_report \
+ load_entities \
+ load_roads \
+ create_data \
+ create_synonyms_file \
+ custom_steps
 
 create_data: create_entities_data \
- 	  create_roads_data
+ create_roads_data
 
 pull:
 	git pull origin $(GIT_BRANCH)
@@ -52,34 +53,40 @@ requirements:
 	$(PIP) install -r $(PROJECT_DIR)/requirements.txt
 
 migrate_db:
-	$(ENVIROMENTS) && $(PYTHON) $(MANAGE) migrate
+	$(ENVIRONMENTS) && $(PYTHON) $(MANAGE) migrate
 
 etl_entities:
-	$(ENVIROMENTS) && $(PROJECT_DIR)/etl_scripts/etl_ign_entidades.sh
+	$(ENVIRONMENTS) && $(PROJECT_DIR)/etl_scripts/etl_ign_entidades.sh
 
 etl_roads:
-	$(ENVIROMENTS) && $(PROJECT_DIR)/etl_scripts/etl_indec_vias.sh
+	$(ENVIRONMENTS) && $(PROJECT_DIR)/etl_scripts/etl_indec_vias.sh
 
 load_entities:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) load_entities
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) load_entities
 
 load_roads:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) load_roads
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) load_roads
 
 load_intersections:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) load_intersections
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) load_intersections
 
 create_entities_data:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_entities_data
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) create_entities_data
 
 create_roads_data:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_roads_data
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) create_roads_data
 
 create_intersections_data:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_intersections_data
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) create_intersections_data
 
 create_entities_report:
-	$(ENVIROMENTS) && $(PYTHON) $(RUNSCRIPT) create_entities_report
+	$(ENVIRONMENTS) && $(PYTHON) $(RUNSCRIPT) create_entities_report
+
+# TODO: Una vez que el proceso de generación del archivo de sinónimos
+# esté decidido, modificar la receta para que el proceso deposite el
+# archivo generado en data/latest/.
+create_synonyms_file:
+	cp georef/sinonimos-nombres.txt data/latest/sinonimos-nombres.txt
 
 install_cron: config/cron
 	@echo "GEOREF_ETL_DIR=$(PROJECT_DIR)" >> .cronfile
