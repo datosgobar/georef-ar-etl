@@ -15,7 +15,7 @@ import os
 import subprocess
 from datetime import datetime
 from datetime import timezone
-from geo_admin.models import State, Department, Municipality, Settlement
+from geo_admin.models import *
 
 
 MESSAGES = {
@@ -42,12 +42,43 @@ def run():
         None
     """
     try:
+        create_data_countries()
         create_data_states()
         create_data_departments()
         create_data_municipalities()
         create_data_settlements()
     except Exception as e:
         logging.error(e)
+
+
+def create_data_countries():
+    """Obtiene y genera datos de la entidad País.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_get'] % '{}'.format('País'))
+    data = {'fuente': 'IGN'}
+    entities = []
+
+    for country in Country.objects.all():
+        entities.append({
+            'nombre': country.name,
+            'centroide': {
+                'lat': float(country.lat),
+                'lon': float(country.lon)
+            },
+            'geometria': {
+                'type': 'multipolygon',
+                'coordinates': country.geom.coords
+            }
+        })
+
+    add_metadata(data)
+    data['datos'] = entities
+    create_data_file('pais', 'json', data)
+    create_data_file('pais', 'csv', flatten_list('pais', entities))
+    create_data_file('pais', 'geojson', convert_to_geojson(entities))
 
 
 def create_data_states():
@@ -272,7 +303,9 @@ def plural_entity_level(entity_level):
     Return:
         entity_level (str): Nombre pluralizado.
     """
-    if 'localidad' not in entity_level:
+    if 'pais' in entity_level:
+        return entity_level
+    elif 'localidad' not in entity_level:
         entity_level = entity_level + 's'
     else:
         entity_level = entity_level + 'es'

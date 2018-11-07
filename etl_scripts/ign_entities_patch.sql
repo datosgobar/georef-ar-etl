@@ -3,9 +3,13 @@
 */
 
 -- Todas las entidades pasan a ser del tipo MultiPolygon
+ALTER TABLE IF EXISTS ign_pais ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326) using ST_Multi(geom);
 ALTER TABLE IF EXISTS ign_provincias ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326) using ST_Multi(geom);
 ALTER TABLE IF EXISTS ign_departamentos ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326) using ST_Multi(geom);
 ALTER TABLE IF EXISTS ign_municipios ALTER COLUMN geom TYPE geometry(MultiPolygon, 4326) using ST_Multi(geom);
+
+-- PAÍS
+DELETE FROM ign_pais WHERE fna ISNULL;
 
 -- DEPARTAMENTOS
 DELETE FROM ign_departamentos WHERE ogc_fid = 530; -- duplicado

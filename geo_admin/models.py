@@ -2,6 +2,15 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 
 
+class Country(models.Model):
+    name = models.CharField(max_length=100, verbose_name='nombre')
+    geom = models.MultiPolygonField(blank=True, null=True)
+    lat = models.DecimalField(max_digits=9, decimal_places=6,
+                              verbose_name='latitud')
+    lon = models.DecimalField(max_digits=9, decimal_places=6,
+                              verbose_name='longitud')
+
+
 class State(models.Model):
     code = models.CharField(max_length=2, blank=True, null=True, unique=True,
                             verbose_name='código')
@@ -117,4 +126,3 @@ class Road(models.Model):
 
     def __str__(self):
         return ', '.join([self.name, self.dept.name, self.state.name])
-
