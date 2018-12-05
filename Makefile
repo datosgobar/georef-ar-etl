@@ -36,6 +36,7 @@ update:	pull \
  load_roads \
  create_data \
  create_synonyms_file \
+ create_excluding_terms_file \
  custom_steps
 
 create_data: create_entities_data \
@@ -86,7 +87,11 @@ create_entities_report:
 # esté decidido, modificar la receta para que el proceso deposite el
 # archivo generado en data/latest/.
 create_synonyms_file:
-	cp georef/sinonimos-nombres.txt data/latest/sinonimos-nombres.txt
+	cp georef/sinonimos-nombres.txt data/latest/
+
+# TODO: Seguir mismo procedimiento que en 'create_synonyms_file'.
+create_excluding_terms_file:
+	cp georef/terminos-excluyentes-nombres.txt data/latest/
 
 install_cron: config/cron
 	@echo "GEOREF_ETL_DIR=$(PROJECT_DIR)" >> .cronfile
