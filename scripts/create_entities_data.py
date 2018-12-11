@@ -21,8 +21,8 @@ from geo_admin.models import State, Department, Municipality, Settlement
 MESSAGES = {
     'entity_info_get': '-- Obteniendo de datos de la entidad %s',
     'entity_info_generate': '-- Creando datos de la entidad %s',
-    'entity_succes_generate': 'Los datos de la entidad %s en formato %s fueron '
-                              'creados exitosamente.'
+    'entity_succes_generate': 'Los datos de la entidad %s en formato %s fueron'
+                              ' creados exitosamente.'
 }
 
 logging.basicConfig(
@@ -77,7 +77,7 @@ def create_data_states():
     add_metadata(data)
     data['datos'] = entities
     create_data_file('provincia', 'json', data)
-    create_data_file('provincia', 'csv', flatten_list('provincia', entities))
+    create_data_file('provincia', 'csv', flatten_list(entities, 'provincia'))
     create_data_file('provincia', 'geojson', convert_to_geojson(entities))
 
 
@@ -97,7 +97,11 @@ def create_data_departments():
     for dept in Department.objects.all():
         geometry = {}
         if dept.geom is not None:
-            geometry = {'type': 'multipolygon', 'coordinates': dept.geom.coords}
+            geometry = {
+                'type': 'multipolygon',
+                'coordinates': dept.geom.coords
+            }
+
         entities.append({
             'id': dept.code,
             'nombre': dept.name,
@@ -116,8 +120,8 @@ def create_data_departments():
     add_metadata(data)
     data['datos'] = entities
     create_data_file('departamento', 'json', data)
-    create_data_file('departamento', 'csv', flatten_list('departamento',
-                                                         entities))
+    create_data_file('departamento', 'csv', flatten_list(entities,
+                                                         'departamento'))
     create_data_file('departamento', 'geojson', convert_to_geojson(entities))
 
 
@@ -155,7 +159,7 @@ def create_data_municipalities():
     add_metadata(data)
     data['datos'] = entities
     create_data_file('municipio', 'json', data)
-    create_data_file('municipio', 'csv', flatten_list('municipio', entities))
+    create_data_file('municipio', 'csv', flatten_list(entities, 'municipio'))
     create_data_file('municipio', 'geojson', convert_to_geojson(entities))
 
 
@@ -213,7 +217,7 @@ def create_data_settlements():
     add_metadata(data)
     data['datos'] = entities
     create_data_file('localidad', 'json', data)
-    create_data_file('localidad', 'csv', flatten_list('localidad', entities))
+    create_data_file('localidad', 'csv', flatten_list(entities, 'localidad'))
     create_data_file('localidad', 'geojson', convert_to_geojson(entities))
 
 
@@ -241,9 +245,11 @@ def create_data_file(entity, file_format, data):
     Returns:
         None
     """
-    logging.info(MESSAGES['entity_info_generate'] % '{}'.format(entity.title()))
+    logging.info(MESSAGES['entity_info_generate'] % '{}'.format(
+        entity.title()))
     filenames = [
-        'data/{}/{}.{}'.format(version, plural_entity_level(entity), file_format),
+        'data/{}/{}.{}'.format(version, plural_entity_level(entity),
+                               file_format),
         'data/latest/{}.{}'.format(plural_entity_level(entity), file_format)
     ]
     for filename in filenames:
@@ -253,7 +259,8 @@ def create_data_file(entity, file_format, data):
         with open(filename, 'w', newline='') as outfile:
             if file_format in 'csv':
                 keys = data[0].keys()
-                dict_writer = csv.DictWriter(outfile, keys)
+                dict_writer = csv.DictWriter(outfile, keys,
+                                             quoting=csv.QUOTE_NONNUMERIC)
                 dict_writer.writeheader()
                 dict_writer.writerows(data)
             else:
@@ -279,12 +286,13 @@ def plural_entity_level(entity_level):
     return entity_level
 
 
-def flatten_list(entity, data):
-    """Aplana un lista y le agrega como prefijo el nombre de la entidad.
+def flatten_list(data, entity=''):
+    """Aplana un lista y agrega opcionalmente como prefijo el nombre de la
+    entidad.
 
     Args:
-        entity (str): Nombre de la entidad.
         data (list): Datos de la entidad a imprimir.
+        entity (str): Nombre de la entidad.
 
     Returns:
         entities (list): Resultado aplanado.

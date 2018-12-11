@@ -94,64 +94,7 @@ def index_roads():
     create_entities_data.add_metadata(data)
     data['datos'] = roads
 
-    create_data_file('json', data)
-    create_data_file('csv', flatten_list(roads))
-
-
-def create_data_file(file_format, data):
-    filenames = [
-        'data/{}/calles.{}'.format(version, file_format),
-        'data/latest/calles.{}'.format(file_format)
-    ]
-
-    for filename in filenames:
-        if not os.path.exists(os.path.dirname(filename)):
-            os.makedirs(os.path.dirname(filename))
-
-        with open(filename, 'w') as outfile:
-            if file_format in 'csv':
-                keys = data[0].keys()
-                dict_writer = csv.DictWriter(outfile, keys)
-                dict_writer.writeheader()
-                dict_writer.writerows(data)
-            else:
-                json.dump(data, outfile, ensure_ascii=False)
-
-    if data:
-        logging.info(MESSAGES['road_data_success'] % file_format)
-    else:
-        logging.error(MESSAGES['road_data_error'])
-
-
-def flatten_list(data):
-    """Aplana un lista.
-
-    Args:
-        data (dic): Datos de la entidad a imprimir.
-
-    Returns:
-        entities (list): Resultado aplanado.
-    """
-    entities = []
-    for row in data:
-        row.pop('geometria')
-        entities.append(flatten_dict(row))
-    return entities
-
-
-def flatten_dict(dd, separator='_', prefix=''):
-    """Aplana un diccionario.
-
-    Args:
-        dd (dic): Diccionario a aplanar.
-        separator (str): Separador entre palabras.
-        prefix (str): Prefijo.
-
-    Returns:
-        dict: Diccionario aplanado.
-    """
-    return {prefix + separator + k if prefix else k: v
-            for kk, vv in dd.items()
-            for k, v in flatten_dict(vv, separator, kk).items()
-            } if isinstance(dd, dict) else {prefix: dd}
-
+    create_entities_data.create_data_file('calle', 'json', data)
+    create_entities_data.create_data_file('calle', 'csv',
+                                          create_entities_data.flatten_list(
+                                              roads))
