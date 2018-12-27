@@ -38,8 +38,13 @@ def run():
         streets = run_query()
         for row in streets:
             process_street(row)
+
+        logging.info('-- Removiendo vías anteriores --')
+        Road.objects.all().delete()
+
         logging.info('-- Insertando vías --')
         Road.objects.bulk_create(roads)
+
         logging.info('-- Proceso completo --')
         generate_report()
     except Exception as e:

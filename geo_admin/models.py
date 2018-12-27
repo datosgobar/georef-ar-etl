@@ -94,7 +94,7 @@ class Settlement(models.Model):
 
 
 class Road(models.Model):
-    code = models.CharField(max_length=13, verbose_name='código')
+    code = models.CharField(max_length=13, verbose_name='código', unique=True)
     name = models.CharField(max_length=100, verbose_name='nombre')
     road_type = models.CharField(max_length=25, blank=True, null=True,
                                  verbose_name='tipo de camino')
