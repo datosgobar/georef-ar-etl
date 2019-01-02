@@ -60,6 +60,7 @@ def index_roads():
 
         for road in roads_filtered:
             dept = departments[road.dept_id]
+            lines = [list(line) for line in road.geom]
 
             document = {
                 'nomenclatura': ', '.join([
@@ -79,7 +80,10 @@ def index_roads():
                         'izquierda': road.end_left
                     }
                 },
-                'geometria': road.geom,
+                'geometria': {
+                    'type': 'MultiLineString',
+                    'coordinates': lines
+                },
                 'departamento': {
                     'id': dept.code,
                     'nombre': dept.name

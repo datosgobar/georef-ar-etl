@@ -44,7 +44,7 @@ create_data: create_entities_data \
 
 pull:
 	git pull origin $(GIT_BRANCH)
-	git pull origin $(GIT_BRANCH) --tags
+	git fetch --tags
 
 virtualenv:
 	rm -rf venv

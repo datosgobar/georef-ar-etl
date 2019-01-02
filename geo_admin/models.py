@@ -106,7 +106,7 @@ class Road(models.Model):
                                    verbose_name='fin izquierda')
     end_right = models.IntegerField(blank=True, null=True,
                                     verbose_name='fin derecha')
-    geom = models.TextField(blank=True, null=True, verbose_name='geometría')
+    geom = models.MultiLineStringField(blank=True, null=True)
     dept = models.ForeignKey(Department, blank=True, null=True,
                              verbose_name='departamento')
     state = models.ForeignKey(State, blank=True, null=True,
