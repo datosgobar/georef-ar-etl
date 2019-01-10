@@ -68,7 +68,8 @@ def index_roads():
                     state.name]),
                 'id': road.code,
                 'nombre': road.name,
-                'tipo': road.road_type,
+                'categoria': road.category,
+                'fuente': road.source,
                 'altura': {
                     'inicio': {
                         'derecha': road.start_right,
@@ -79,7 +80,7 @@ def index_roads():
                         'izquierda': road.end_left
                     }
                 },
-                'geometria': road.geom,
+                'localidad_id': road.locality_code,
                 'departamento': {
                     'id': dept.code,
                     'nombre': dept.name
@@ -87,7 +88,8 @@ def index_roads():
                 'provincia': {
                     'id': state.code,
                     'nombre': state.name
-                }
+                },
+                'geometria': road.geom
             }
             roads.append(document)
 

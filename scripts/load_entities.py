@@ -136,7 +136,10 @@ def load_states():
     try:
         logging.info(MESSAGES['entity_load_info'] % 'Provincia')
         query = """SELECT in1 AS code, \
-                          nam AS name, \
+                          fna AS name, \
+                          nam AS name_short, \
+                          gna AS category, \
+                          sag AS source, \
                           st_y(st_centroid(geom)) AS lat, \
                           st_x(st_centroid(geom)) AS lon, \
                           geom \
@@ -146,8 +149,9 @@ def load_states():
         states = run_query(query)
         states_list = []
         for row in states:
-            (code, name, lat, lon, geom) = row
-            states_list.append(State(code=code, name=name, lat=lat,
+            (code, name, name_short, category, source, lat, lon, geom) = row
+            states_list.append(State(code=code, name=name, name_short=name_short,
+                                     category=category, source=source, lat=lat,
                                      lon=lon, geom=geom))
 
         State.objects.all().delete()
@@ -172,35 +176,45 @@ def load_departments(state_ids):
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Departamento')
             query = """SELECT in1 AS code, \
-                              nam AS name, \
-                              st_y(st_centroid(geom)) AS lat, \
-                              st_x(st_centroid(geom)) AS lon, \
-                              geom, \
+                              fna AS name, \
+                              nam AS name_short, \
+                              gna AS category, \
+                              sag AS source, \
                               substring(in1, 1, 2) AS state_id, \
                               get_percentage_intersection_state(geom,
-                              substring(in1, 1, 2)) AS intersection
+                              substring(in1, 1, 2)) AS intersection, \
+                              st_y(st_centroid(geom)) AS lat, \
+                              st_x(st_centroid(geom)) AS lon, \
+                              geom \
                         FROM  ign_departamentos \
                         ORDER BY code;
                     """
             departments = run_query(query)
             departments_list = []
             for row in departments:
-                (code, name, lat, lon, geom, state_code, intersection) = row
+                (code, name, name_short, category, source, state_id,
+                 intersection, lat, lon, geom) = row
                 departments_list.append(Department(
                     code=code,
                     name=name,
+                    name_short=name_short,
+                    category=category,
+                    source=source,
+                    state_id=state_ids[state_id],
+                    state_intersection=intersection,
                     lat=lat,
                     lon=lon,
-                    geom=geom,
-                    state_id=state_ids[state_code],
-                    state_intersection=intersection
+                    geom=geom
                 ))
 
             Department.objects.all().delete()
 
             caba = State.objects.get(code='02')  # consistencia con bahra
-            Department.objects.get_or_create(name=caba.name, code='02000',
-                                             state=caba, lat=0.0, lon=0.0)
+            Department.objects.get_or_create(code='02000', name=caba.name,
+                                             name_short=caba.name, state=caba,
+                                             state_intersection=caba.code,
+                                             lat=caba.lat, lon=caba.lon,
+                                             geom=caba.geom)
 
             Department.objects.bulk_create(departments_list)
             logging.info(MESSAGES['entity_load_success'] % 'Departamento')
@@ -225,28 +239,35 @@ def load_municipalities(state_ids):
         try:
             logging.info(MESSAGES['entity_load_info'] % 'Municipio')
             query = """SELECT in1 AS code, \
-                               nam AS name, \
-                               st_y(st_centroid(geom)) AS lat, \
-                               st_x(st_centroid(geom)) AS lon, \
-                               geom, \
+                               fna AS name, \
+                               nam AS name_short, \
+                               gna AS category, \
+                               sag AS source, \
                                substring(in1, 1, 2) AS state_id, \
                                get_percentage_intersection_state(geom,
-                               substring(in1, 1, 2)) AS intersection
+                               substring(in1, 1, 2)) AS intersection, \
+                               st_y(st_centroid(geom)) AS lat, \
+                               st_x(st_centroid(geom)) AS lon, \
+                               geom \
                         FROM ign_municipios \
                         ORDER BY code;
                     """
             municipalities = run_query(query)
             municipalities_list = []
             for row in municipalities:
-                code, name, lat, lon, geom, state_code, intersection = row
+                (code, name, name_short, category, source, state_id,
+                 intersection, lat, lon, geom) = row
                 municipalities_list.append(Municipality(
                     code=code,
                     name=name,
+                    name_short=name_short,
+                    category=category,
+                    source=source,
+                    state_id=state_ids[state_id],
+                    state_intersection=intersection,
                     lat=lat,
                     lon=lon,
-                    geom=geom,
-                    state_id=state_ids[state_code],
-                    state_intersection=intersection
+                    geom=geom
                 ))
 
             Municipality.objects.all().delete()
@@ -274,10 +295,11 @@ def load_settlements(state_ids, department_ids, municipality_ids):
             logging.info(MESSAGES['entity_load_info'] % 'Asentamiento')
             query = """SELECT cod_bahra AS code, \
                           nombre_bah AS name, \
-                          tipo_bahra AS bahra_type, \
                           get_municipality(cod_bahra) AS municipality_id, \
-                          cod_depto AS dep_code, \
-                          cod_prov AS state_code, \
+                          cod_depto AS department_id, \
+                          cod_prov AS state_id, \
+                          tipo_bahra AS category, \
+                          fuente_ubi AS source, \
                           st_y(st_centroid(geom)) AS lat, \
                           st_x(st_centroid(geom)) AS lon, \
                           geom \
@@ -288,15 +310,16 @@ def load_settlements(state_ids, department_ids, municipality_ids):
             settlements = run_query(query)
             settlements_list = []
             for row in settlements:
-                (code, name, bahra_type, mun_code, dep_code, state_code,
+                (code, name, mun_code, dep_code, state_code, category, source,
                  lat, lon, geom) = row
                 settlements_list.append(Settlement(
                     code=code,
                     name=name,
-                    bahra_type=bahra_type,
                     municipality_id=municipality_ids[mun_code] if mun_code else None,
                     department_id=department_ids[state_code + dep_code],
                     state_id=state_ids[state_code],
+                    category=category,
+                    source=source,
                     lat=lat,
                     lon=lon,
                     geom=geom

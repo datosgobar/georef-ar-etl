@@ -14,7 +14,7 @@ import os
 from geo_admin.models import Road, State, Department
 from datetime import datetime
 
-
+SOURCE = 'INDEC'
 roads = []
 flagged_roads = []
 states = {state.code: state.id for state in State.objects.all()}
@@ -71,13 +71,14 @@ def run_query():
     Returns:
         streets (dict): Diccionario con vías de circulación.
     """
-    query = """SELECT nomencla as code, \
-                    nombre as name, \
-                    tipo as road_type, \
-                    desdei as start_left, \
-                    desded as start_right, \
-                    hastai as end_left, \
-                    hastad as end_right, \
+    query = """SELECT nomencla AS code, \
+                    nombre AS name, \
+                    codloc AS locality_id, \
+                    tipo AS category, \
+                    desdei AS start_left, \
+                    desded AS start_right, \
+                    hastai AS end_left, \
+                    hastad AS end_right, \
                     geom \
             FROM  indec_vias \
             WHERE tipo <> 'OTRO';
@@ -101,7 +102,7 @@ def process_street(row):
     Returns:
         None
     """
-    (code, name, road_type, start_left, start_right,
+    (code, name, locality_id, category, start_left, start_right,
         end_left, end_right, geom) = row
     
     obs = {}
@@ -119,10 +120,11 @@ def process_street(row):
         state_id = states[state_code]
         dept_id = depts[dept_code]
 
-        road = Road(code=code, name=name, road_type=road_type,
-                    start_left=start_left, start_right=start_right,
-                    end_left=end_left, end_right=end_right, geom=geom,
-                    dept_id=dept_id, state_id=state_id)
+        road = Road(code=code, name=name, locality_code=locality_id,
+                    category=category, source=SOURCE, start_left=start_left,
+                    start_right=start_right, end_left=end_left,
+                    end_right=end_right, geom=geom, dept_id=dept_id,
+                    state_id=state_id)
         roads.append(road)
     else:
         if state_code not in states:

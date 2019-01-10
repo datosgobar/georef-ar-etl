@@ -57,13 +57,18 @@ def create_data_states():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Provincia'))
-    data = {'fuente': 'IGN'}
+    data = {}
     entities = []
 
     for state in State.objects.all():
         entities.append({
             'id': state.code,
-            'nombre': state.name,
+            'nombre': state.name_short,
+            'nombre_completo': state.name,
+            'iso_id': state.iso_code,
+            'iso_nombre': state.iso_name,
+            'categoria': state.category,
+            'fuente': state.source,
             'centroide': {
                 'lat': float(state.lat),
                 'lon': float(state.lon)
@@ -88,7 +93,7 @@ def create_data_departments():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Departamento'))
-    data = {'fuente': 'IGN'}
+    data = {}
     entities = []
 
     states = {state.id: (state.code, state.name) for state in
@@ -104,17 +109,20 @@ def create_data_departments():
 
         entities.append({
             'id': dept.code,
-            'nombre': dept.name,
-            'centroide': {
-                'lat': float(dept.lat),
-                'lon': float(dept.lon)
-            },
-            'geometria': geometry,
+            'nombre': dept.name_short,
+            'nombre_completo': dept.name,
+            'categoria': dept.category,
+            'fuente': dept.source,
             'provincia': {
                 'id': states[dept.state_id][0],
                 'nombre': states[dept.state_id][1],
                 'interseccion': dept.state_intersection
-            }
+            },
+            'centroide': {
+                'lat': float(dept.lat),
+                'lon': float(dept.lon)
+            },
+            'geometria': geometry
         })
 
     add_metadata(data)
@@ -132,7 +140,7 @@ def create_data_municipalities():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Municipio'))
-    data = {'fuente': 'IGN'}
+    data = {}
     entities = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
@@ -140,7 +148,15 @@ def create_data_municipalities():
     for mun in Municipality.objects.all():
         entities.append({
             'id': mun.code,
-            'nombre': mun.name,
+            'nombre': mun.name_short,
+            'nombre_completo': mun.name,
+            'categoria': mun.category,
+            'fuente': mun.source,
+            'provincia': {
+                'id': states[mun.state_id][0],
+                'nombre': states[mun.state_id][1],
+                'interseccion': mun.state_intersection
+            },
             'centroide': {
                 'lat': float(mun.lat),
                 'lon': float(mun.lon)
@@ -149,11 +165,6 @@ def create_data_municipalities():
                 'type': 'multipolygon',
                 'coordinates': mun.geom.coords,
             },
-            'provincia': {
-                'id': states[mun.state_id][0],
-                'nombre': states[mun.state_id][1],
-                'interseccion': mun.state_intersection
-            }
         })
 
     add_metadata(data)
@@ -176,7 +187,7 @@ def create_data_settlements():
         'LS': 'Localidad simple (LS)'
     }
 
-    data = {'fuente': 'BAHRA'}
+    data = {}
     entities = []
     states = {state.id: (state.code, state.name) for state in
               State.objects.all()}
@@ -189,15 +200,8 @@ def create_data_settlements():
         entities.append({
             'id': settlement.code,
             'nombre': settlement.name,
-            'tipo': bahra_types[settlement.bahra_type],
-            'centroide': {
-                'lat': float(settlement.lat),
-                'lon': float(settlement.lon)
-            },
-            'geometria': {
-                'type': 'multipoint',
-                'coordinates': settlement.geom.coords
-            },
+            'categoria': bahra_types[settlement.category],
+            'fuente': settlement.source,
             'municipio': {
                 'id': municipalities[settlement.municipality_id][0]
                 if settlement.municipality_id else None,
@@ -211,6 +215,14 @@ def create_data_settlements():
             'provincia': {
                 'id': states[settlement.state_id][0],
                 'nombre': states[settlement.state_id][1]
+            },
+            'centroide': {
+                'lat': float(settlement.lat),
+                'lon': float(settlement.lon)
+            },
+            'geometria': {
+                'type': 'multipoint',
+                'coordinates': settlement.geom.coords
             }
         })
 
@@ -332,10 +344,10 @@ def convert_to_geojson(data):
     """
     features = []
     for item in data:
-        lat = item['centroide']['lat']
         lon = item['centroide']['lon']
+        lat = item['centroide']['lat']
         item.pop('centroide')
 
-        point = geojson.Point((lat, lon))
+        point = geojson.Point((lon, lat))
         features.append(geojson.Feature(geometry=point, properties=item))
     return geojson.FeatureCollection(features)
