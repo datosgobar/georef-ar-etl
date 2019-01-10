@@ -60,6 +60,7 @@ def index_roads():
 
         for road in roads_filtered:
             dept = departments[road.dept_id]
+            lines = [list(line) for line in road.geom]
 
             document = {
                 'nomenclatura': ', '.join([

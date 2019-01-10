@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import subprocess
+import shutil
 from datetime import datetime
 from datetime import timezone
 from geo_admin.models import State, Department, Municipality, Settlement
@@ -74,7 +75,7 @@ def create_data_states():
                 'lon': float(state.lon)
             },
             'geometria': {
-                'type': 'multipolygon',
+                'type': 'MultiPolygon',
                 'coordinates': state.geom.coords
             }
         })
@@ -103,7 +104,7 @@ def create_data_departments():
         geometry = {}
         if dept.geom is not None:
             geometry = {
-                'type': 'multipolygon',
+                'type': 'MultiPolygon',
                 'coordinates': dept.geom.coords
             }
 
@@ -162,7 +163,7 @@ def create_data_municipalities():
                 'lon': float(mun.lon)
             },
             'geometria': {
-                'type': 'multipolygon',
+                'type': 'MultiPolygon',
                 'coordinates': mun.geom.coords,
             },
         })
@@ -259,24 +260,27 @@ def create_data_file(entity, file_format, data):
     """
     logging.info(MESSAGES['entity_info_generate'] % '{}'.format(
         entity.title()))
-    filenames = [
-        'data/{}/{}.{}'.format(version, plural_entity_level(entity),
-                               file_format),
-        'data/latest/{}.{}'.format(plural_entity_level(entity), file_format)
-    ]
-    for filename in filenames:
-        if not os.path.exists(os.path.dirname(filename)):
-            os.makedirs(os.path.dirname(filename))
 
-        with open(filename, 'w', newline='') as outfile:
-            if file_format in 'csv':
-                keys = data[0].keys()
-                dict_writer = csv.DictWriter(outfile, keys,
-                                             quoting=csv.QUOTE_NONNUMERIC)
-                dict_writer.writeheader()
-                dict_writer.writerows(data)
-            else:
-                json.dump(data, outfile, ensure_ascii=False)
+    filename = 'data/{}/{}.{}'.format(version, plural_entity_level(entity),
+                                      file_format)
+
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    with open(filename, 'w', newline='') as outfile:
+        if file_format in 'csv':
+            keys = data[0].keys()
+            dict_writer = csv.DictWriter(outfile, keys,
+                                         quoting=csv.QUOTE_NONNUMERIC)
+            dict_writer.writeheader()
+            dict_writer.writerows(data)
+        else:
+            json.dump(data, outfile, ensure_ascii=False)
+
+    latest_fiename = 'data/latest/{}.{}'.format(plural_entity_level(entity),
+                                                file_format)
+
+    os.makedirs(os.path.dirname(latest_fiename), exist_ok=True)
+    shutil.copyfile(filename, latest_fiename)
 
     logging.info(MESSAGES['entity_succes_generate'] %
                  ('{}'.format(entity.title()), file_format))

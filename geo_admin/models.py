@@ -125,7 +125,7 @@ class Road(models.Model):
                                      verbose_name='código localidad')
     dept = models.ForeignKey(Department, verbose_name='departamento')
     state = models.ForeignKey(State, verbose_name='provincia')
-    geom = models.TextField(verbose_name='geometría')
+    geom = models.MultiLineStringField(verbose_name='geometría')
 
     class Meta:
         verbose_name = 'calle'
