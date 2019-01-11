@@ -90,7 +90,10 @@ def index_roads():
                     'id': state.code,
                     'nombre': state.name
                 },
-                'geometria': road.geom
+                'geometria': {
+                    'type': 'MultiLineString',
+                    'coordinates': lines
+                },
             }
             roads.append(document)
 

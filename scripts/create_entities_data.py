@@ -222,7 +222,7 @@ def create_data_settlements():
                 'lon': float(settlement.lon)
             },
             'geometria': {
-                'type': 'multipoint',
+                'type': 'MultiPoint',
                 'coordinates': settlement.geom.coords
             }
         })
