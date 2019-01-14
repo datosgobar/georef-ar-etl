@@ -5,10 +5,15 @@ from django.contrib.gis.db import models
 
 class Country(models.Model):
     name = models.CharField(max_length=100, verbose_name='nombre')
+    name_short = models.CharField(max_length=100, verbose_name='nombre corto')
     iso_code = models.CharField(blank=True, max_length=4,
                                 verbose_name='codigo iso')
     iso_name = models.CharField(blank=True, max_length=100,
                                 verbose_name='nombre iso')
+    category = models.CharField(blank=True,  null=True, max_length=50,
+                                verbose_name='categoría')
+    source = models.CharField(blank=True, null=True, max_length=50,
+                              verbose_name='fuente')
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
     lon = models.DecimalField(max_digits=9, decimal_places=6,
@@ -25,7 +30,7 @@ class State(models.Model):
                                 verbose_name='nombre iso')
     category = models.CharField(max_length=50, verbose_name='categoría')
     source = models.CharField(max_length=50, verbose_name='fuente')
-    # country = models.ForeignKey(Country, verbose_name='país')
+    country = models.ForeignKey(Country, verbose_name='país')
     lat = models.DecimalField(max_digits=9, decimal_places=6,
                               verbose_name='latitud')
     lon = models.DecimalField(max_digits=9, decimal_places=6,

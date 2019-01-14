@@ -16,7 +16,7 @@ import subprocess
 import shutil
 from datetime import datetime
 from datetime import timezone
-from geo_admin.models import State, Department, Municipality, Settlement
+from geo_admin.models import *
 
 
 MESSAGES = {
@@ -43,12 +43,46 @@ def run():
         None
     """
     try:
+        create_data_countries()
         create_data_states()
         create_data_departments()
         create_data_municipalities()
         create_data_settlements()
     except Exception as e:
         logging.error(e)
+
+
+def create_data_countries():
+    """Obtiene y genera datos de la entidad País.
+
+    Returns:
+        None
+    """
+    logging.info(MESSAGES['entity_info_get'] % '{}'.format('País'))
+    data = {'fuente': 'IGN'}
+    entities = []
+
+    for country in Country.objects.all():
+        entities.append({
+            'nombre': country.name_short,
+            'nombre_completo': country.name,
+            'categoria': country.category,
+            'fuente': country.source,
+            'centroide': {
+                'lat': float(country.lat),
+                'lon': float(country.lon)
+            },
+            'geometria': {
+                'type': 'multipolygon',
+                'coordinates': country.geom.coords
+            }
+        })
+
+    add_metadata(data)
+    data['datos'] = entities
+    create_data_file('pais', 'json', data)
+    create_data_file('pais', 'csv', flatten_list(entities, 'pais'))
+    create_data_file('pais', 'geojson', convert_to_geojson(entities))
 
 
 def create_data_states():
@@ -70,6 +104,7 @@ def create_data_states():
             'iso_nombre': state.iso_name,
             'categoria': state.category,
             'fuente': state.source,
+            'pais': state.country.name,
             'centroide': {
                 'lat': float(state.lat),
                 'lon': float(state.lon)
@@ -295,10 +330,10 @@ def plural_entity_level(entity_level):
     Return:
         entity_level (str): Nombre pluralizado.
     """
-    if 'localidad' not in entity_level:
-        entity_level = entity_level + 's'
-    else:
+    if entity_level in ['localidad', 'pais']:
         entity_level = entity_level + 'es'
+    else:
+        entity_level = entity_level + 's'
     return entity_level
 
 

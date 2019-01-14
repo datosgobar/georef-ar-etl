@@ -12,7 +12,7 @@ import logging
 import os
 import psycopg2
 from datetime import datetime
-from geo_admin.models import State, Department, Municipality, Settlement
+from geo_admin.models import *
 from georef.settings import BASE_DIR
 
 
@@ -51,6 +51,7 @@ def run():
         load_script('functions_load_entities.sql')
         update_entities_data()
         load_script('ign_entities_patch.sql')
+        load_countries()
         state_ids = load_states()
         department_ids = load_departments(state_ids)
         municipality_ids = load_municipalities(state_ids)
@@ -125,6 +126,42 @@ def update_entities_data():
     logging.info(MESSAGES['update_entities_success'])
 
 
+def load_countries():
+    """Ejecuta una consulta sobre la base de datos intermedia para obtener los
+       datos de la entidad País, e inserta los resultados en la base de
+       datos integrada con georef-etl.
+
+    Returns:
+       None
+    """
+    try:
+        logging.info(MESSAGES['entity_load_info'] % 'País')
+        query = """SELECT fna AS name, \
+                          nam AS name_sort, \
+                          gna AS category, \
+                          sag AS source, \
+                          st_y(st_centroid(geom)) AS lat, \
+                          st_x(st_centroid(geom)) AS lon, \
+                          geom \
+                    FROM  ign_pais \
+                    ORDER BY name;
+                """
+        countries = run_query(query)
+        countries_list = []
+        for row in countries:
+            (name, name_short, category, source, lat, lon, geom) = row
+            countries_list.append(Country(name=name, name_short=name_short,
+                                          category=category, source=source,
+                                          lat=lat, lon=lon, geom=geom))
+
+        Country.objects.all().delete()
+        Country.objects.bulk_create(countries_list)
+        logging.info(MESSAGES['entity_load_success'] % 'País')
+    except Exception as e:
+        logging.error("{0}: {1}".format(MESSAGES['entity_load_error'] %
+                                        'País', e))
+
+
 def load_states():
     """Ejecuta una consulta sobre la base de datos intermedia para obtener los
        datos de la entidad Provincia, e inserta los resultados en la base de
@@ -147,12 +184,13 @@ def load_states():
                     ORDER BY code;
                 """
         states = run_query(query)
+        arg = Country.objects.get(name='República Argentina')
         states_list = []
         for row in states:
             (code, name, name_short, category, source, lat, lon, geom) = row
             states_list.append(State(code=code, name=name, name_short=name_short,
-                                     category=category, source=source, lat=lat,
-                                     lon=lon, geom=geom))
+                                     country_id=arg.id, category=category,
+                                     source=source, lat=lat, lon=lon, geom=geom))
 
         State.objects.all().delete()
         State.objects.bulk_create(states_list)
