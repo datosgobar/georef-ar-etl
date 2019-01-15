@@ -8,6 +8,7 @@ una base datos intermedia con entidades políticas (asentamientos, municipios,
 departamentos y provincias).
 """
 
+import csv
 import logging
 import os
 import psycopg2
@@ -188,7 +189,10 @@ def load_states():
         states_list = []
         for row in states:
             (code, name, name_short, category, source, lat, lon, geom) = row
+            iso_code, iso_name = add_data_iso(code)
+
             states_list.append(State(code=code, name=name, name_short=name_short,
+                                     iso_code=iso_code, iso_name=iso_name,
                                      country_id=arg.id, category=category,
                                      source=source, lat=lat, lon=lon, geom=geom))
 
@@ -371,3 +375,12 @@ def load_settlements(state_ids, department_ids, municipality_ids):
                                             % 'Asentamiento', e))
     else:
         logging.error(MESSAGES['settlements_dependency_error'])
+
+
+def add_data_iso(code):
+    file_path = BASE_DIR + '/georef/iso-3166-provincias-arg.csv'
+    csv_file = csv.reader(open(file_path, "r"), delimiter=",")
+    for row in csv_file:
+        if code == row[0]:
+            return row[2], row[3]
+    return '', ''
