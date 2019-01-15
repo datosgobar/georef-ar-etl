@@ -1,0 +1,196 @@
+código_indec,indec_nombre_largo,iso_nombre_oficial,iso_alpha_3
+149,República de Angola,Angola,AGO
+102,República Argelina Democrática y Popular,Argelia,DZA
+112,República de Benin,Benin,BEN
+103,República de Botswana,Botswana,BWA
+101,Burkina Faso,Burkina Faso,BFA
+104,República de Burundi,Burundi,BDI
+150,República de Cabo Verde,Cabo Verde,CPV
+105,República del Camerún,Camerún,CMR
+111,República del Chad,Chad,TCD
+155,Unión de las Comoras,Comoras (las),COM
+108,República del Congo,Congo (el),COG
+110,República de Côte d'Ivoire,costa de marfil !Côte d'Ivoire,CIV
+153,República de Djibouti,Djibouti,DJI
+113,República Árabe de Egipto,Egipto,EGY
+160,Eritrea,Eritrea,ERI
+161,República Democrática Federal de Etiopía,Etiopía,ETH
+115,República Gabonesa,Gabón,GAB
+116,República de Gambia,Gambia (la),GMB
+117,República de Ghana,Ghana,GHA
+118,República de Guinea,Guinea,GIN
+156,República de Guinea-Bissau,Guinea Bissau,GNB
+119,República de Guinea Ecuatorial,Guinea Ecuatorial,GNQ
+120,República de Kenya,Kenya,KEN
+121,Reino de Lesotho,Lesotho,LSO
+122,República de Liberia,Liberia,LBR
+123,Jamahiriya Árabe Libia Popular y Socialista,Libia,LBY
+124,República de Madagascar,Madagascar,MDG
+125,República de Malawi,Malawi,MWI
+126,República de Malí,Malí,MLI
+127,Reino de Marruecos,Marruecos,MAR
+128,República de Mauricio,Mauricio,MUS
+129,República Islámica de Mauritania,Mauritania,MRT
+151,República de Mozambique,Mozambique,MOZ
+158,República de Namibia,Namibia,NAM
+130,República del Níger,Níger (el),NER
+131,República Federal de Nigeria,Nigeria,NGA
+107,República Centroafricana,República Centroafricana (la),CAF
+109,República Democrática del Congo,Congo (la República Democrática del),COD
+133,República de Rwanda,Rwanda,RWA
+157,República Democrática de Santo Tomé y Príncipe,Santo Tomé y Príncipe,STP
+134,República del Senegal,Senegal,SEN
+152,República de Seychelles,Seychelles,SYC
+135,República de Sierra Leona,Sierra leona,SLE
+136,República Somalí,Somalia,SOM
+159,República de Sudáfrica,Sudáfrica,ZAF
+162,República del Sudán,Sudán (el),SDN
+163,República de Sudán del Sur,Sudán del Sur,SSD
+137,Reino de Swazilandia,Swazilandia,SWZ
+139,República Unida de Tanzanía,"Tanzania, República Unida de",TZA
+140,República Togolesa,Togo,TGO
+141,República de Túnez,Túnez,TUN
+142,República de Uganda,Uganda,UGA
+144,República de Zambia,Zambia,ZMB
+132,República de Zimbabwe,Zimbabwe,ZWE
+237,Antigua y Barbuda,Antigua y Barbuda,ATG
+200,República Argentina,Argentina,ARG
+239,Commonwealth de las Bahamas,Bahamas (las),BHS
+201,Barbados,Barbados,BRB
+236,Belice,Belice,BLZ
+202,Estado Plurinacional de Bolivia (el),Bolivia (Estado Plurinacional de),BOL
+203,República Federativa del Brasil,Brasil,BRA
+204,Canadá,Canadá,CAN
+208,República de Chile,Chile,CHL
+205,República de Colombia,Colombia,COL
+206,República de Costa Rica,Costa Rica,CRI
+207,República de Cuba,Cuba,CUB
+233,Commonwealth de Dominica,Dominica,DMA
+210,República del Ecuador,Ecuador,ECU
+211,República de El Salvador,El Salvador,SLV
+212,los Estados Unidos de América,Estados Unidos de América (los),USA
+240,Granada,Granada,GRD
+213,República de Guatemala (la),Guatemala,GTM
+214,República de Guyana,Guyana,GUY
+215,República de Haití,Haití,HTI
+216,República de Honduras,Honduras,HND
+217,Jamaica,Jamaica,JAM
+218,los Estados Unidos Mexicanos,México,MEX
+219,República de Nicaragua,Nicaragua,NIC
+220,República de Panamá,Panamá,PAN
+221,República del Paraguay,Paraguay,PRY
+222,República del Perú,Perú,PER
+209,República Dominicana,"Dominicana, (la) República",DOM
+238,Saint Kitts y Nevis,Saint Kitts y Nevis,KNA
+235,San Vicente y las Granadinas,San Vicente y las Granadinas,VCT
+234,Santa Lucía,Santa Lucía,LCA
+232,República de Suriname,Suriname,SUR
+224,República de Trinidad y Tabago,Trinidad y Tobago,TTO
+225,República Oriental del Uruguay,Uruguay,URY
+226,República Bolivariana de Venezuela,Venezuela (República Bolivariana de),VEN
+301,República Islámica del Afganistán (la),Afganistán,AFG
+302,Reino de la Arabia Saudita,Arabia Saudita,SAU
+349,República de Armenia,Armenia,ARM
+350,República de Azerbaiyán,Azerbaiyán,AZE
+303,Reino de Bahrein,Bahrein,BHR
+345,República Popular de Bangladesh,Bangladesh,BGD
+305,Reino de Bhután,Bhután,BTN
+346,Brunei Darussalam,Brunei Darussalam,BRN
+306,Reino de Camboya,Camboya,KHM
+310,República Popular China,China,CHN
+309,República de Corea,Corea (la República de),KOR
+308,República Popular Democrática de Corea,Corea (la República Popular Democrática de),PRK
+331,los Emiratos Árabes Unidos,Emiratos Árabes Unidos (los),ARE
+312,República de Filipinas,Filipinas (las),PHL
+351,Georgia,Georgia,GEO
+315,República de la India,India,IND
+316,República de Indonesia,Indonesia,IDN
+318,República Islámica del Irán,Irán (República Islámica de),IRN
+317,República del Iraq,Iraq,IRQ
+319,Estado de Israel,Israel,ISR
+320,Japón,Japón,JPN
+321,Reino Hachemita de Jordania,Jordania,JOR
+352,República de Kazajstán,Kazajstán,KAZ
+353,República Kirguisa,Kirguistán,KGZ
+323,Estado de Kuwait,Kuwait,KWT
+324,República Democrática Popular Lao,"Lao, (la) República Democrática Popular",LAO
+325,República Libanesa,Líbano,LBN
+326,Malasia,Malasia,MYS
+327,República de Maldivas,Maldivas,MDV
+329,Mongolia,Mongolia,MNG
+304,Unión de Myanmar,Myanmar,MMR
+330,República Democrática Federal de Nepal,Nepal,NPL
+328,Sultanía de Omán,Omán,OMN
+332,República Islámica del Pakistán,Pakistán,PAK
+357,Estado de Palestina,"Palestina, Estado de",PSE
+322,Estado de Qatar,Qatar,QAT
+333,República de Singapur,Singapur,SGP
+334,República Árabe Siria,República Árabe Siria,SYR
+307,República Socialista Democrática de Sri Lanka,Sri Lanka,LKA
+335,Reino de Tailandia,Tailandia,THA
+354,República de Tayikistán,Tayikistán,TJK
+358,República Democrática de Timor-Leste,Timor-Leste,TLS
+355,Turkmenistán,Turkmenistán,TKM
+356,República de Uzbekistán,Uzbekistán,UZB
+337,República Socialista de Viet Nam,Viet Nam,VNM
+348,República del Yemen,Yemen,YEM
+401,República de Albania,Albania,ALB
+438,República Federal de Alemania,Alemania,DEU
+404,Principado de Andorra,Andorra,AND
+405,República de Austria,Austria,AUT
+439,República de Belarús,Belarús,BLR
+406,Reino de Bélgica,Bélgica,BEL
+446,Bosnia y Herzegovina,Bosnia y Herzegovina,BIH
+407,República de Bulgaria,Bulgaria,BGR
+435,República de Chipre,Chipre,CYP
+447,República de Croacia,Croacia,HRV
+409,Reino de Dinamarca,Dinamarca,DNK
+448,República Eslovaca,Eslovaquia,SVK
+449,República de Eslovenia,Eslovenia,SVN
+410,Reino de España,España,ESP
+440,República de Estonia,Estonia,EST
+411,República de Finlandia,Finlandia,FIN
+412,República Francesa,Francia,FRA
+413,República Helénica,Grecia,GRC
+414,República de Hungría,Hungría,HUN
+415,Irlanda,Irlanda,IRL
+416,República de Islandia,Islandia,ISL
+417,República Italiana,Italia,ITA
+441,República de Letonia,Letonia,LVA
+418,Principado de Liechtenstein,Liechtenstein,LIE
+442,República de Lituania,Lituania,LTU
+419,Gran Ducado de Luxemburgo,Luxemburgo,LUX
+450,ex República Yugoslava de Macedonia (la),Macedonia (la ex República Yugoslava de),MKD
+420,República de Malta,Malta,MLT
+443,República de Moldova,Moldova (la República de),MDA
+421,Principado de Mónaco,Mónaco,MCO
+453,Montenegro,Montenegro,MNE
+422,Reino de Noruega,Noruega,NOR
+423,Reino de los Países Bajos,Países Bajos (los),NLD
+424,República de Polonia,Polonia,POL
+425,República Portuguesa,Portugal,PRT
+426,Reino Unido de Gran Bretaña e Irlanda del Norte,Reino Unido de Gran Bretaña e Irlanda del Norte (el),GBR
+451,República Checa,Chequia,CZE
+427,Rumania,Rumania,ROU
+444,Federación de Rusia,"Rusia, (la) Federación de",RUS
+428,República de San Marino,San Marino,SMR
+454,República de Serbia,Serbia,SRB
+429,Reino de Suecia,Suecia,SWE
+430,Confederación Suiza,Suiza,CHE
+436,República de Turquía,Turquía,TUR
+445,Ucrania,Ucrania,UKR
+431,Vaticano (Santa Sede),Santa Sede (la),VAT
+501,Australia,Australia,AUS
+512,República de las Islas Fiji,Fiji,FJI
+520,República de las Islas Marshall,"Marshall, (las) Islas",MHL
+518,las Islas Salomón,"Salomón, Islas",SLB
+514,República de Kiribati,Kiribati,KIR
+515,los Estados Federados de Micronesia,Micronesia (Estados Federados de),FSM
+503,República de Nauru,Nauru,NRU
+504,Nueva Zelandia,Nueva Zelandia,NZL
+516,República de Palau,Palau,PLW
+513,Papua Nueva Guinea,Papua Nueva Guinea,PNG
+506,Estado Independiente de Samoa,Samoa,WSM
+519,Reino de Tonga,Tonga,TON
+517,Tuvalu,Tuvalu,TUV
+505,República de Vanuatu,Vanuatu,VUT

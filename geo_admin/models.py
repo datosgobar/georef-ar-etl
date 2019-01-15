@@ -4,11 +4,13 @@ from django.contrib.gis.db import models
 
 
 class Country(models.Model):
+    code = models.CharField(blank=True, null=True, max_length=3, unique=True,
+                            verbose_name='código')
     name = models.CharField(max_length=100, verbose_name='nombre')
     name_short = models.CharField(max_length=100, verbose_name='nombre corto')
-    iso_code = models.CharField(blank=True, max_length=4,
+    iso_code = models.CharField(blank=True, null=True, max_length=4,
                                 verbose_name='codigo iso')
-    iso_name = models.CharField(blank=True, max_length=100,
+    iso_name = models.CharField(blank=True, null=True, max_length=100,
                                 verbose_name='nombre iso')
     category = models.CharField(blank=True,  null=True, max_length=50,
                                 verbose_name='categoría')

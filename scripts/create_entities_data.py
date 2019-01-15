@@ -64,8 +64,11 @@ def create_data_countries():
 
     for country in Country.objects.all():
         entities.append({
+            'id': country.code,
             'nombre': country.name_short,
             'nombre_completo': country.name,
+            'iso_id': country.iso_code,
+            'iso_nombre': country.iso_name,
             'categoria': country.category,
             'fuente': country.source,
             'centroide': {

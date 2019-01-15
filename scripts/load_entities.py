@@ -151,9 +151,13 @@ def load_countries():
         countries_list = []
         for row in countries:
             (name, name_short, category, source, lat, lon, geom) = row
+            code, iso_name, iso_code = add_data_iso_country(name)
+
             countries_list.append(Country(name=name, name_short=name_short,
-                                          category=category, source=source,
-                                          lat=lat, lon=lon, geom=geom))
+                                          code=code, iso_code=iso_code,
+                                          iso_name=iso_name, category=category,
+                                          source=source, lat=lat, lon=lon,
+                                          geom=geom))
 
         Country.objects.all().delete()
         Country.objects.bulk_create(countries_list)
@@ -189,7 +193,7 @@ def load_states():
         states_list = []
         for row in states:
             (code, name, name_short, category, source, lat, lon, geom) = row
-            iso_code, iso_name = add_data_iso(code)
+            iso_code, iso_name = add_data_iso_state(code)
 
             states_list.append(State(code=code, name=name, name_short=name_short,
                                      iso_code=iso_code, iso_name=iso_name,
@@ -377,10 +381,23 @@ def load_settlements(state_ids, department_ids, municipality_ids):
         logging.error(MESSAGES['settlements_dependency_error'])
 
 
-def add_data_iso(code):
+def add_data_iso_state(code):
+    # TODO: Agregar docstring
     file_path = BASE_DIR + '/georef/iso-3166-provincias-arg.csv'
     csv_file = csv.reader(open(file_path, "r"), delimiter=",")
     for row in csv_file:
         if code == row[0]:
             return row[2], row[3]
-    return '', ''
+    # TODO: Mejorar respuesta
+    return None, None
+
+
+def add_data_iso_country(name):
+    # TODO: Agregar docstring
+    file_path = BASE_DIR + '/georef/iso-alfa-3-paises.csv'
+    csv_file = csv.reader(open(file_path, "r"), delimiter=",")
+    for row in csv_file:
+        if name == row[1]:
+            return row[0], row[2], row[3]
+    # TODO: Mejorar respuesta
+    return None, None, None
