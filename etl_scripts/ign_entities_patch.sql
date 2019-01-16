@@ -22,6 +22,7 @@ UPDATE ign_departamentos SET in1 = '94011' WHERE fna = 'Departamento Río Grande
 
 -- MUNICIPIOS
 DELETE FROM ign_municipios WHERE in1 ISNULL ;
+DELETE FROM ign_municipios WHERE gna ISNULL ;
 
 -- Error de asignación de código
 UPDATE ign_municipios SET in1 = '540287' WHERE in1 = '550287';
