@@ -77,10 +77,12 @@ def create_intersections_data():
     logging.info(MESSAGES['intersections_export_info'])
     entities_code = ['02', '06', '10', '14', '18', '22', '26', '30', '34', '38',
                      '42', '46', '50', '54', '58', '62', '66', '70', '74', '78',
-                     '82', '86', '90', '94']
+                     '82', '86', '90', '94', 'provincias']
 
-    query = """SELECT nomencla_a, nombre_a, tipo_a, departamento_a, provincia_a, 
-                      nomencla_b, nombre_b, tipo_b, departamento_b, provincia_b,
+    query = """SELECT a_nomencla, a_nombre, a_tipo, 
+                      a_dept_id, a_dept_nombre, a_prov_id, a_prov_nombre, 
+                      b_nomencla, b_nombre, b_tipo, 
+                      b_dept_id, b_dept_nombre, b_prov_id, b_prov_nombre, 
                       ST_Y(geom) AS lat, ST_X(geom) AS lon
                FROM {}
             """
@@ -90,22 +92,43 @@ def create_intersections_data():
         table_name = 'indec_intersecciones_{}'.format(code)
         intersections = run_query(query.format(table_name))
         for row in intersections:
-            (nomencla_a, nombre_a, tipo_a, departamento_a, provincia_a,
-             nomencla_b, nombre_b, tipo_b, departamento_b, provincia_b,
-             lat, lon) = row
+            (a_nomencla, a_nombre, a_tipo, a_dept_id, a_dept_nombre, a_prov_id,
+             a_prov_nombre, b_nomencla, b_nombre, b_tipo, b_dept_id,
+             b_dept_nombre, b_prov_id, b_prov_nombre, lat, lon) = row
             data.append({
-                'nomencla_a': nomencla_a,
-                'nombre_a': nombre_a,
-                'tipo_a': tipo_a,
-                'departamento_a': departamento_a,
-                'provincia_a': provincia_a,
-                'nomencla_b': nomencla_b,
-                'nombre_b': nombre_b,
-                'tipo_b': tipo_b,
-                'departamento_b': departamento_b,
-                'provincia_b': provincia_b,
-                'lat': lat,
-                'lon': lon
+                'id': '-'.join([a_nomencla, b_nomencla]),
+                'calle_a': {
+                    'id': a_nomencla,
+                    'nombre': a_nombre,
+                    'departamento': {
+                        'id': a_dept_id,
+                        'nombre': a_dept_nombre
+                    },
+                    'provincia': {
+                        'id': a_prov_id,
+                        'nombre': a_prov_nombre,
+                    },
+                    'categoria': a_tipo,
+                },
+                'calle_b': {
+                    'nomencla': b_nomencla,
+                    'nombre': b_nombre,
+                    'departamento': {
+                        'id': b_dept_id,
+                        'nombre': b_dept_nombre
+                    },
+                    'provincia': {
+                        'id': b_prov_id,
+                        'nombre': b_prov_nombre
+                    },
+                    'categoria': b_tipo,
+                },
+                'geometria': {
+                    'type': 'Point',
+                    'coordinates': [
+                        lon, lat
+                    ]
+                }
             })
         create_data_file(code, data)
         logging.info(MESSAGES['intersections_export_success'] % code)
@@ -122,7 +145,7 @@ def create_data_file(code, data):
     Returns:
         None
     """
-    filename = 'data/intersecciones/indec_intersecciones_{}.json' \
+    filename = 'data/intersecciones/calles_intersecciones_{}.json' \
         .format(code)
 
     if not os.path.exists(os.path.dirname(filename)):

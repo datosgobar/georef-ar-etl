@@ -34,13 +34,15 @@ update:	pull \
  create_entities_report \
  load_entities \
  load_roads \
+ load_intersections \
  create_data \
  create_synonyms_file \
  create_excluding_terms_file \
  custom_steps
 
 create_data: create_entities_data \
- create_roads_data
+ create_roads_data \
+ create_intersections_data
 
 pull:
 	git pull origin $(GIT_BRANCH)

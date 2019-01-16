@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION get_department_by_code(code CHARACTER(5), OUT result 
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  SELECT upper(nam) INTO result
+  SELECT nam INTO result
   FROM ign_departamentos
   WHERE in1 = code;
   EXCEPTION WHEN OTHERS
@@ -16,7 +16,7 @@ CREATE OR REPLACE FUNCTION get_state_by_code(code CHARACTER(2), OUT result VARCH
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  SELECT upper(nam) INTO result
+  SELECT nam INTO result
   FROM ign_provincias
   WHERE in1 = code;
   EXCEPTION WHEN OTHERS
@@ -48,35 +48,43 @@ BEGIN
 
   sql_create_tbl := 'CREATE TABLE IF NOT EXISTS %s (' ||
                     ' id serial not null primary key,' ||
-                    ' nomencla_a varchar(13),' ||
-                    ' nombre_a varchar(100),' ||
-                    ' tipo_a varchar(10),' ||
-                    ' departamento_a varchar(100),' ||
-                    ' provincia_a varchar(100),' ||
-                    ' nomencla_b varchar(13),' ||
-                    ' nombre_b varchar(100),' ||
-                    ' tipo_b varchar(10),' ||
-                    ' departamento_b varchar(100),' ||
-                    ' provincia_b varchar(100),' ||
+                    ' a_nomencla varchar(13),' ||
+                    ' a_nombre varchar(100),' ||
+                    ' a_tipo varchar(10),' ||
+                    ' a_dept_id varchar(5),' ||
+                    ' a_dept_nombre varchar(100),' ||
+                    ' a_prov_id varchar(2),' ||
+                    ' a_prov_nombre varchar(100),' ||
+                    ' b_nomencla varchar(13),' ||
+                    ' b_nombre varchar(100),' ||
+                    ' b_tipo varchar(10),' ||
+                    ' b_dept_id varchar(5),' ||
+                    ' b_dept_nombre varchar(100),' ||
+                    ' b_prov_id varchar(2),' ||
+                    ' b_prov_nombre varchar(100),' ||
                     ' geom geometry,' ||
                     ' nomencla_interseccion varchar(254)' ||
                     ')';
 
   sql_insert := 'INSERT INTO %s (' ||
-                'nomencla_a, nombre_a, tipo_a, departamento_a, provincia_a, ' ||
-                'nomencla_b, nombre_b, tipo_b, departamento_b, provincia_b, ' ||
+                'a_nomencla, a_nombre, a_tipo, a_dept_id, a_dept_nombre, a_prov_id, a_prov_nombre,' ||
+                'b_nomencla, b_nombre, b_tipo, b_dept_id, b_dept_nombre, b_prov_id, b_prov_nombre,' ||
                 'geom, nomencla_interseccion)' ||
                 ' SELECT' ||
-                '   a.nomencla nomencla_a,' ||
-                '   a.nombre nombre_a,' ||
-                '   a.tipo tipo_a,' ||
-                '   get_department_by_code(substr(a.nomencla, 1, 5)) departamento_a,' ||
-                '   get_state_by_code(substr(a.nomencla, 1, 2)) provincia_a,' ||
-                '   b.nomencla nomencla_b,' ||
-                '   b.nombre nombre_b,' ||
-                '   b.tipo tipo_b,' ||
-                '   get_department_by_code(substr(b.nomencla, 1, 5)) departamento_b,' ||
-                '   get_state_by_code(substr(b.nomencla, 1, 2)) provincia_b,' ||
+                '   a.nomencla a_nomencla,' ||
+                '   a.nombre a_nombre,' ||
+                '   a.tipo a_tipo,' ||
+                '   substr(a.nomencla, 1, 5) a_dept_id,' ||
+                '   get_department_by_code(substr(a.nomencla, 1, 5)) a_dept_nombre,' ||
+                '   substr(a.nomencla, 1, 2) a_prov_id,' ||
+                '   get_state_by_code(substr(a.nomencla, 1, 2)) a_prov_nombre,' ||
+                '   b.nomencla b_nomencla,' ||
+                '   b.nombre b_nombre,' ||
+                '   b.tipo b_tipo,' ||
+                '   substr(b.nomencla, 1, 5) b_dept_id,' ||
+                '   get_department_by_code(substr(b.nomencla, 1, 5)) b_dept_nombre,' ||
+                '   substr(b.nomencla, 1, 2) b_prov_id,' ||
+                '   get_state_by_code(substr(b.nomencla, 1, 2)) b_prov_nombre,' ||
                 '   CASE WHEN ST_CoveredBy(a.geom, b.geom)' ||
                 '     THEN' ||
                 '       a.geom' ||
@@ -134,10 +142,10 @@ BEGIN
                            '  SELECT t.id FROM (' ||
                            '     SELECT DISTINCT' ||
                            '       first_value(id) OVER w AS id,' ||
-                           '       first_value(nomencla_a) OVER w AS nomencla_a,' ||
-                           '       first_value(nombre_a) OVER w AS nombre_a,' ||
-                           '       first_value(nomencla_b) OVER w AS nomencla_b,' ||
-                           '       first_value(nombre_b) OVER w AS nombre_b,' ||
+                           '       first_value(nomencla_a) OVER w AS a_nomencla,' ||
+                           '       first_value(nombre_a) OVER w AS a_nombre,' ||
+                           '       first_value(nomencla_b) OVER w AS b_nomencla,' ||
+                           '       first_value(nombre_b) OVER w AS b_nombre,' ||
                            '       first_value(geom) OVER w AS geom,' ||
                            '       nomencla_interseccion' ||
                            '   FROM %s' ||
@@ -178,16 +186,20 @@ BEGIN
   sql_drop_tbl := 'DROP TABLE IF EXISTS indec_intersecciones_provincias';
   sql_create_tbl := 'CREATE TABLE indec_intersecciones_provincias AS' ||
                     '  SELECT' ||
-                    '    a.nomencla nomencla_a,' ||
-                    '    a.nombre   nombre_a,' ||
-                    '    a.tipo     tipo_a,' ||
-                    '    get_department_by_code(substr(a.nomencla, 1, 5)) departamento_a,' ||
-                    '    get_state_by_code(substr(a.nomencla, 1, 2)) provincia_a,' ||
-                    '    b.nomencla nomencla_b,' ||
-                    '    b.nombre   nombre_b,' ||
-                    '    b.tipo     tipo_b,' ||
-                    '    get_department_by_code(substr(b.nomencla, 1, 5)) departamento_b,' ||
-                    '    get_state_by_code(substr(b.nomencla, 1, 2)) provincia_b,' ||
+                    '    a.nomencla a_nomencla,' ||
+                    '    a.nombre   a_nombre,' ||
+                    '    a.tipo     a_tipo,' ||
+                    '    substr(a.nomencla, 1, 5) a_dept_id,' ||
+                    '    get_department_by_code(substr(a.nomencla, 1, 5)) a_dept_nombre,' ||
+                    '    substr(a.nomencla, 1, 2) a_prov_id,' ||
+                    '    get_state_by_code(substr(a.nomencla, 1, 2)) a_prov_nombre,' ||
+                    '    b.nomencla b_nomencla,' ||
+                    '    b.nombre   b_nombre,' ||
+                    '    b.tipo     b_tipo,' ||
+                    '    substr(b.nomencla, 1, 5) b_dept_id,' ||
+                    '    get_department_by_code(substr(b.nomencla, 1, 5)) b_dept_nombre,' ||
+                    '    substr(b.nomencla, 1, 2) b_prov_id,' ||
+                    '    get_state_by_code(substr(b.nomencla, 1, 2)) b_prov_nombre,' ||
                     '    CASE WHEN ST_CoveredBy(a.geom, b.geom)' ||
                     '      THEN' ||
                     '        a.geom' ||
@@ -244,11 +256,11 @@ DECLARE
   sql_insert TEXT;
 BEGIN
   tbl_name = 'indec_intersecciones_' || code_state;
-  sql_insert = 'INSERT INTO %s (nombre_a, nomencla_a, tipo_a, departamento_a, provincia_a, ' ||
-               '                nombre_b, nomencla_b, tipo_b, departamento_b, provincia_b, geom)' ||
+  sql_insert = 'INSERT INTO %s (a_nombre, a_nomencla, a_tipo, a_depto_id, a_depto_nombre, a_prov_id, a_prov_nombre,' ||
+               '                b_nombre, b_nomencla, b_tipo, b_depto_id, b_depto_nombre, b_prov_id, b_prov_nombre, geom)' ||
                ' SELECT ' ||
-               '  nombre_a, nomencla_a, tipo_a, departamento_a, provincia_a,' ||
-               '  nombre_b, nomencla_b, tipo_b, departamento_b, provincia_b, geom' ||
+               '  a_nombre, a_nomencla, a_tipo, a_depto_id, a_depto_nombre, a_prov_id, a_prov_nombre,' ||
+               '  b_nombre, b_nomencla, b_tipo, b_depto_id, b_depto_nombre, b_prov_id, b_prov_nombre, geom' ||
                ' FROM indec_intersecciones_provincias' ||
                ' WHERE ' ||
                '  nomencla_a LIKE %L OR' ||
