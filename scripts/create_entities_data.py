@@ -59,7 +59,7 @@ def create_data_countries():
         None
     """
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('País'))
-    data = {'fuente': 'IGN'}
+    data = {}
     entities = []
 
     for country in Country.objects.all():
@@ -333,7 +333,7 @@ def plural_entity_level(entity_level):
     Return:
         entity_level (str): Nombre pluralizado.
     """
-    if entity_level in ['localidad', 'pais']:
+    if entity_level in ['interseccion', 'localidad', 'pais']:
         entity_level = entity_level + 'es'
     else:
         entity_level = entity_level + 's'

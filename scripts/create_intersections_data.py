@@ -7,16 +7,14 @@ vías de intersección.
 """
 
 import logging
-import json
 import psycopg2
 import os
 from datetime import datetime
+from scripts.create_entities_data import add_metadata, create_data_file
 
 MESSAGES = {
     'intersections_export_info': '-- Exportando datos de intersecciones',
-    'intersections_export_success': 'Los datos de intersecciones para la '
-                                    'Provincia con código "%s" fueron '
-                                    'exportados exitosamente',
+    'intersections_export_lenght': 'Cantidad de intersecciones: %s'
 }
 
 logging.basicConfig(
@@ -75,6 +73,8 @@ def create_intersections_data():
         None
     """
     logging.info(MESSAGES['intersections_export_info'])
+    entities = []
+    data = {}
     entities_code = ['02', '06', '10', '14', '18', '22', '26', '30', '34', '38',
                      '42', '46', '50', '54', '58', '62', '66', '70', '74', '78',
                      '82', '86', '90', '94', 'provincias']
@@ -88,38 +88,39 @@ def create_intersections_data():
             """
 
     for code in entities_code:
-        data = []
         table_name = 'indec_intersecciones_{}'.format(code)
         intersections = run_query(query.format(table_name))
+
         for row in intersections:
-            (a_nomencla, a_nombre, a_tipo, a_dept_id, a_dept_nombre, a_prov_id,
-             a_prov_nombre, b_nomencla, b_nombre, b_tipo, b_dept_id,
-             b_dept_nombre, b_prov_id, b_prov_nombre, lat, lon) = row
-            data.append({
-                'id': '-'.join([a_nomencla, b_nomencla]),
+            (a_id, a_nom, a_tipo, a_dept_id, a_dept_nom, a_prov_id, a_prov_nom,
+             b_id, b_nom, b_tipo, b_dept_id, b_dept_nom, b_prov_id, b_prov_nom,
+             lat, lon) = row
+
+            entities.append({
+                'id': '-'.join([a_id, b_id]),
                 'calle_a': {
-                    'id': a_nomencla,
-                    'nombre': a_nombre,
+                    'id': a_id,
+                    'nombre': a_nom,
                     'departamento': {
                         'id': a_dept_id,
-                        'nombre': a_dept_nombre
+                        'nombre': a_dept_nom
                     },
                     'provincia': {
                         'id': a_prov_id,
-                        'nombre': a_prov_nombre,
+                        'nombre': a_prov_nom,
                     },
                     'categoria': a_tipo,
                 },
                 'calle_b': {
-                    'nomencla': b_nomencla,
-                    'nombre': b_nombre,
+                    'id': b_id,
+                    'nombre': b_nom,
                     'departamento': {
                         'id': b_dept_id,
-                        'nombre': b_dept_nombre
+                        'nombre': b_dept_nom
                     },
                     'provincia': {
                         'id': b_prov_id,
-                        'nombre': b_prov_nombre
+                        'nombre': b_prov_nom
                     },
                     'categoria': b_tipo,
                 },
@@ -130,27 +131,8 @@ def create_intersections_data():
                     ]
                 }
             })
-        create_data_file(code, data)
-        logging.info(MESSAGES['intersections_export_success'] % code)
 
-
-def create_data_file(code, data):
-    """Imprime datos de intersecciones de vías de circulación por código de
-       entidad en formato JSON.
-
-    Args:
-        code (str): Código de la entidad.
-        data (list): Datos de la entidad a imprimir.
-
-    Returns:
-        None
-    """
-    filename = 'data/intersecciones/calles_intersecciones_{}.json' \
-        .format(code)
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
-
-    with open(filename, 'w') as outfile:
-        json.dump(data, outfile, ensure_ascii=False)
-
+    add_metadata(data)
+    data['datos'] = entities
+    logging.info(MESSAGES['intersections_export_lenght'] % len(entities))
+    create_data_file('interseccion', 'json', data)

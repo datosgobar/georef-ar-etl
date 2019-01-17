@@ -142,10 +142,10 @@ BEGIN
                            '  SELECT t.id FROM (' ||
                            '     SELECT DISTINCT' ||
                            '       first_value(id) OVER w AS id,' ||
-                           '       first_value(nomencla_a) OVER w AS a_nomencla,' ||
-                           '       first_value(nombre_a) OVER w AS a_nombre,' ||
-                           '       first_value(nomencla_b) OVER w AS b_nomencla,' ||
-                           '       first_value(nombre_b) OVER w AS b_nombre,' ||
+                           '       first_value(a_nomencla) OVER w AS a_nomencla,' ||
+                           '       first_value(a_nombre) OVER w AS a_nombre,' ||
+                           '       first_value(b_nomencla) OVER w AS b_nomencla,' ||
+                           '       first_value(b_nombre) OVER w AS b_nombre,' ||
                            '       first_value(geom) OVER w AS geom,' ||
                            '       nomencla_interseccion' ||
                            '   FROM %s' ||
