@@ -137,7 +137,7 @@ def create_data_departments():
     data = {}
     entities = []
 
-    states = {state.id: (state.code, state.name) for state in
+    states = {state.id: (state.code, state.name_short) for state in
               State.objects.all()}
 
     for dept in Department.objects.all():
@@ -183,7 +183,7 @@ def create_data_municipalities():
     logging.info(MESSAGES['entity_info_get'] % '{}'.format('Municipio'))
     data = {}
     entities = []
-    states = {state.id: (state.code, state.name) for state in
+    states = {state.id: (state.code, state.name_short) for state in
               State.objects.all()}
 
     for mun in Municipality.objects.all():
@@ -230,11 +230,11 @@ def create_data_settlements():
 
     data = {}
     entities = []
-    states = {state.id: (state.code, state.name) for state in
+    states = {state.id: (state.code, state.name_short) for state in
               State.objects.all()}
-    departments = {dept.id: (dept.code, dept.name) for dept in
+    departments = {dept.id: (dept.code, dept.name_short) for dept in
                    Department.objects.all()}
-    municipalities = {mun.id: (mun.code, mun.name)
+    municipalities = {mun.id: (mun.code, mun.name_short)
                       for mun in Municipality.objects.all()}
 
     for settlement in Settlement.objects.all():

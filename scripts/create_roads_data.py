@@ -87,11 +87,11 @@ def index_roads():
                 # 'localidad_id': road.locality_code,
                 'departamento': {
                     'id': dept.code,
-                    'nombre': dept.name
+                    'nombre': dept.name_short
                 },
                 'provincia': {
                     'id': state.code,
-                    'nombre': state.name
+                    'nombre': state.name_short
                 },
                 'geometria': {
                     'type': 'MultiLineString',

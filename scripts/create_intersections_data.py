@@ -11,6 +11,7 @@ import psycopg2
 import os
 from datetime import datetime
 from scripts.create_entities_data import add_metadata, create_data_file
+from scripts.load_roads import SOURCE
 
 MESSAGES = {
     'intersections_export_info': '-- Exportando datos de intersecciones',
@@ -110,6 +111,7 @@ def create_intersections_data():
                         'nombre': a_prov_nom,
                     },
                     'categoria': a_tipo,
+                    'fuente': SOURCE
                 },
                 'calle_b': {
                     'id': b_id,
@@ -123,6 +125,7 @@ def create_intersections_data():
                         'nombre': b_prov_nom
                     },
                     'categoria': b_tipo,
+                    'fuente': SOURCE
                 },
                 'geometria': {
                     'type': 'Point',
