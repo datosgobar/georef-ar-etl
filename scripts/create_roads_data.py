@@ -81,7 +81,10 @@ def index_roads():
                         'izquierda': road.end_left
                     }
                 },
-                'localidad_id': road.locality_code,
+                # TODO: Habilitar campo cuando se generen los datos de
+                # localidades censales.
+                # TODO: Cambiar campo a objeto (ID y nombre).
+                # 'localidad_id': road.locality_code,
                 'departamento': {
                     'id': dept.code,
                     'nombre': dept.name

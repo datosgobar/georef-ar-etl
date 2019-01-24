@@ -76,7 +76,7 @@ def create_data_countries():
                 'lon': float(country.lon)
             },
             'geometria': {
-                'type': 'multipolygon',
+                'type': 'MultiPolygon',
                 'coordinates': country.geom.coords
             }
         })
@@ -107,7 +107,9 @@ def create_data_states():
             'iso_nombre': state.iso_name,
             'categoria': state.category,
             'fuente': state.source,
-            'pais': state.country.name,
+            # TODO: Habilitar este campo cuando se generen los datos de paises
+            # TODO: Cambiar campo a objeto con ID y nombre
+            # 'pais': state.country.name,
             'centroide': {
                 'lat': float(state.lat),
                 'lon': float(state.lon)
