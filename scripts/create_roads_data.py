@@ -65,8 +65,8 @@ def index_roads():
             document = {
                 'nomenclatura': ', '.join([
                     road.name,
-                    dept.name,
-                    state.name]),
+                    dept.name_short,
+                    state.name_short]),
                 'id': road.code,
                 'nombre': road.name,
                 'categoria': road.category,
