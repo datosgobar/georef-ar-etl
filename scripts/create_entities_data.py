@@ -107,9 +107,11 @@ def create_data_states():
             'iso_nombre': state.iso_name,
             'categoria': state.category,
             'fuente': state.source,
-            # TODO: Habilitar este campo cuando se generen los datos de paises
-            # TODO: Cambiar campo a objeto con ID y nombre
-            # 'pais': state.country.name,
+            # TODO: Habilitar este campo cuando se generen los datos de paise
+            # 'pais': {
+            #     'id': state.country.iso_code,
+            #     'nombre': state.country.name,
+            # },
             'centroide': {
                 'lat': float(state.lat),
                 'lon': float(state.lon)
