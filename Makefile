@@ -2,7 +2,7 @@ ENVIRONMENTS=. $(PROJECT_DIR)/environment.sh
 MANAGE?=$(PROJECT_DIR)/manage.py
 PIP?=$(VENV_DIR)/bin/pip
 PROJECT_DIR=$(shell pwd)
-PYTHON?=$(VENV_DIR)/bin/python3.6
+PYTHON?=$(VENV_DIR)/bin/python3
 RUNSCRIPT=$(MANAGE) runscript
 VENV_DIR?=$(PROJECT_DIR)/venv
 GIT_BRANCH?=master
@@ -51,7 +51,7 @@ pull:
 
 virtualenv:
 	rm -rf venv
-	python3.6 -m venv $(VENV_DIR)
+	python3 -m venv $(VENV_DIR)
 
 requirements:
 	$(PIP) install -r $(PROJECT_DIR)/requirements.txt
