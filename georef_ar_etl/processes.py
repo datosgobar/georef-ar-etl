@@ -32,3 +32,11 @@ def localities_pipeline():
         transformers.transform_tarfile,
         partial(transformers.transform_ogr2ogr, 'MULTIPOINT', False)
     ])
+
+
+def streets_pipeline():
+    return pipeline.Pipeline([
+        partial(extractors.extract_url, 'vias.zip'),
+        transformers.transform_zipfile,
+        partial(transformers.transform_ogr2ogr, 'MULTILINESTRING', True)
+    ])

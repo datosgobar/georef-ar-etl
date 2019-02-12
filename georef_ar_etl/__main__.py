@@ -2,7 +2,7 @@ import logging
 import configparser
 from fs import osfs
 from .components.context import Context
-from . import territories
+from . import processes
 
 
 def get_logger():
@@ -30,37 +30,20 @@ def main():
         logger=get_logger()
     )
 
-    # pipeline = territories.provinces_pipeline()
-    # result = pipeline.run(
-    #     'http://www.ign.gob.ar/descargas/geodatos/provincia.zip',
-    #     context
-    # )
+    pipeline = processes.provinces_pipeline()
+    pipeline.run(config['etl']['provinces_url'], context)
 
-    # print(result)
+    pipeline = processes.departments_pipeline()
+    pipeline.run(config['etl']['departments_url'], context)
 
-    # pipeline = territories.departments_pipeline()
-    # result = pipeline.run(
-    #     'http://www.ign.gob.ar/descargas/geodatos/departamento.zip',
-    #     context
-    # )
+    pipeline = processes.municipalities_pipeline()
+    pipeline.run(config['etl']['municipalities_url'], context)
 
-    # print(result)
+    pipeline = processes.localities_pipeline()
+    pipeline.run(config['etl']['localities_url'], context)
 
-    # pipeline = territories.municipalities_pipeline()
-    # result = pipeline.run(
-    #     'http://www.ign.gob.ar/descargas/geodatos/municipio.zip',
-    #     context
-    # )
-
-    # print(result)
-
-    pipeline = territories.localities_pipeline()
-    result = pipeline.run(
-        'http://www.bahra.gob.ar/descargas/BAHRA_2014_version_1.1_shape.tar.gz',
-        context
-    )
-
-    print(result)
+    pipeline = processes.streets_pipeline()
+    pipeline.run(config['etl']['streets_url'], context)
 
 
 main()
