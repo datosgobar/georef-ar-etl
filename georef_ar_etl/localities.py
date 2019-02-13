@@ -16,5 +16,5 @@ class LocalitiesETL(ETL):
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name='raw_localidades',
-                        geom_type='MULTIPOINT', encoding='LATIN1',
+                        geom_type='MultiPoint', encoding='latin1',
                         precision=False, context=context)

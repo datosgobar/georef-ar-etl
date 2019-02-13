@@ -1,6 +1,6 @@
 from .etl import ETL
 from . import extractors, transformers, loaders
-from .models import Province, ProvinceRaw
+from .models import ProvinceRaw
 
 
 class ProvincesETL(ETL):
@@ -17,14 +17,14 @@ class ProvincesETL(ETL):
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name=ProvinceRaw.__tablename__,
-                        geom_type='MULTIPOLYGON', encoding='UTF-8',
+                        geom_type='MultiPolygon', encoding='utf-8',
                         precision=True, context=context)
 
-    def _transform_insert_provinces(self, raw_provinces, context):
-        provinces = []
+    # def _transform_insert_provinces(self, raw_provinces, context):
+    #     provinces = []
 
-        for province in raw_provinces:
-            centroid = context.session.scalar(province.geom.ST_Centroid())
-            from geoalchemy2.shape import to_shape
-            g = to_shape(centroid)
-            print(g)
+    #     for province in raw_provinces:
+    #         centroid = context.session.scalar(province.geom.ST_Centroid())
+    #         from geoalchemy2.shape import to_shape
+    #         g = to_shape(centroid)
+    #         print(g)

@@ -16,5 +16,5 @@ class StreetsETL(ETL):
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name='raw_calles',
-                        geom_type='MULTILINESTRING', encoding='LATIN1',
+                        geom_type='MultiLineString', encoding='latin1',
                         precision=True, context=context)

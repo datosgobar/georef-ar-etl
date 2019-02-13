@@ -6,6 +6,9 @@ from .context import Context
 from . import models
 
 from . import provinces, departments, municipalities, localities, streets
+from . import countries
+
+CONFIG_PATH = 'config/georef.cfg'
 
 
 def get_logger():
@@ -23,25 +26,29 @@ def get_logger():
     return logger
 
 
-def main():
-    config = configparser.ConfigParser()
-    config.read('config/georef.cfg')
-
+def create_engine(config):
     engine = sqlalchemy.create_engine(
-        'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
-            **config['db']), echo=True)
+            'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
+                **config['db']), echo=True)
 
     models.Base.metadata.create_all(engine)
+    return engine
+
+
+def main():
+    config = configparser.ConfigParser()
+    config.read(CONFIG_PATH)
 
     context = Context(
         config=config,
         filesystem=osfs.OSFS(config.get('etl', 'cache_dir'), create=True,
                              create_mode=0o700),
-        engine=engine,
+        engine=create_engine(config),
         logger=get_logger()
     )
 
     processes = [
+        countries.CountriesETL(),
         provinces.ProvincesETL(),
         departments.DepartmentsETL(),
         municipalities.MunicipalitiesETL(),

@@ -16,5 +16,5 @@ class DepartmentsETL(ETL):
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name='raw_departamentos',
-                        geom_type='MULTIPOLYGON', encoding='UTF-8',
+                        geom_type='MultiPolygon', encoding='utf-8',
                         precision=True, context=context)
