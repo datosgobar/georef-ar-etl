@@ -39,3 +39,22 @@ class Department(Base):
     lat = Column(Float, nullable=False)
     fuente = Column(String, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+
+
+class Municipality(Base):
+    __tablename__ = constants.MUNICIPALITIES_ETL_TABLE
+
+    id = Column(String, primary_key=True)
+    nombre = Column(String, nullable=False)
+    nombre_completo = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    # TODO: Testear si el on delete cascade funciona bien
+    provincia_id = Column(String,
+                          ForeignKey(constants.PROVINCES_ETL_TABLE + '.id',
+                                     ondelete='cascade'),
+                          nullable=False)
+    provincia_interseccion = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    fuente = Column(String, nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)

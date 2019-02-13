@@ -22,8 +22,7 @@ class DepartmentsETL(ETL):
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_departments = ctx.automap_table(
-            constants.DEPARTMENTS_RAW_TABLE)
+        raw_departments = ctx.automap_table(constants.DEPARTMENTS_RAW_TABLE)
 
         # Aplicar parche
         self._patch_raw_departments(raw_departments, ctx)
