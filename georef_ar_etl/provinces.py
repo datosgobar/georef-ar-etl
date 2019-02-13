@@ -33,8 +33,8 @@ class ProvincesETL(ETL):
         iso_data = {row['id']: row for row in iso_csv}
 
         # TODO: Manejar comparación con provincias que ya están en la base
-        ctx.session.query(Province).delete()
-        query = ctx.session.query(raw_provinces)
+        ctx.query(Province).delete()
+        query = ctx.query(raw_provinces)
         count = query.count()
 
         ctx.logger.info('Insertando provincias procesadas...')

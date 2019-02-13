@@ -55,8 +55,8 @@ class DepartmentsETL(ETL):
         departments = []
 
         # TODO: Manejar comparación con deptos que ya están en la base
-        ctx.session.query(Department).delete()
-        query = ctx.session.query(raw_departments)
+        ctx.query(Department).delete()
+        query = ctx.query(raw_departments)
         count = query.count()
 
         ctx.logger.info('Insertando departamentos procesados...')
