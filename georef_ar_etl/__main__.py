@@ -1,8 +1,11 @@
 import logging
 import configparser
+import sqlalchemy
 from fs import osfs
-from .components.context import Context
-from . import processes
+from .context import Context
+from . import models
+
+from . import provinces, departments, municipalities, localities, streets
 
 
 def get_logger():
@@ -24,26 +27,30 @@ def main():
     config = configparser.ConfigParser()
     config.read('config/georef.cfg')
 
+    engine = sqlalchemy.create_engine(
+        'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
+            **config['db']), echo=True)
+
+    models.Base.metadata.create_all(engine)
+
     context = Context(
         config=config,
-        filesystem=osfs.OSFS('cache', create=True, create_mode=0o700),
+        filesystem=osfs.OSFS(config.get('etl', 'cache_dir'), create=True,
+                             create_mode=0o700),
+        engine=engine,
         logger=get_logger()
     )
 
-    pipeline = processes.provinces_pipeline()
-    pipeline.run(config['etl']['provinces_url'], context)
+    processes = [
+        provinces.ProvincesETL(),
+        departments.DepartmentsETL(),
+        municipalities.MunicipalitiesETL(),
+        localities.LocalitiesETL(),
+        streets.StreetsETL()
+    ]
 
-    pipeline = processes.departments_pipeline()
-    pipeline.run(config['etl']['departments_url'], context)
-
-    pipeline = processes.municipalities_pipeline()
-    pipeline.run(config['etl']['municipalities_url'], context)
-
-    pipeline = processes.localities_pipeline()
-    pipeline.run(config['etl']['localities_url'], context)
-
-    pipeline = processes.streets_pipeline()
-    pipeline.run(config['etl']['streets_url'], context)
+    for process in processes:
+        process.run(context)
 
 
 main()

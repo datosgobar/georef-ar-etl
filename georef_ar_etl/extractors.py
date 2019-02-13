@@ -2,7 +2,7 @@ import shutil
 import requests
 
 
-def extract_url(filename, url, context):
+def download_url(filename, url, context):
     if context.fs.isfile(filename):
         context.logger.info('Salteando descarga: %s', url)
         return filename
