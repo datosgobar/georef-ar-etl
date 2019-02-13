@@ -11,14 +11,14 @@ def new_env(new_vars):
 
 
 def ogr2ogr(dirname, table_name, geom_type, encoding, precision, context):
-    glob = context.fs.glob(os.path.join(dirname, '*.shp'))
+    glob = context.cache.glob(os.path.join(dirname, '*.shp'))
     if glob.count().files != 1:
         # TODO: Cambiar tipo de error
         raise RuntimeError('SHP count != 1')
 
     shp = next(iter(glob))
     # TODO: Opcional: implementar caso donde no existe getsyspath()
-    shp_path = context.fs.getsyspath(shp.path)
+    shp_path = context.cache.getsyspath(shp.path)
 
     context.logger.info('Ejecutando ogr2ogr sobre %s.', shp_path)
     args = [
@@ -39,5 +39,5 @@ def ogr2ogr(dirname, table_name, geom_type, encoding, precision, context):
     result = subprocess.run(args, env=new_env({'SHAPE_ENCODING': encoding}))
 
     if result.returncode:
-        # TODO: Cambiar tipo de errorp
+        # TODO: Cambiar tipo de error
         raise RuntimeError('ogr2ogr failed')

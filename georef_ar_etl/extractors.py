@@ -3,7 +3,7 @@ import requests
 
 
 def download_url(filename, url, context):
-    if context.fs.isfile(filename):
+    if context.cache.isfile(filename):
         context.logger.info('Salteando descarga: %s', url)
         return filename
 
@@ -13,7 +13,7 @@ def download_url(filename, url, context):
             # TODO: Cambiar tipo de error
             raise RuntimeError('HTTP status != 200')
 
-        with context.fs.open(filename, 'wb') as f:
+        with context.cache.open(filename, 'wb') as f:
             shutil.copyfileobj(req.raw, f)
 
     return filename
