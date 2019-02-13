@@ -2,18 +2,18 @@ class ETL:
     def __init__(self, name):
         self._name = name
 
-    def run(self, context):
-        self._print_log_separator(context.logger)
-        session = context.session
+    def run(self, ctx):
+        self._print_log_separator(ctx.logger)
+        session = ctx.session
 
-        self._run_internal(context)
+        self._run_internal(ctx)
 
-        context.logger.info('Commit...')
+        ctx.logger.info('Commit...')
         session.commit()
 
-        context.logger.info('')
+        ctx.logger.info('')
 
-    def _run_internal(self, context):
+    def _run_internal(self, ctx):
         raise NotImplementedError()
 
     def _print_log_separator(self, l, separator_width=60):

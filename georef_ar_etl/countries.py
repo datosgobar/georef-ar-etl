@@ -6,15 +6,15 @@ class CountriesETL(ETL):
     def __init__(self):
         super().__init__("Países")
 
-    def _run_internal(self, context):
+    def _run_internal(self, ctx):
         # Descargar el archivo de la URL
-        url = context.config.get('etl', 'countries_url')
-        filename = extractors.download_url('paises.zip', url, context)
+        url = ctx.config.get('etl', 'countries_url')
+        filename = extractors.download_url('paises.zip', url, ctx)
 
         # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, context)
+        zip_dir = transformers.extract_zipfile(filename, ctx)
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name='raw_paises',
                         geom_type='MultiPolygon', encoding='latin1',
-                        precision=True, context=context)
+                        precision=True, ctx=ctx)

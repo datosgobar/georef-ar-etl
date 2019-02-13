@@ -8,15 +8,15 @@ def clean_string(s):
     return s.strip()
 
 
-def pbar(iterator, context, total=None):
-    if not context.interactive:
+def pbar(iterator, ctx, total=None):
+    if not ctx.interactive:
         yield from iterator
         return
 
     yield from tqdm(iterator, file=sys.stderr, total=total)
 
 
-def load_data_csv(filename, context):
-    with context.data.open(filename, newline='') as f:
+def load_data_csv(filename, ctx):
+    with ctx.data.open(filename, newline='') as f:
         reader = csv.DictReader(f)
         return list(reader)

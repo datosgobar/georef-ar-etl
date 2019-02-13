@@ -6,15 +6,15 @@ class MunicipalitiesETL(ETL):
     def __init__(self):
         super().__init__("Municipios")
 
-    def _run_internal(self, context):
+    def _run_internal(self, ctx):
         # Descargar el archivo de la URL
-        url = context.config.get('etl', 'municipalities_url')
-        filename = extractors.download_url('municipios.zip', url, context)
+        url = ctx.config.get('etl', 'municipalities_url')
+        filename = extractors.download_url('municipios.zip', url, ctx)
 
         # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, context)
+        zip_dir = transformers.extract_zipfile(filename, ctx)
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name='raw_municipios',
                         geom_type='MultiPolygon', encoding='utf-8',
-                        precision=True, context=context)
+                        precision=True, ctx=ctx)

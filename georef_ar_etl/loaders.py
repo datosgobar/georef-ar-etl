@@ -10,23 +10,23 @@ def new_env(new_vars):
     return env
 
 
-def ogr2ogr(dirname, table_name, geom_type, encoding, precision, context):
-    glob = context.cache.glob(os.path.join(dirname, '*.shp'))
+def ogr2ogr(dirname, table_name, geom_type, encoding, precision, ctx):
+    glob = ctx.cache.glob(os.path.join(dirname, '*.shp'))
     if glob.count().files != 1:
         # TODO: Cambiar tipo de error
         raise RuntimeError('SHP count != 1')
 
     shp = next(iter(glob))
     # TODO: Opcional: implementar caso donde no existe getsyspath()
-    shp_path = context.cache.getsyspath(shp.path)
+    shp_path = ctx.cache.getsyspath(shp.path)
 
-    context.logger.info('Ejecutando ogr2ogr sobre %s.', shp_path)
+    ctx.logger.info('Ejecutando ogr2ogr sobre %s.', shp_path)
     args = [
         'ogr2ogr', '-overwrite', '-f', 'PostgreSQL',
         ('PG:host={host} ' +
          'user={user} ' +
          'password={password} ' +
-         'dbname={database}').format(**context.config['db']),
+         'dbname={database}').format(**ctx.config['db']),
         '-nln', table_name,
         '-nlt', geom_type,
         '-lco', 'GEOMETRY_NAME=geom'

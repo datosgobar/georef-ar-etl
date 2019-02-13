@@ -7,71 +7,66 @@ class DepartmentsETL(ETL):
     def __init__(self):
         super().__init__("Departamentos")
 
-    def _run_internal(self, context):
+    def _run_internal(self, ctx):
         # Descargar el archivo de la URL
-        url = context.config.get('etl', 'departments_url')
-        filename = extractors.download_url('departamentos.zip', url, context)
+        url = ctx.config.get('etl', 'departments_url')
+        filename = extractors.download_url('departamentos.zip', url, ctx)
 
         # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, context)
+        zip_dir = transformers.extract_zipfile(filename, ctx)
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name=constants.DEPARTMENTS_RAW_TABLE,
                         geom_type='MultiPolygon', encoding='utf-8',
-                        precision=True, context=context)
+                        precision=True, ctx=ctx)
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_departments = context.automap_table(
+        raw_departments = ctx.automap_table(
             constants.DEPARTMENTS_RAW_TABLE)
 
         # Aplicar parche
-        self._patch_raw_departments(raw_departments, context)
+        self._patch_raw_departments(raw_departments, ctx)
 
         # Leer la tabla raw_provinces para crear las entidades procesadas
-        self._insert_clean_departments(raw_departments, context)
+        self._insert_clean_departments(raw_departments, ctx)
 
-    def _patch_raw_departments(self, raw_departments, context):
+    def _patch_raw_departments(self, raw_departments, ctx):
         # Antártida Argentina duplicada
-        context.query(raw_departments).filter_by(
-            ogc_fid=530, in1='94028').delete()
+        ctx.query(raw_departments).filter_by(ogc_fid=530, in1='94028').delete()
 
         # Error de tipeo
-        context.query(raw_departments).filter_by(
-            in1='55084').one().in1 = '54084'
+        ctx.query(raw_departments).filter_by(in1='55084').one().in1 = '54084'
 
         # Chascomús
-        context.query(raw_departments).filter_by(
-            in1='06218').one().in1 = '06217'
+        ctx.query(raw_departments).filter_by(in1='06218').one().in1 = '06217'
 
         # Río Grande
-        context.query(raw_departments).filter_by(
-            in1='94007').one().in1 = '94008'
+        ctx.query(raw_departments).filter_by(in1='94007').one().in1 = '94008'
 
         # Ushuaia
-        context.query(raw_departments).filter_by(
-            in1='94014').one().in1 = '94015'
+        ctx.query(raw_departments).filter_by(in1='94014').one().in1 = '94015'
 
         # Tolhuin
-        context.query(raw_departments).filter_by(
+        ctx.query(raw_departments).filter_by(
             fna='Departamento Río Grande', nam='Tolhuin').one().in1 = '94011'
 
-    def _insert_clean_departments(self, raw_departments, context):
+    def _insert_clean_departments(self, raw_departments, ctx):
         departments = []
 
         # TODO: Manejar comparación con deptos que ya están en la base
-        context.session.query(Department).delete()
-        query = context.session.query(raw_departments)
+        ctx.session.query(Department).delete()
+        query = ctx.session.query(raw_departments)
         count = query.count()
 
-        context.logger.info('Insertando departamentos procesados...')
+        ctx.logger.info('Insertando departamentos procesados...')
 
-        for raw_department in utils.pbar(query, context, total=count):
-            lon, lat = geometry.get_centroid(raw_department, context)
+        for raw_department in utils.pbar(query, ctx, total=count):
+            lon, lat = geometry.get_centroid(raw_department, ctx)
             dept_id = raw_department.in1
             prov_id = dept_id[:constants.PROVINCE_ID_LEN]
 
-            province = context.query(Province).get(prov_id)
+            province = ctx.query(Province).get(prov_id)
 
             department = Department(
                 id=dept_id,
@@ -90,4 +85,4 @@ class DepartmentsETL(ETL):
 
             departments.append(department)
 
-        context.session.add_all(departments)
+        ctx.session.add_all(departments)

@@ -7,40 +7,40 @@ class ProvincesETL(ETL):
     def __init__(self):
         super().__init__("Provincias")
 
-    def _run_internal(self, context):
+    def _run_internal(self, ctx):
         # Descargar el archivo de la URL
-        url = context.config.get('etl', 'provinces_url')
-        filename = extractors.download_url('provincias.zip', url, context)
+        url = ctx.config.get('etl', 'provinces_url')
+        filename = extractors.download_url('provincias.zip', url, ctx)
 
         # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, context)
+        zip_dir = transformers.extract_zipfile(filename, ctx)
 
         # Cargar el archivo .shp a la base de datos
         loaders.ogr2ogr(zip_dir, table_name=constants.PROVINCES_RAW_TABLE,
                         geom_type='MultiPolygon', encoding='utf-8',
-                        precision=True, context=context)
+                        precision=True, ctx=ctx)
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_provinces = context.automap_table(constants.PROVINCES_RAW_TABLE)
+        raw_provinces = ctx.automap_table(constants.PROVINCES_RAW_TABLE)
 
         # Leer la tabla raw_provinces para crear las provincias procesadas
-        self._insert_clean_provinces(raw_provinces, context)
+        self._insert_clean_provinces(raw_provinces, ctx)
 
-    def _insert_clean_provinces(self, raw_provinces, context):
+    def _insert_clean_provinces(self, raw_provinces, ctx):
         provinces = []
-        iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv', context)
+        iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv', ctx)
         iso_data = {row['id']: row for row in iso_csv}
 
         # TODO: Manejar comparación con provincias que ya están en la base
-        context.session.query(Province).delete()
-        query = context.session.query(raw_provinces)
+        ctx.session.query(Province).delete()
+        query = ctx.session.query(raw_provinces)
         count = query.count()
 
-        context.logger.info('Insertando provincias procesadas...')
+        ctx.logger.info('Insertando provincias procesadas...')
 
-        for raw_province in utils.pbar(query, context, total=count):
-            lon, lat = geometry.get_centroid(raw_province, context)
+        for raw_province in utils.pbar(query, ctx, total=count):
+            lon, lat = geometry.get_centroid(raw_province, ctx)
             prov_id = raw_province.in1
 
             province = Province(
@@ -60,4 +60,4 @@ class ProvincesETL(ETL):
 
             provinces.append(province)
 
-        context.session.add_all(provinces)
+        ctx.session.add_all(provinces)
