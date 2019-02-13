@@ -67,6 +67,8 @@ class DepartmentsETL(ETL):
             prov_id = dept_id[:constants.PROVINCE_ID_LEN]
 
             province = ctx.query(Province).get(prov_id)
+            province_isct = geometry.get_intersection_percentage(
+                province, raw_department, ctx, geom_field_a='geometria')
 
             department = Department(
                 id=dept_id,
@@ -74,7 +76,7 @@ class DepartmentsETL(ETL):
                 nombre_completo=utils.clean_string(raw_department.fna),
                 categoria=utils.clean_string(raw_department.gna),
                 lon=lon, lat=lat,
-                provincia_interseccion=0,  # TODO: Área de intersección
+                provincia_interseccion=province_isct,
                 provincia_id=province.id,
                 fuente=utils.clean_string(raw_department.sag),
                 geometria=raw_department.geom
