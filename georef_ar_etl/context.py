@@ -49,3 +49,6 @@ class Context:
             self._session = self._session_maker()
 
         return self._session
+
+    def query(self, entity_class):
+        return self.session.query(entity_class)

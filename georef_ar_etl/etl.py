@@ -8,8 +8,10 @@ class ETL:
 
         self._run_internal(context)
 
-        context.logger.info('')
+        context.logger.info('Commit...')
         session.commit()
+
+        context.logger.info('')
 
     def _run_internal(self, context):
         raise NotImplementedError()

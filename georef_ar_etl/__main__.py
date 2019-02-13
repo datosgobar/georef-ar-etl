@@ -51,12 +51,12 @@ def main():
     )
 
     processes = [
-        # countries.CountriesETL(),
+        countries.CountriesETL(),
         provinces.ProvincesETL(),
-        # departments.DepartmentsETL(),
-        # municipalities.MunicipalitiesETL(),
-        # localities.LocalitiesETL(),
-        # streets.StreetsETL()
+        departments.DepartmentsETL(),
+        municipalities.MunicipalitiesETL(),
+        localities.LocalitiesETL(),
+        streets.StreetsETL()
     ]
 
     for process in processes:

@@ -1,7 +1,6 @@
 from .etl import ETL
-from .constants import RAW_TABLE_NAME
 from .models import Province
-from . import extractors, transformers, loaders, geometry, utils
+from . import extractors, transformers, loaders, geometry, utils, constants
 
 
 class ProvincesETL(ETL):
@@ -16,15 +15,14 @@ class ProvincesETL(ETL):
         # Descomprimir el .zip
         zip_dir = transformers.extract_zipfile(filename, context)
 
-        raw_provinces_table_name = RAW_TABLE_NAME.format('provincias')
         # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name=raw_provinces_table_name,
+        loaders.ogr2ogr(zip_dir, table_name=constants.PROVINCES_RAW_TABLE,
                         geom_type='MultiPolygon', encoding='utf-8',
                         precision=True, context=context)
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_provinces = context.automap_table(raw_provinces_table_name)
+        raw_provinces = context.automap_table(constants.PROVINCES_RAW_TABLE)
 
         # Leer la tabla raw_provinces para crear las provincias procesadas
         self._insert_clean_provinces(raw_provinces, context)
@@ -58,7 +56,7 @@ class ProvincesETL(ETL):
             )
 
             # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(province.id) == 2
+            assert len(province.id) == constants.PROVINCE_ID_LEN
 
             provinces.append(province)
 

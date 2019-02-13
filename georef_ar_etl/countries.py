@@ -4,7 +4,7 @@ from . import extractors, transformers, loaders
 
 class CountriesETL(ETL):
     def __init__(self):
-        super().__init__("Provincias")
+        super().__init__("Países")
 
     def _run_internal(self, context):
         # Descargar el archivo de la URL

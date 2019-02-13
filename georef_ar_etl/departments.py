@@ -1,5 +1,6 @@
 from .etl import ETL
-from . import extractors, transformers, loaders
+from .models import Province, Department
+from . import extractors, transformers, loaders, geometry, utils, constants
 
 
 class DepartmentsETL(ETL):
@@ -15,6 +16,78 @@ class DepartmentsETL(ETL):
         zip_dir = transformers.extract_zipfile(filename, context)
 
         # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name='raw_departamentos',
+        loaders.ogr2ogr(zip_dir, table_name=constants.DEPARTMENTS_RAW_TABLE,
                         geom_type='MultiPolygon', encoding='utf-8',
                         precision=True, context=context)
+
+        # Crear una Table automáticamente a partir de la tabla generada por
+        # ogr2ogr
+        raw_departments = context.automap_table(
+            constants.DEPARTMENTS_RAW_TABLE)
+
+        # Aplicar parche
+        self._patch_raw_departments(raw_departments, context)
+
+        # Leer la tabla raw_provinces para crear las entidades procesadas
+        self._insert_clean_departments(raw_departments, context)
+
+    def _patch_raw_departments(self, raw_departments, context):
+        # Antártida Argentina duplicada
+        context.query(raw_departments).filter_by(
+            ogc_fid=530, in1='94028').delete()
+
+        # Error de tipeo
+        context.query(raw_departments).filter_by(
+            in1='55084').one().in1 = '54084'
+
+        # Chascomús
+        context.query(raw_departments).filter_by(
+            in1='06218').one().in1 = '06217'
+
+        # Río Grande
+        context.query(raw_departments).filter_by(
+            in1='94007').one().in1 = '94008'
+
+        # Ushuaia
+        context.query(raw_departments).filter_by(
+            in1='94014').one().in1 = '94015'
+
+        # Tolhuin
+        context.query(raw_departments).filter_by(
+            fna='Departamento Río Grande', nam='Tolhuin').one().in1 = '94011'
+
+    def _insert_clean_departments(self, raw_departments, context):
+        departments = []
+
+        # TODO: Manejar comparación con deptos que ya están en la base
+        context.session.query(Department).delete()
+        query = context.session.query(raw_departments)
+        count = query.count()
+
+        context.logger.info('Insertando departamentos procesados...')
+
+        for raw_department in utils.pbar(query, context, total=count):
+            lon, lat = geometry.get_centroid(raw_department, context)
+            dept_id = raw_department.in1
+            prov_id = dept_id[:constants.PROVINCE_ID_LEN]
+
+            province = context.query(Province).get(prov_id)
+
+            department = Department(
+                id=dept_id,
+                nombre=utils.clean_string(raw_department.nam),
+                nombre_completo=utils.clean_string(raw_department.fna),
+                categoria=utils.clean_string(raw_department.gna),
+                lon=lon, lat=lat,
+                provincia_interseccion=0,  # TODO: Área de intersección
+                provincia_id=province.id,
+                fuente=utils.clean_string(raw_department.sag),
+                geometria=raw_department.geom
+            )
+
+            # TODO: Sistema que compruebe la integridad de los nuevos datos
+            assert len(department.id) == constants.DEPARTMENT_ID_LEN
+
+            departments.append(department)
+
+        context.session.add_all(departments)
