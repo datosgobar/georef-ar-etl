@@ -1,6 +1,8 @@
+from sqlalchemy import func
 from .etl import ETL
 from .models import Province, Municipality
 from . import extractors, transformers, loaders, geometry, utils, constants
+from . import patch
 
 
 class MunicipalitiesETL(ETL):
@@ -32,8 +34,20 @@ class MunicipalitiesETL(ETL):
         self._insert_clean_municipalities(raw_municipalities, ctx)
 
     def _patch_raw_municipalities(self, raw_municipalities, ctx):
-        ctx.query(raw_municipalities).filter_by(in1=None).delete()
-        ctx.query(raw_municipalities).filter_by(gna=None).delete()
+        patch.delete(raw_municipalities, 'in1', None, ctx)
+        patch.delete(raw_municipalities, 'gna', None, ctx)
+
+        # TODO: Manejar mejor municipios con IDs inválidos
+        patch.delete(raw_municipalities, 'in1', '82210', ctx)
+        patch.delete(raw_municipalities, 'in1', '82287', ctx)
+        patch.delete(raw_municipalities, 'in1', '82119', ctx)
+
+        patch.replace_id(raw_municipalities, '550287', '540287', 'in1', ctx)
+        patch.replace_id(raw_municipalities, '550343', '540343', 'in1', ctx)
+        patch.replace_id(raw_municipalities, '800277', '820277', 'in1', ctx)
+        patch.replace_id(raw_municipalities, '545070', '585070', 'in1', ctx)
+        patch.replace_id(raw_municipalities, '549999', '589999', 'in1', ctx)
+        patch.replace_id(raw_municipalities, '829999', '629999', 'in1', ctx)
 
     def _insert_clean_municipalities(self, raw_municipalities, ctx):
         municipalities = []
@@ -67,7 +81,7 @@ class MunicipalitiesETL(ETL):
             )
 
             # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(municipality.id) == constants.MUNICIPALITY_ID_LEN
+            assert len(municipality.id) == constants.MUNICIPALITY_ID_LEN, municipality.nombre
 
             municipalities.append(municipality)
 
