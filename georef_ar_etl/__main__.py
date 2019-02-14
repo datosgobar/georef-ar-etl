@@ -95,7 +95,7 @@ def main():
     if args.console:
         console(ctx)
     else:
-        etl(ctx)
+        etl(args.processes, ctx)
 
 
 main()
