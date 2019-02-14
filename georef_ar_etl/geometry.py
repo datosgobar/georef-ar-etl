@@ -23,3 +23,9 @@ def get_intersection_percentage(entity_a, entity_b, ctx, geom_field_a='geom',
 
     area_isct = ctx.session.scalar(geom_a.ST_Intersection(geom_b).ST_Area())
     return area_isct / area_a
+
+
+def get_entity_at_point(entity_type, point, ctx, geom_field='geometria'):
+    return ctx.query(entity_type).filter(
+        getattr(entity_type, geom_field).ST_Contains(point)
+    ).one_or_none()

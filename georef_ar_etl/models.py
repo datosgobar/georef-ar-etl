@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, Float, Enum, ForeignKey
+from sqlalchemy import Column, String, Float, Enum, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from geoalchemy2 import Geometry
 from . import constants
@@ -89,3 +89,14 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     lat = Column(Float, nullable=False)
     categoria = Column(Enum(BAHRAType), nullable=False)
     geometria = Column(Geometry('MULTIPOINT'), nullable=False)
+
+
+class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
+    __tablename__ = constants.STREETS_ETL_TABLE
+
+    inicio_derecha = Column(Integer, nullable=False)
+    fin_derecha = Column(Integer, nullable=False)
+    inicio_izquierda = Column(Integer, nullable=False)
+    fin_izquierda = Column(Integer, nullable=False)
+    categoria = Column(String, nullable=False)
+    geometria = Column(Geometry('MULTILINESTRING'), nullable=False)

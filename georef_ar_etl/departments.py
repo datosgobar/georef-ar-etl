@@ -30,7 +30,7 @@ class DepartmentsETL(ETL):
         # Aplicar parche
         self._patch_raw_departments(raw_departments, ctx)
 
-        # Leer la tabla raw_provinces para crear las entidades procesadas
+        # Leer la tabla raw_departments para crear las entidades procesadas
         self._insert_clean_departments(raw_departments, ctx)
 
     def _patch_raw_departments(self, raw_departments, ctx):

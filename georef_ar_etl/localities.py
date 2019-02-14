@@ -1,5 +1,5 @@
 from .etl import ETL
-from .models import Province, Department, Locality, BAHRAType
+from .models import Province, Department, Municipality, Locality, BAHRAType
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
@@ -29,7 +29,7 @@ class LocalitiesETL(ETL):
         # Aplicar parche
         self._patch_raw_localities(raw_localities, ctx)
 
-        # Leer la tabla raw_provinces para crear las entidades procesadas
+        # Leer la tabla raw_localities para crear las entidades procesadas
         self._insert_clean_localities(raw_localities, ctx)
 
     def _patch_raw_localities(self, raw_localities, ctx):
@@ -91,6 +91,8 @@ class LocalitiesETL(ETL):
 
             province = ctx.query(Province).get(prov_id)
             department = ctx.query(Department).get(dept_id)
+            municipality = geometry.get_entity_at_point(Municipality,
+                                                        raw_locality.geom, ctx)
 
             locality = Locality(
                 id=loc_id,
@@ -99,6 +101,7 @@ class LocalitiesETL(ETL):
                 lon=lon, lat=lat,
                 provincia_id=province.id,
                 departamento_id=department.id,
+                municipio_id=municipality.id if municipality else None,
                 fuente=utils.clean_string(raw_locality.fuente_ubi),
                 geometria=raw_locality.geom
             )

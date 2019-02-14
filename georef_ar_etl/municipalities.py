@@ -30,7 +30,7 @@ class MunicipalitiesETL(ETL):
         # Aplicar parche
         self._patch_raw_municipalities(raw_municipalities, ctx)
 
-        # Leer la tabla raw_provinces para crear las entidades procesadas
+        # Leer la tabla raw_municipalities para crear las entidades procesadas
         self._insert_clean_municipalities(raw_municipalities, ctx)
 
     def _patch_raw_municipalities(self, raw_municipalities, ctx):
