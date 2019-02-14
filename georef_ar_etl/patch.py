@@ -17,14 +17,25 @@ def update_field(table, field, value, ctx, **conditions):
     ctx.logger.info('')
 
 
-def apply_fn(table, fn, ctx, **conditions):
+def apply_fn(table, fn, ctx, *expressions, **conditions):
+    if bool(expressions) == bool(conditions):
+        raise RuntimeError('Use only SQL expressions or keyword expressions')
+
     ctx.logger.info('Parche: apply_fn')
     ctx.logger.info('+ Aplicar función %s a las entidades que cumplan con:',
                     fn.__name__)
-    for k, v in conditions.items():
-        ctx.logger.info('  > %s = %s', k, v)
 
-    rows = ctx.query(table).filter_by(**conditions).all()
+    if conditions:
+        for k, v in conditions.items():
+            ctx.logger.info('  > %s = %s', k, v)
+
+        rows = ctx.query(table).filter_by(**conditions).all()
+    else:
+        for expr in expressions:
+            ctx.logger.info('  > %s', expr)
+
+        rows = ctx.query(table).filter(*expressions).all()
+
     if rows:
         for row in rows:
             fn(row)
