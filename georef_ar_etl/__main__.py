@@ -19,8 +19,8 @@ def get_logger():
     stdout_handler = logging.StreamHandler()
     stdout_handler.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s',
-                                  '%Y-%m-%d %H:%M:%S')
+    formatter = logging.Formatter('{asctime} - {levelname:^7s} - {message}',
+                                  '%Y-%m-%d %H:%M:%S', style='{')
     stdout_handler.setFormatter(formatter)
 
     logger.addHandler(stdout_handler)
@@ -47,7 +47,7 @@ def main():
                            create_mode=0o700),
         engine=create_engine(config),
         logger=get_logger(),
-        interactive=True
+        mode='interactive'
     )
 
     processes = [

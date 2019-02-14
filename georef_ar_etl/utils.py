@@ -9,7 +9,7 @@ def clean_string(s):
 
 
 def pbar(iterator, ctx, total=None):
-    if not ctx.interactive:
+    if ctx.mode != 'interactive':
         yield from iterator
         return
 

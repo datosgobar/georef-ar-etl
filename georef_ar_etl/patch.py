@@ -1,34 +1,35 @@
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 
-def replace_id(table, old, new, id_field, ctx, name=None):
-    ctx.logger.info('Parche: replace_id')
-    if name:
-        ctx.logger.info('+ Nombre: %s', name)
-    ctx.logger.info('+ Reemplazar %s con %s (campo: %s)', old, new, id_field)
+def update_row_field(table, field, value, ctx, **conditions):
+    ctx.logger.info('Parche: update_field')
+    ctx.logger.info('+ Modificar la entidad que cumpla con:')
+    for k, v in conditions.items():
+        ctx.logger.info('  > %s = %s', k, v)
+    ctx.logger.info('+ Establecer su %s a: %s.', field, value)
 
     try:
-        entity = ctx.query(table).filter_by(**{id_field: old}).one()
-        setattr(entity, id_field, new)
+        row = ctx.query(table).filter_by(**conditions).one()
+        setattr(row, field, value)
         ctx.logger.info('+ Parche aplicado.')
     except NoResultFound:
-        ctx.logger.warn('+ No se encontró la entidad con %s = %s.', id_field,
-                        old)
+        ctx.logger.warn(
+            '+ No se encontró una entidad que cumpla las condiciones.')
     except MultipleResultsFound:
-        ctx.logger.warn('+ Varias entidades con %s = %s.', id_field, old)
+        ctx.logger.warn('+ Varias entidades cumplen la condición.')
 
     ctx.logger.info('')
 
 
-def delete(table, field, value, ctx, name=None):
+def delete(table, ctx, **conditions):
     ctx.logger.info('Parche: delete')
-    if name:
-        ctx.logger.info('+ Nombre: %s', name)
-    ctx.logger.info('+ Borrar entidades con %s = %s.', field, value)
+    ctx.logger.info('+ Eliminar entidades que cumplan con:')
+    for k, v in conditions.items():
+        ctx.logger.info('  > %s = %s', k, v)
 
-    count = ctx.query(table).filter_by(**{field: value}).delete()
+    count = ctx.query(table).filter_by(**conditions).delete()
     if count:
-        ctx.logger.info('+ Parche aplicado.')
+        ctx.logger.info('+ Parche aplicado (entidades eliminadas: %s).', count)
     else:
         ctx.logger.warn('+ No se borraron entidades.')
 

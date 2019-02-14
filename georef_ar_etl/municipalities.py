@@ -1,4 +1,3 @@
-from sqlalchemy import func
 from .etl import ETL
 from .models import Province, Municipality
 from . import extractors, transformers, loaders, geometry, utils, constants
@@ -34,20 +33,26 @@ class MunicipalitiesETL(ETL):
         self._insert_clean_municipalities(raw_municipalities, ctx)
 
     def _patch_raw_municipalities(self, raw_municipalities, ctx):
-        patch.delete(raw_municipalities, 'in1', None, ctx)
-        patch.delete(raw_municipalities, 'gna', None, ctx)
+        patch.delete(raw_municipalities, ctx, in1=None)
+        patch.delete(raw_municipalities, ctx, gna=None)
 
         # TODO: Manejar mejor municipios con IDs inválidos
-        patch.delete(raw_municipalities, 'in1', '82210', ctx)
-        patch.delete(raw_municipalities, 'in1', '82287', ctx)
-        patch.delete(raw_municipalities, 'in1', '82119', ctx)
+        patch.delete(raw_municipalities, ctx, in1='82210')
+        patch.delete(raw_municipalities, ctx, in1='82287')
+        patch.delete(raw_municipalities, ctx, in1='82119')
 
-        patch.replace_id(raw_municipalities, '550287', '540287', 'in1', ctx)
-        patch.replace_id(raw_municipalities, '550343', '540343', 'in1', ctx)
-        patch.replace_id(raw_municipalities, '800277', '820277', 'in1', ctx)
-        patch.replace_id(raw_municipalities, '545070', '585070', 'in1', ctx)
-        patch.replace_id(raw_municipalities, '549999', '589999', 'in1', ctx)
-        patch.replace_id(raw_municipalities, '829999', '629999', 'in1', ctx)
+        patch.update_row_field(raw_municipalities, 'in1', '540287', ctx,
+                               in1='550287')
+        patch.update_row_field(raw_municipalities, 'in1', '540343', ctx,
+                               in1='550343')
+        patch.update_row_field(raw_municipalities, 'in1', '820277', ctx,
+                               in1='800277')
+        patch.update_row_field(raw_municipalities, 'in1', '585070', ctx,
+                               in1='545070')
+        patch.update_row_field(raw_municipalities, 'in1', '589999', ctx,
+                               in1='549999')
+        patch.update_row_field(raw_municipalities, 'in1', '629999', ctx,
+                               in1='829999')
 
     def _insert_clean_municipalities(self, raw_municipalities, ctx):
         municipalities = []
@@ -81,7 +86,7 @@ class MunicipalitiesETL(ETL):
             )
 
             # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(municipality.id) == constants.MUNICIPALITY_ID_LEN, municipality.nombre
+            assert len(municipality.id) == constants.MUNICIPALITY_ID_LEN
 
             municipalities.append(municipality)
 

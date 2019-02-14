@@ -1,6 +1,7 @@
 from .etl import ETL
 from .models import Province, Department
 from . import extractors, transformers, loaders, geometry, utils, constants
+from . import patch
 
 
 class DepartmentsETL(ETL):
@@ -32,23 +33,27 @@ class DepartmentsETL(ETL):
 
     def _patch_raw_departments(self, raw_departments, ctx):
         # Antártida Argentina duplicada
-        ctx.query(raw_departments).filter_by(ogc_fid=530, in1='94028').delete()
+        patch.delete(raw_departments, ctx, ogc_fid=530, in1='94028')
 
         # Error de tipeo
-        ctx.query(raw_departments).filter_by(in1='55084').one().in1 = '54084'
+        patch.update_row_field(raw_departments, 'in1', '54084', ctx,
+                               in1='55084')
 
         # Chascomús
-        ctx.query(raw_departments).filter_by(in1='06218').one().in1 = '06217'
+        patch.update_row_field(raw_departments, 'in1', '06217', ctx,
+                               in1='06218')
 
         # Río Grande
-        ctx.query(raw_departments).filter_by(in1='94007').one().in1 = '94008'
+        patch.update_row_field(raw_departments, 'in1', '94008', ctx,
+                               in1='94007')
 
         # Ushuaia
-        ctx.query(raw_departments).filter_by(in1='94014').one().in1 = '94015'
+        patch.update_row_field(raw_departments, 'in1', '94015', ctx,
+                               in1='94014')
 
         # Tolhuin
-        ctx.query(raw_departments).filter_by(
-            fna='Departamento Río Grande', nam='Tolhuin').one().in1 = '94011'
+        patch.update_row_field(raw_departments, 'in1', '94011', ctx,
+                               fna='Departamento Río Grande', nam='Tolhuin')
 
     def _insert_clean_departments(self, raw_departments, ctx):
         departments = []

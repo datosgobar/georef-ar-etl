@@ -2,16 +2,22 @@ from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 
+RUN_MODES = frozenset(['normal', 'interactive', 'testing'])
+
 
 class Context:
     def __init__(self, config, data_fs, cache_fs, engine, logger,
-                 interactive=False):
+                 mode='normal'):
         self._config = config
         self._data = data_fs
         self._cache = cache_fs
         self._engine = engine
         self._logger = logger
-        self._interactive = interactive
+
+        if mode not in RUN_MODES:
+            raise ValueError('Invalid run mode')
+
+        self._mode = mode
         self._session_maker = sessionmaker(bind=engine)
         self._session = None
 
@@ -40,8 +46,8 @@ class Context:
         return self._logger
 
     @property
-    def interactive(self):
-        return self._interactive
+    def mode(self):
+        return self._mode
 
     @property
     def session(self):
