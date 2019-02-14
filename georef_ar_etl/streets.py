@@ -52,7 +52,7 @@ class StreetsETL(ETL):
 
         ctx.query(Street).delete()
 
-        bulk_size = ctx.config.getint('db', 'bulk_size')
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
         query = ctx.query(raw_streets).\
             filter(raw_streets.tipo != 'OTRO').\
             yield_per(bulk_size)
