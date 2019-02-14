@@ -5,12 +5,13 @@ from . import extractors, transformers, loaders, geometry, utils, constants
 
 class ProvincesETL(ETL):
     def __init__(self):
-        super().__init__("Provincias")
+        super().__init__(constants.PROVINCES)
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL
         url = ctx.config.get('etl', 'provinces_url')
-        filename = extractors.download_url('provincias.zip', url, ctx)
+        filename = extractors.download_url(constants.PROVINCES + '.zip', url,
+                                           ctx)
 
         # Descomprimir el .zip
         zip_dir = transformers.extract_zipfile(filename, ctx)
@@ -22,7 +23,7 @@ class ProvincesETL(ETL):
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_provinces = ctx.automap_table(constants.PROVINCES_RAW_TABLE)
+        raw_provinces = utils.automap_table(constants.PROVINCES_RAW_TABLE, ctx)
 
         # Leer la tabla raw_provinces para crear las provincias procesadas
         self._insert_clean_provinces(raw_provinces, ctx)

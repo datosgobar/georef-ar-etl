@@ -13,6 +13,10 @@ class ETL:
 
         ctx.logger.info('')
 
+    @property
+    def name(self):
+        return self._name
+
     def _run_internal(self, ctx):
         raise NotImplementedError()
 
@@ -20,7 +24,7 @@ class ETL:
         l.info("=" * separator_width)
         l.info("|" + " " * (separator_width - 2) + "|")
 
-        l.info("|" + self._name.center(separator_width - 2) + "|")
+        l.info("|" + self._name.title().center(separator_width - 2) + "|")
 
         l.info("|" + " " * (separator_width - 2) + "|")
         l.info("=" * separator_width)

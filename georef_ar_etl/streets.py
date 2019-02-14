@@ -1,10 +1,10 @@
 from .etl import ETL
-from . import extractors, transformers, loaders
+from . import extractors, transformers, loaders, constants
 
 
 class StreetsETL(ETL):
     def __init__(self):
-        super().__init__("Calles")
+        super().__init__(constants.STREETS)
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL

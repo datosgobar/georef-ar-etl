@@ -1,8 +1,9 @@
+import argparse
 import logging
 import configparser
 import sqlalchemy
 from fs import osfs
-from .context import Context
+from .context import Context, RUN_MODES
 from . import models
 
 from . import provinces, departments, municipalities, localities, streets
@@ -36,7 +37,17 @@ def create_engine(config):
     return engine
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--procesos', action='append', dest='processes')
+    parser.add_argument('-m', '--modo', dest='mode', choices=RUN_MODES,
+                        default='normal')
+
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     config = configparser.ConfigParser()
     config.read(CONFIG_PATH)
 
@@ -47,7 +58,7 @@ def main():
                            create_mode=0o700),
         engine=create_engine(config),
         logger=get_logger(),
-        mode='interactive'
+        mode=args.mode
     )
 
     processes = [
@@ -60,7 +71,8 @@ def main():
     ]
 
     for process in processes:
-        process.run(context)
+        if not args.processes or process.name in args.processes:
+            process.run(context)
 
 
 main()

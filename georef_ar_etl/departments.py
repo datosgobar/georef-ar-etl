@@ -6,12 +6,13 @@ from . import patch
 
 class DepartmentsETL(ETL):
     def __init__(self):
-        super().__init__("Departamentos")
+        super().__init__(constants.DEPARTMENTS)
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL
         url = ctx.config.get('etl', 'departments_url')
-        filename = extractors.download_url('departamentos.zip', url, ctx)
+        filename = extractors.download_url(constants.DEPARTMENTS + '.zip', url,
+                                           ctx)
 
         # Descomprimir el .zip
         zip_dir = transformers.extract_zipfile(filename, ctx)
@@ -23,7 +24,8 @@ class DepartmentsETL(ETL):
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_departments = ctx.automap_table(constants.DEPARTMENTS_RAW_TABLE)
+        raw_departments = utils.automap_table(constants.DEPARTMENTS_RAW_TABLE,
+                                              ctx)
 
         # Aplicar parche
         self._patch_raw_departments(raw_departments, ctx)
@@ -36,24 +38,20 @@ class DepartmentsETL(ETL):
         patch.delete(raw_departments, ctx, ogc_fid=530, in1='94028')
 
         # Error de tipeo
-        patch.update_row_field(raw_departments, 'in1', '54084', ctx,
-                               in1='55084')
+        patch.update_field(raw_departments, 'in1', '54084', ctx, in1='55084')
 
         # Chascomús
-        patch.update_row_field(raw_departments, 'in1', '06217', ctx,
-                               in1='06218')
+        patch.update_field(raw_departments, 'in1', '06217', ctx, in1='06218')
 
         # Río Grande
-        patch.update_row_field(raw_departments, 'in1', '94008', ctx,
-                               in1='94007')
+        patch.update_field(raw_departments, 'in1', '94008', ctx, in1='94007')
 
         # Ushuaia
-        patch.update_row_field(raw_departments, 'in1', '94015', ctx,
-                               in1='94014')
+        patch.update_field(raw_departments, 'in1', '94015', ctx, in1='94014')
 
         # Tolhuin
-        patch.update_row_field(raw_departments, 'in1', '94011', ctx,
-                               fna='Departamento Río Grande', nam='Tolhuin')
+        patch.update_field(raw_departments, 'in1', '94011', ctx,
+                           fna='Departamento Río Grande', nam='Tolhuin')
 
     def _insert_clean_departments(self, raw_departments, ctx):
         departments = []

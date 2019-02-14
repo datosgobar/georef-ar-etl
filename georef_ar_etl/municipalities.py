@@ -6,12 +6,13 @@ from . import patch
 
 class MunicipalitiesETL(ETL):
     def __init__(self):
-        super().__init__("Municipios")
+        super().__init__(constants.MUNICIPALITIES)
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL
         url = ctx.config.get('etl', 'municipalities_url')
-        filename = extractors.download_url('municipios.zip', url, ctx)
+        filename = extractors.download_url(constants.MUNICIPALITIES + '.zip',
+                                           url, ctx)
 
         # Descomprimir el .zip
         zip_dir = transformers.extract_zipfile(filename, ctx)
@@ -23,8 +24,8 @@ class MunicipalitiesETL(ETL):
 
         # Crear una Table automáticamente a partir de la tabla generada por
         # ogr2ogr
-        raw_municipalities = ctx.automap_table(
-            constants.MUNICIPALITIES_RAW_TABLE)
+        raw_municipalities = utils.automap_table(
+            constants.MUNICIPALITIES_RAW_TABLE, ctx)
 
         # Aplicar parche
         self._patch_raw_municipalities(raw_municipalities, ctx)
@@ -41,18 +42,18 @@ class MunicipalitiesETL(ETL):
         patch.delete(raw_municipalities, ctx, in1='82287')
         patch.delete(raw_municipalities, ctx, in1='82119')
 
-        patch.update_row_field(raw_municipalities, 'in1', '540287', ctx,
-                               in1='550287')
-        patch.update_row_field(raw_municipalities, 'in1', '540343', ctx,
-                               in1='550343')
-        patch.update_row_field(raw_municipalities, 'in1', '820277', ctx,
-                               in1='800277')
-        patch.update_row_field(raw_municipalities, 'in1', '585070', ctx,
-                               in1='545070')
-        patch.update_row_field(raw_municipalities, 'in1', '589999', ctx,
-                               in1='549999')
-        patch.update_row_field(raw_municipalities, 'in1', '629999', ctx,
-                               in1='829999')
+        patch.update_field(raw_municipalities, 'in1', '540287', ctx,
+                           in1='550287')
+        patch.update_field(raw_municipalities, 'in1', '540343', ctx,
+                           in1='550343')
+        patch.update_field(raw_municipalities, 'in1', '820277', ctx,
+                           in1='800277')
+        patch.update_field(raw_municipalities, 'in1', '585070', ctx,
+                           in1='545070')
+        patch.update_field(raw_municipalities, 'in1', '589999', ctx,
+                           in1='549999')
+        patch.update_field(raw_municipalities, 'in1', '629999', ctx,
+                           in1='829999')
 
     def _insert_clean_municipalities(self, raw_municipalities, ctx):
         municipalities = []

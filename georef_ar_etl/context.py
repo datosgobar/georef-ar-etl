@@ -1,8 +1,6 @@
-from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.automap import automap_base
 
-RUN_MODES = frozenset(['normal', 'interactive', 'testing'])
+RUN_MODES = ['normal', 'interactive', 'testing']
 
 
 class Context:
@@ -21,14 +19,6 @@ class Context:
         self._session_maker = sessionmaker(bind=engine)
         self._session = None
 
-    def automap_table(self, table_name):
-        metadata = MetaData()
-        metadata.reflect(self._engine, only=[table_name])
-        base = automap_base(metadata=metadata)
-        base.prepare()
-
-        return getattr(base.classes, table_name)
-
     @property
     def config(self):
         return self._config
@@ -40,6 +30,10 @@ class Context:
     @property
     def cache(self):
         return self._cache
+
+    @property
+    def engine(self):
+        return self._engine
 
     @property
     def logger(self):
