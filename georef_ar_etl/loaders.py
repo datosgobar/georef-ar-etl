@@ -14,8 +14,8 @@ def new_env(new_vars):
 def ogr2ogr(dirname, table_name, geom_type, encoding, precision, ctx):
     glob = ctx.cache.glob(os.path.join(dirname, '*.shp'))
     if glob.count().files != 1:
-        # TODO: Cambiar tipo de error
-        raise RuntimeError('SHP count != 1')
+        raise ProcessException(
+            'Se detectó más de un archivo .shp en el directorio especificado.')
 
     shp = next(iter(glob))
     shp_path = ctx.cache.getsyspath(shp.path)
