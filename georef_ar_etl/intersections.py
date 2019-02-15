@@ -19,7 +19,7 @@ class IntersectionsETL(ETL):
             self._insert_province_intersections(province, i + 1, total + 1,
                                                 ctx)
 
-        self._insert_province_intersections(None, total, total, ctx)
+        self._insert_province_intersections(None, total + 1, total + 1, ctx)
 
     def _build_intersection_query(self, province, bulk_size, ctx):
         StreetA = aliased(Street)
