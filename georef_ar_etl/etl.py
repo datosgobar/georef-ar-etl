@@ -1,3 +1,7 @@
+class ProcessException(Exception):
+    pass
+
+
 class ETL:
     def __init__(self, name, dependencies):
         self._name = name
@@ -5,10 +9,14 @@ class ETL:
 
     def run(self, ctx):
         self._print_log_separator(ctx.logger)
-        self._check_dependencies(ctx)
-
         session = ctx.session
-        self._run_internal(ctx)
+
+        try:
+            self._check_dependencies(ctx)
+            self._run_internal(ctx)
+        except ProcessException as e:
+            ctx.logger.error('Sucedió un error en el proceso:')
+            ctx.logger.error(e)
 
         ctx.logger.info('Commit...')
         session.commit()
@@ -22,11 +30,8 @@ class ETL:
     def _check_dependencies(self, ctx):
         for dep in self._dependencies:
             if not ctx.query(dep).first():
-                ctx.logger.error(
-                    'La tabla "%s" está vacía.' % dep.__tablename__)
-                ctx.logger.error('No se puede continuar con el ETL actual.')
-
-                raise RuntimeError()
+                raise ProcessException(
+                    'La tabla "{}" está vacía.'.format(dep.__tablename__))
 
     def _run_internal(self, ctx):
         raise NotImplementedError()

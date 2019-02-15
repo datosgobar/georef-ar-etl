@@ -1,5 +1,6 @@
 import shutil
 import requests
+from .etl import ProcessException
 
 
 def download_url(filename, url, ctx):
@@ -10,8 +11,8 @@ def download_url(filename, url, ctx):
     ctx.logger.info('Descargando: %s', url)
     with requests.get(url, stream=True) as req:
         if req.status_code != 200:
-            # TODO: Cambiar tipo de error
-            raise RuntimeError('HTTP status != 200')
+            raise ProcessException(
+                'La petición HTTP devolvió código {}.'.format(req.status_code))
 
         with ctx.cache.open(filename, 'wb') as f:
             shutil.copyfileobj(req.raw, f)

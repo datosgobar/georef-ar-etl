@@ -19,14 +19,30 @@ fileConfig(config.config_file_name)
 #    Agegado por georef-ar-etl    #
 ###################################
 
-from georef_ar_etl import models
-from georef_ar_etl import read_config
+from georef_ar_etl import models, read_config
 target_metadata = models.Base.metadata
 
 georef_config = read_config()
 db_url = 'postgresql://{user}:{password}@{host}:{port}/{database}'.format(
     **georef_config['db'])
 config.set_main_option('sqlalchemy.url', db_url)
+
+
+def include_object(obj, name, type_, reflected, compare_to):
+    # NO incluir en migraciones:
+    # - La tabla especial 'spatial_ref_sys' generada por la extensión PostGIS
+    # - Índices
+    # - Tablas leídas directamente desde la base de datos, sin que tengan un
+    #   modelo correspondiente. La consecuencia de esto es que no se crean
+    #   migraciones para tablas borradas, deben ser borradas manualmente.
+    return name != 'spatial_ref_sys' and type_ != 'index' and not reflected
+
+
+def process_revision_directives(context, revision, directives):
+    if config.cmd_opts.autogenerate:
+        script = directives[0]
+        if script.upgrade_ops.is_empty():
+            directives[:] = []
 
 
 # other values from the config, defined by the needs of env.py,
@@ -71,7 +87,9 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            include_object=include_object,
+            process_revision_directives=process_revision_directives
         )
 
         with context.begin_transaction():

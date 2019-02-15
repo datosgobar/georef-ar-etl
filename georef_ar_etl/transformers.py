@@ -9,7 +9,6 @@ def extract_zipfile(filename, ctx):
         ctx.logger.info('Zip: Removiendo directorio "%s" anterior.', dirname)
         ctx.cache.removetree(dirname)
 
-    # TODO: Opcional: implementar caso donde no existe getsyspath()
     dirpath = os.path.dirname(ctx.cache.getsyspath(filename))
 
     with ctx.cache.open(filename, 'rb') as f:
@@ -25,7 +24,6 @@ def extract_tarfile(filename, ctx):
         ctx.logger.info('Tar: Removiendo directorio "%s" anterior.', dirname)
         ctx.cache.removetree(dirname)
 
-    # TODO: Opcional: implementar caso donde no existe getsyspath()
     sys_filename = ctx.cache.getsyspath(filename)
     dirpath = os.path.dirname(sys_filename)
 

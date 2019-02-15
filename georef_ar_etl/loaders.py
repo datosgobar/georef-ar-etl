@@ -1,5 +1,6 @@
 import os
 import subprocess
+from .etl import ProcessException
 
 
 def new_env(new_vars):
@@ -17,7 +18,6 @@ def ogr2ogr(dirname, table_name, geom_type, encoding, precision, ctx):
         raise RuntimeError('SHP count != 1')
 
     shp = next(iter(glob))
-    # TODO: Opcional: implementar caso donde no existe getsyspath()
     shp_path = ctx.cache.getsyspath(shp.path)
 
     ctx.logger.info('Ejecutando ogr2ogr sobre %s.', shp_path)
@@ -39,5 +39,5 @@ def ogr2ogr(dirname, table_name, geom_type, encoding, precision, ctx):
     result = subprocess.run(args, env=new_env({'SHAPE_ENCODING': encoding}))
 
     if result.returncode:
-        # TODO: Cambiar tipo de error
-        raise RuntimeError('ogr2ogr failed')
+        raise ProcessException(
+            'El comando ogr2ogr retornó codigo {}.'.format(result.returncode))
