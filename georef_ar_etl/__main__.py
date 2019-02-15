@@ -1,17 +1,12 @@
 import argparse
-import logging
-import configparser
 import code
-import sqlalchemy
 from fs import osfs
 from .context import Context, RUN_MODES
-from . import models, constants
-
+from . import read_config, get_logger, create_engine, constants
 from . import provinces, departments, municipalities, localities, streets
 from . import countries, intersections
 
 DATA_PATH = 'data'
-CONFIG_PATH = 'config/georef.cfg'
 PROCESSES = [
     constants.PROVINCES,
     constants.DEPARTMENTS,
@@ -20,30 +15,6 @@ PROCESSES = [
     constants.STREETS,
     constants.INTERSECTIONS
 ]
-
-
-def get_logger():
-    logger = logging.getLogger('georef-ar-etl')
-    logger.setLevel(logging.INFO)
-
-    stdout_handler = logging.StreamHandler()
-    stdout_handler.setLevel(logging.INFO)
-
-    formatter = logging.Formatter('{asctime} - {levelname:^7s} - {message}',
-                                  '%Y-%m-%d %H:%M:%S', style='{')
-    stdout_handler.setFormatter(formatter)
-
-    logger.addHandler(stdout_handler)
-    return logger
-
-
-def create_engine(config, echo=False):
-    engine = sqlalchemy.create_engine(
-            'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
-                **config['db']), echo=echo)
-
-    models.Base.metadata.create_all(engine)
-    return engine
 
 
 def parse_args():
@@ -88,8 +59,7 @@ def console(ctx):
 
 def main():
     args = parse_args()
-    config = configparser.ConfigParser()
-    config.read(CONFIG_PATH)
+    config = read_config()
 
     ctx = Context(
         config=config,

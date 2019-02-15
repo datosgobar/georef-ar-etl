@@ -1,5 +1,11 @@
 ETL_VERSION = '9.0.0'
 
+BAHRA_TYPES = {
+    'E': 'Entidad (E)',
+    'LC': 'Componente de localidad compuesta (LC)',
+    'LS': 'Localidad simple (LS)'
+}
+
 PROVINCES = 'provincias'
 DEPARTMENTS = 'departamentos'
 MUNICIPALITIES = 'municipios'

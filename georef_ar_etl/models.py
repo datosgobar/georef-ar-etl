@@ -1,5 +1,5 @@
-import enum
-from sqlalchemy import Column, String, Float, Enum, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, ForeignKey
+from sqlalchemy.orm import validates
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from geoalchemy2 import Geometry
 from . import constants
@@ -7,16 +7,11 @@ from . import constants
 Base = declarative_base()
 
 
-class BAHRAType(enum.Enum):
-    E = 'Entidad (E)'
-    LC = 'Componente de localidad compuesta (LC)'
-    LS = 'Localidad simple (LS)'
-
-
 class EntityMixin:
     id = Column(String, primary_key=True)
     nombre = Column(String, nullable=False)
     fuente = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
 
 
 class InProvinceMixin:
@@ -50,7 +45,6 @@ class Province(Base, EntityMixin):
     iso_nombre = Column(String, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
 
 
@@ -61,7 +55,6 @@ class Department(Base, EntityMixin, InProvinceMixin):
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
 
 
@@ -72,7 +65,6 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
 
 
@@ -87,8 +79,12 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     )
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    categoria = Column(Enum(BAHRAType), nullable=False)
     geometria = Column(Geometry('MULTIPOINT'), nullable=False)
+
+    @validates('categoria')
+    def validate_category(self, _key, category):
+        assert category in constants.BAHRA_TYPES.keys()
+        return category
 
 
 class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
@@ -98,7 +94,6 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     fin_derecha = Column(Integer, nullable=False)
     inicio_izquierda = Column(Integer, nullable=False)
     fin_izquierda = Column(Integer, nullable=False)
-    categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
 
 

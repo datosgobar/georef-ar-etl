@@ -1,5 +1,5 @@
 from .etl import ETL
-from .models import Province, Department, Municipality, Locality, BAHRAType
+from .models import Province, Department, Municipality, Locality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
@@ -78,7 +78,7 @@ class LocalitiesETL(ETL):
 
         # Seleccionar un subconjunto de BAHRA
         query = ctx.query(raw_localities).filter(raw_localities.tipo_bahra.in_(
-            [BAHRAType.E.name, BAHRAType.LS.name, BAHRAType.LC.name]
+            constants.BAHRA_TYPES.keys()
         ))
         count = query.count()
 
