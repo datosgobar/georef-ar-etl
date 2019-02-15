@@ -5,7 +5,7 @@ from . import extractors, transformers, loaders, geometry, utils, constants
 
 class ProvincesETL(ETL):
     def __init__(self):
-        super().__init__(constants.PROVINCES)
+        super().__init__(constants.PROVINCES, dependencies=[])
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL

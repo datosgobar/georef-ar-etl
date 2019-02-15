@@ -8,7 +8,7 @@ from .context import Context, RUN_MODES
 from . import models, constants
 
 from . import provinces, departments, municipalities, localities, streets
-from . import countries
+from . import countries, intersections
 
 DATA_PATH = 'data'
 CONFIG_PATH = 'config/georef.cfg'
@@ -17,7 +17,8 @@ PROCESSES = [
     constants.DEPARTMENTS,
     constants.MUNICIPALITIES,
     constants.LOCALITIES,
-    constants.STREETS
+    constants.STREETS,
+    constants.INTERSECTIONS
 ]
 
 
@@ -46,12 +47,19 @@ def create_engine(config, echo=False):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog='georef_ar_etl',
+        description='ETL para Georef. Versión: {}.'.format(
+            constants.ETL_VERSION)
+    )
     parser.add_argument('-p', '--processes', action='append',
-                        choices=PROCESSES)
-    parser.add_argument('-m', '--mode', choices=RUN_MODES, default='normal')
-    parser.add_argument('-c', '--console', action='store_true')
-    parser.add_argument('-v', '--verbose', action='store_true')
+                        choices=PROCESSES, help='Procesos ETL a ejecutar.')
+    parser.add_argument('-m', '--mode', choices=RUN_MODES, default='normal',
+                        help='Modo de ejecución.')
+    parser.add_argument('-c', '--console', action='store_true',
+                        help='Iniciar una consola interactiva.')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Imprimir información adicional.')
 
     return parser.parse_args()
 
@@ -63,7 +71,8 @@ def etl(enabled_processes, ctx):
         departments.DepartmentsETL(),
         municipalities.MunicipalitiesETL(),
         localities.LocalitiesETL(),
-        streets.StreetsETL()
+        streets.StreetsETL(),
+        intersections.IntersectionsETL()
     ]
 
     for process in processes:

@@ -2,14 +2,22 @@ from geoalchemy2.shape import to_shape
 
 
 def get_centroid(entity, ctx, geom_field='geom'):
+    # TODO: Hacer que reciba la geom directamente como en
+    # get_intersection_centroid?
     centroid = ctx.session.scalar(
         getattr(entity, geom_field).ST_Centroid())
     point = to_shape(centroid)
     return point.x, point.y
 
 
+def get_intersection_centroid(geom_a, geom_b, ctx):
+    return ctx.session.scalar(geom_a.ST_Intersection(geom_b).ST_Centroid())
+
+
 def get_intersection_percentage(entity_a, entity_b, ctx, geom_field_a='geom',
                                 geom_field_b='geom'):
+    # TODO: Hacer que reciba la geom directamente como en
+    # get_intersection_centroid?
     if ctx.mode == 'interactive':
         # Saltear operaciones costosas en modo interactivo
         return 0

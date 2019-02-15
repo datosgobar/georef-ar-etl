@@ -50,5 +50,5 @@ class Context:
 
         return self._session
 
-    def query(self, entity_class):
-        return self.session.query(entity_class)
+    def query(self, *args, **kwargs):
+        return self.session.query(*args, **kwargs)

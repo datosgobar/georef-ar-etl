@@ -3,7 +3,7 @@ import requests
 
 
 def download_url(filename, url, ctx):
-    if ctx.cache.isfile(filename):
+    if ctx.cache.isfile(filename) and ctx.mode == 'interactive':
         ctx.logger.info('Salteando descarga: %s', url)
         return filename
 

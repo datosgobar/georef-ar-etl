@@ -5,7 +5,7 @@ from . import extractors, transformers, loaders, utils, constants, patch
 
 class StreetsETL(ETL):
     def __init__(self):
-        super().__init__(constants.STREETS)
+        super().__init__(constants.STREETS, [Province, Department])
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL

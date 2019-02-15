@@ -100,3 +100,16 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     fin_izquierda = Column(Integer, nullable=False)
     categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
+
+
+class Intersection(Base):
+    __tablename__ = constants.INTERSECTIONS_ETL_TABLE
+
+    id = Column(String, primary_key=True)
+    calle_a_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
+                                           ondelete='cascade'),
+                        nullable=False)
+    calle_b_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
+                                           ondelete='cascade'),
+                        nullable=False)
+    geometria = Column(Geometry('POINT'), nullable=False)

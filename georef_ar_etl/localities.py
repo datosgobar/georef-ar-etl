@@ -6,7 +6,8 @@ from . import patch
 
 class LocalitiesETL(ETL):
     def __init__(self):
-        super().__init__(constants.LOCALITIES)
+        super().__init__(constants.LOCALITIES, [Province, Department,
+                                                Municipality])
 
     def _run_internal(self, ctx):
         # Descargar el archivo de la URL
