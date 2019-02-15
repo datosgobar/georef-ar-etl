@@ -41,7 +41,7 @@ class ProvincesETL(ETL):
         ctx.logger.info('Insertando provincias procesadas...')
 
         for raw_province in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid(raw_province, ctx)
+            lon, lat = geometry.get_centroid_coordinates(raw_province.geom, ctx)
             prov_id = raw_province.in1
 
             province = Province(

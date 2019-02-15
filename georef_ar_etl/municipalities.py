@@ -66,13 +66,14 @@ class MunicipalitiesETL(ETL):
         ctx.logger.info('Insertando municipios procesados...')
 
         for raw_municipality in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid(raw_municipality, ctx)
+            lon, lat = geometry.get_centroid_coordinates(raw_municipality.geom,
+                                                         ctx)
             muni_id = raw_municipality.in1
             prov_id = muni_id[:constants.PROVINCE_ID_LEN]
 
             province = ctx.query(Province).get(prov_id)
             province_isct = geometry.get_intersection_percentage(
-                province, raw_municipality, ctx, geom_field_a='geometria')
+                province.geometria, raw_municipality.geom, ctx)
 
             municipality = Municipality(
                 id=muni_id,

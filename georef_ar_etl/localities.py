@@ -85,7 +85,8 @@ class LocalitiesETL(ETL):
         ctx.logger.info('Insertando localidades procesadas...')
 
         for raw_locality in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid(raw_locality, ctx)
+            lon, lat = geometry.get_centroid_coordinates(raw_locality.geom,
+                                                         ctx)
             loc_id = raw_locality.cod_bahra
             prov_id = loc_id[:constants.PROVINCE_ID_LEN]
             dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]

@@ -64,13 +64,14 @@ class DepartmentsETL(ETL):
         ctx.logger.info('Insertando departamentos procesados...')
 
         for raw_department in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid(raw_department, ctx)
+            lon, lat = geometry.get_centroid_coordinates(raw_department.geom,
+                                                         ctx)
             dept_id = raw_department.in1
             prov_id = dept_id[:constants.PROVINCE_ID_LEN]
 
             province = ctx.query(Province).get(prov_id)
             province_isct = geometry.get_intersection_percentage(
-                province, raw_department, ctx, geom_field_a='geometria')
+                province.geometria, raw_department.geom, ctx)
 
             department = Department(
                 id=dept_id,
