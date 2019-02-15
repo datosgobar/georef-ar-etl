@@ -30,6 +30,9 @@ class StreetsETL(ETL):
         # Leer la tabla raw_streets para crear las entidades procesadas
         self._insert_clean_streets(raw_streets, ctx)
 
+        # Borrar la tabla temporal
+        utils.drop_table(raw_streets, ctx)
+
     def _patch_raw_streets(self, raw_streets, ctx):
         def update_ushuaia(row):
             row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]

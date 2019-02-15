@@ -32,10 +32,7 @@ def include_object(obj, name, type_, reflected, compare_to):
     # NO incluir en migraciones:
     # - La tabla especial 'spatial_ref_sys' generada por la extensión PostGIS
     # - Índices
-    # - Tablas leídas directamente desde la base de datos, sin que tengan un
-    #   modelo correspondiente. La consecuencia de esto es que no se crean
-    #   migraciones para tablas borradas, deben ser borradas manualmente.
-    return name != 'spatial_ref_sys' and type_ != 'index' and not reflected
+    return name != 'spatial_ref_sys' and type_ != 'index'
 
 
 def process_revision_directives(context, revision, directives):

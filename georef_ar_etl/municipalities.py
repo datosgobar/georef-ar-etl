@@ -33,6 +33,9 @@ class MunicipalitiesETL(ETL):
         # Leer la tabla raw_municipalities para crear las entidades procesadas
         self._insert_clean_municipalities(raw_municipalities, ctx)
 
+        # Borrar la tabla temporal
+        utils.drop_table(raw_municipalities, ctx)
+
     def _patch_raw_municipalities(self, raw_municipalities, ctx):
         patch.delete(raw_municipalities, ctx, in1=None)
         patch.delete(raw_municipalities, ctx, gna=None)

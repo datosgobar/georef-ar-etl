@@ -31,3 +31,7 @@ def automap_table(table_name, ctx):
     base.prepare()
 
     return getattr(base.classes, table_name)
+
+
+def drop_table(table, ctx):
+    table.__table__.drop(ctx.engine)

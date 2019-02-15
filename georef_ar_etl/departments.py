@@ -33,6 +33,9 @@ class DepartmentsETL(ETL):
         # Leer la tabla raw_departments para crear las entidades procesadas
         self._insert_clean_departments(raw_departments, ctx)
 
+        # Borrar la tabla temporal
+        utils.drop_table(raw_departments, ctx)
+
     def _patch_raw_departments(self, raw_departments, ctx):
         # Antártida Argentina duplicada
         patch.delete(raw_departments, ctx, ogc_fid=530, in1='94028')

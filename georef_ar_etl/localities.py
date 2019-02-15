@@ -33,6 +33,9 @@ class LocalitiesETL(ETL):
         # Leer la tabla raw_localities para crear las entidades procesadas
         self._insert_clean_localities(raw_localities, ctx)
 
+        # Borrar la tabla temporal
+        utils.drop_table(raw_localities, ctx)
+
     def _patch_raw_localities(self, raw_localities, ctx):
         # Agregado en ETL2
         patch.delete(raw_localities, ctx, cod_bahra='02000010000')

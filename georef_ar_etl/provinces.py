@@ -28,6 +28,10 @@ class ProvincesETL(ETL):
         # Leer la tabla raw_provinces para crear las provincias procesadas
         self._insert_clean_provinces(raw_provinces, ctx)
 
+        # Borrar la tabla temporal
+        # TODO: Quizás mover a un método _cleanup() o similar
+        utils.drop_table(raw_provinces, ctx)
+
     def _insert_clean_provinces(self, raw_provinces, ctx):
         provinces = []
         iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv', ctx)
