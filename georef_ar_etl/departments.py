@@ -88,9 +88,6 @@ class DepartmentsETL(ETL):
                 geometria=raw_department.geom
             )
 
-            # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(department.id) == constants.DEPARTMENT_ID_LEN
-
             departments.append(department)
 
         ctx.session.add_all(departments)

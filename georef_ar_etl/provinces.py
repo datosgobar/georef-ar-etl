@@ -59,9 +59,6 @@ class ProvincesETL(ETL):
                 geometria=raw_province.geom
             )
 
-            # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(province.id) == constants.PROVINCE_ID_LEN
-
             provinces.append(province)
 
         ctx.session.add_all(provinces)

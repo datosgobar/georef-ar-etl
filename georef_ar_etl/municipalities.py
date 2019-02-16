@@ -90,9 +90,6 @@ class MunicipalitiesETL(ETL):
                 geometria=raw_municipality.geom
             )
 
-            # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(municipality.id) == constants.MUNICIPALITY_ID_LEN
-
             municipalities.append(municipality)
 
         ctx.session.add_all(municipalities)

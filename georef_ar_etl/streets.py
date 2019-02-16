@@ -67,7 +67,6 @@ class StreetsETL(ETL):
             prov_id = street_id[:constants.PROVINCE_ID_LEN]
             dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
 
-            # TODO: Cachear estas cosas?
             province = ctx.query(Province).get(prov_id)
             department = ctx.query(Department).get(dept_id)
 
@@ -84,8 +83,6 @@ class StreetsETL(ETL):
                 provincia_id=province.id,
                 departamento_id=department.id
             )
-
-            assert len(street.id) == constants.STREET_ID_LEN
 
             streets.append(street)
 

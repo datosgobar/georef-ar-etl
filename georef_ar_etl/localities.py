@@ -111,9 +111,6 @@ class LocalitiesETL(ETL):
                 geometria=raw_locality.geom
             )
 
-            # TODO: Sistema que compruebe la integridad de los nuevos datos
-            assert len(locality.id) == constants.LOCALITY_ID_LEN
-
             localities.append(locality)
 
         ctx.session.add_all(localities)
