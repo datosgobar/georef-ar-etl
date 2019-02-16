@@ -34,4 +34,7 @@ def automap_table(table_name, ctx):
 
 
 def drop_table(table, ctx):
+    # Asegurarse de ejecutar cualquier transacción pendiende primero
+    ctx.session.commit()
+    # Eliminar la tabla
     table.__table__.drop(ctx.engine)
