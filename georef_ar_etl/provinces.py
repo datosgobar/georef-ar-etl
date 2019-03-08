@@ -1,37 +1,28 @@
-from .etl import ETL
+from .process import Process, Step, MultiStep
 from .models import Province
 from . import extractors, transformers, loaders, geometry, utils, constants
 
 
-class ProvincesETL(ETL):
+def create_process(ctx):
+    return Process(constants.PROVINCES, [
+        extractors.DownloadURLStep(constants.PROVINCES + '.zip',
+                                   ctx.config.get('etl', 'provinces_url')),
+        transformers.ExtractZipStep(),
+        loaders.Ogr2ogrStep(table_name=constants.PROVINCES_RAW_TABLE,
+                            geom_type='MultiPolygon', encoding='utf-8'),
+        MultiStep([
+            ProvincesExtractionStep(),
+            utils.DropTableStep()
+        ]),
+        utils.FunctionStep(lambda results: results[0])
+    ])
+
+
+class ProvincesExtractionStep(Step):
     def __init__(self):
-        super().__init__(constants.PROVINCES, dependencies=[])
+        super().__init__('provinces_extraction')
 
-    def _run_internal(self, ctx):
-        # Descargar el archivo de la URL
-        url = ctx.config.get('etl', 'provinces_url')
-        filename = extractors.download_url(constants.PROVINCES + '.zip', url,
-                                           ctx)
-
-        # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, ctx)
-
-        # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name=constants.PROVINCES_RAW_TABLE,
-                        geom_type='MultiPolygon', encoding='utf-8',
-                        precision=True, ctx=ctx)
-
-        # Crear una Table automáticamente a partir de la tabla generada por
-        # ogr2ogr
-        raw_provinces = utils.automap_table(constants.PROVINCES_RAW_TABLE, ctx)
-
-        # Leer la tabla raw_provinces para crear las provincias procesadas
-        self._insert_clean_provinces(raw_provinces, ctx)
-
-        # Borrar la tabla temporal
-        utils.drop_table(raw_provinces, ctx)
-
-    def _insert_clean_provinces(self, raw_provinces, ctx):
+    def _run_internal(self, raw_provinces, ctx):
         provinces = []
         iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv', ctx)
         iso_data = {row['id']: row for row in iso_csv}
@@ -44,7 +35,8 @@ class ProvincesETL(ETL):
         ctx.logger.info('Insertando provincias procesadas...')
 
         for raw_province in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid_coordinates(raw_province.geom, ctx)
+            lon, lat = geometry.get_centroid_coordinates(raw_province.geom,
+                                                         ctx)
             prov_id = raw_province.in1
 
             province = Province(

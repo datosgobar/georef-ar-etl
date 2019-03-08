@@ -3,11 +3,12 @@ import code
 from fs import osfs
 from .context import Context, RUN_MODES
 from . import read_config, get_logger, create_engine, constants
-from . import provinces, departments, municipalities, localities, streets
-from . import countries, intersections
+from . import countries, provinces, departments, municipalities, localities
+from . import streets, intersections
 
 DATA_PATH = 'data'
 PROCESSES = [
+    constants.COUNTRIES,
     constants.PROVINCES,
     constants.DEPARTMENTS,
     constants.MUNICIPALITIES,
@@ -37,13 +38,13 @@ def parse_args():
 
 def etl(enabled_processes, ctx):
     processes = [
-        countries.CountriesETL(),
-        provinces.ProvincesETL(),
-        departments.DepartmentsETL(),
-        municipalities.MunicipalitiesETL(),
-        localities.LocalitiesETL(),
-        streets.StreetsETL(),
-        intersections.IntersectionsETL()
+        countries.create_process(ctx),
+        provinces.create_process(ctx),
+        departments.create_process(ctx),
+        municipalities.create_process(ctx),
+        localities.create_process(ctx),
+        streets.create_process(ctx),
+        intersections.create_process(ctx)
     ]
 
     for process in processes:

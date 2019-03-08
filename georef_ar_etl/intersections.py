@@ -1,15 +1,21 @@
 from sqlalchemy.orm import aliased
-from .etl import ETL
+from .process import Process, Step
 from .models import Province, Department, Street, Intersection
-from . import constants, geometry
+from . import constants, geometry, utils
 
 
-class IntersectionsETL(ETL):
+def create_process(ctx):
+    return Process(constants.INTERSECTIONS, [
+        utils.CheckDependenciesStep([Province, Department, Street]),
+        IntersectionsCreationStep()
+    ])
+
+
+class IntersectionsCreationStep(Step):
     def __init__(self):
-        super().__init__(constants.INTERSECTIONS, [Province, Street,
-                                                   Department])
+        super().__init__('intersections_creation_step')
 
-    def _run_internal(self, ctx):
+    def _run_internal(self, data, ctx):
         provinces = ctx.query(Province).all()
         total = len(provinces)
 

@@ -1,20 +1,13 @@
-from .etl import ETL
-from . import extractors, transformers, loaders
+from .process import Process
+from . import extractors, transformers, loaders, constants, utils
 
 
-class CountriesETL(ETL):
-    def __init__(self):
-        super().__init__("Países", dependencies=[])
-
-    def _run_internal(self, ctx):
-        # Descargar el archivo de la URL
-        url = ctx.config.get('etl', 'countries_url')
-        filename = extractors.download_url('paises.zip', url, ctx)
-
-        # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, ctx)
-
-        # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name='raw_paises',
-                        geom_type='MultiPolygon', encoding='latin1',
-                        precision=True, ctx=ctx)
+def create_process(ctx):
+    return Process(constants.COUNTRIES, [
+        extractors.DownloadURLStep(constants.COUNTRIES + '.zip',
+                                   ctx.config.get('etl', 'countries_url')),
+        transformers.ExtractZipStep(),
+        loaders.Ogr2ogrStep(table_name=constants.COUNTRIES_RAW_TABLE,
+                            geom_type='MultiPolygon', encoding='latin1'),
+        utils.DropTableStep()
+    ])

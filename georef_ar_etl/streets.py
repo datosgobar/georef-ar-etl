@@ -1,37 +1,27 @@
-from .etl import ETL
+from .process import Process, Step, MultiStep
 from .models import Province, Department, Street
 from . import extractors, transformers, loaders, utils, constants, patch
 
 
-class StreetsETL(ETL):
+def create_process(ctx):
+    return Process(constants.STREETS, [
+        utils.CheckDependenciesStep([Province, Department]),
+        extractors.DownloadURLStep(constants.STREETS + '.zip',
+                                   ctx.config.get('etl', 'streets_url')),
+        transformers.ExtractZipStep(),
+        loaders.Ogr2ogrStep(table_name=constants.STREETS_RAW_TABLE,
+                            geom_type='MultiLineString', encoding='latin1'),
+        MultiStep([
+            StreetsExtractionStep(),
+            utils.DropTableStep()
+        ]),
+        utils.FunctionStep(lambda results: results[0])
+    ])
+
+
+class StreetsExtractionStep(Step):
     def __init__(self):
-        super().__init__(constants.STREETS, [Province, Department])
-
-    def _run_internal(self, ctx):
-        # Descargar el archivo de la URL
-        url = ctx.config.get('etl', 'streets_url')
-        filename = extractors.download_url('calles.zip', url, ctx)
-
-        # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, ctx)
-
-        # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name=constants.STREETS_RAW_TABLE,
-                        geom_type='MultiLineString', encoding='latin1',
-                        precision=True, ctx=ctx)
-
-        # Crear una Table automáticamente a partir de la tabla generada por
-        # ogr2ogr
-        raw_streets = utils.automap_table(constants.STREETS_RAW_TABLE, ctx)
-
-        # Aplicar parche (nuevo en ETL2)
-        self._patch_raw_streets(raw_streets, ctx)
-
-        # Leer la tabla raw_streets para crear las entidades procesadas
-        self._insert_clean_streets(raw_streets, ctx)
-
-        # Borrar la tabla temporal
-        utils.drop_table(raw_streets, ctx)
+        super().__init__('streets_extraction_step')
 
     def _patch_raw_streets(self, raw_streets, ctx):
         def update_ushuaia(row):
@@ -50,7 +40,8 @@ class StreetsETL(ETL):
         patch.apply_fn(raw_streets, update_rio_grande, ctx,
                        raw_streets.nomencla.like('94007%'))
 
-    def _insert_clean_streets(self, raw_streets, ctx):
+    def _run_internal(self, raw_streets, ctx):
+        self._patch_raw_streets(raw_streets, ctx)
         streets = []
 
         ctx.query(Street).delete()

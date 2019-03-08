@@ -1,9 +1,5 @@
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
 
-code_checks:
-	pyflakes georef_ar_etl
-	pylint georef_ar_etl
-
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
 # datos para SQLAlchemy.
 
@@ -15,3 +11,9 @@ migrate:
 
 history:
 	PYTHONPATH=$$(pwd) $(ALEMBIC_COMMAND) history
+
+# Testing/Linting
+
+code_checks:
+	pyflakes georef_ar_etl
+	pylint georef_ar_etl

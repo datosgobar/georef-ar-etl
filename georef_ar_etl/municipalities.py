@@ -1,40 +1,29 @@
-from .etl import ETL
+from .process import Process, Step, MultiStep
 from .models import Province, Municipality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
 
-class MunicipalitiesETL(ETL):
+def create_process(ctx):
+    return Process(constants.MUNICIPALITIES, [
+        utils.CheckDependenciesStep([Province]),
+        extractors.DownloadURLStep(constants.MUNICIPALITIES + '.zip',
+                                   ctx.config.get('etl',
+                                                  'municipalities_url')),
+        transformers.ExtractZipStep(),
+        loaders.Ogr2ogrStep(table_name=constants.MUNICIPALITIES_RAW_TABLE,
+                            geom_type='MultiPolygon', encoding='utf-8'),
+        MultiStep([
+            MunicipalitiesExtractionStep(),
+            utils.DropTableStep()
+        ]),
+        utils.FunctionStep(lambda results: results[0])
+    ])
+
+
+class MunicipalitiesExtractionStep(Step):
     def __init__(self):
-        super().__init__(constants.MUNICIPALITIES, [Province])
-
-    def _run_internal(self, ctx):
-        # Descargar el archivo de la URL
-        url = ctx.config.get('etl', 'municipalities_url')
-        filename = extractors.download_url(constants.MUNICIPALITIES + '.zip',
-                                           url, ctx)
-
-        # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, ctx)
-
-        # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name=constants.MUNICIPALITIES_RAW_TABLE,
-                        geom_type='MultiPolygon', encoding='utf-8',
-                        precision=True, ctx=ctx)
-
-        # Crear una Table automáticamente a partir de la tabla generada por
-        # ogr2ogr
-        raw_municipalities = utils.automap_table(
-            constants.MUNICIPALITIES_RAW_TABLE, ctx)
-
-        # Aplicar parche
-        self._patch_raw_municipalities(raw_municipalities, ctx)
-
-        # Leer la tabla raw_municipalities para crear las entidades procesadas
-        self._insert_clean_municipalities(raw_municipalities, ctx)
-
-        # Borrar la tabla temporal
-        utils.drop_table(raw_municipalities, ctx)
+        super().__init__('municipalities_extraction_step')
 
     def _patch_raw_municipalities(self, raw_municipalities, ctx):
         patch.delete(raw_municipalities, ctx, in1=None)
@@ -58,7 +47,8 @@ class MunicipalitiesETL(ETL):
         patch.update_field(raw_municipalities, 'in1', '629999', ctx,
                            in1='829999')
 
-    def _insert_clean_municipalities(self, raw_municipalities, ctx):
+    def _run_internal(self, raw_municipalities, ctx):
+        self._patch_raw_municipalities(raw_municipalities, ctx)
         municipalities = []
 
         # TODO: Manejar comparación con municipios que ya están en la base

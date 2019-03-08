@@ -1,40 +1,29 @@
-from .etl import ETL
+from .process import Process, Step, MultiStep
 from .models import Province, Department, Municipality, Locality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
 
-class LocalitiesETL(ETL):
+def create_process(ctx):
+    return Process(constants.MUNICIPALITIES, [
+        utils.CheckDependenciesStep([Province, Department, Municipality]),
+        extractors.DownloadURLStep(constants.LOCALITIES + '.zip',
+                                   ctx.config.get('etl', 'localities_url')),
+        transformers.ExtractTarStep(),
+        loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_RAW_TABLE,
+                            geom_type='MultiPoint', encoding='latin1',
+                            precision=False),
+        MultiStep([
+            LocalitiesExtractionStep(),
+            utils.DropTableStep()
+        ]),
+        utils.FunctionStep(lambda results: results[0])
+    ])
+
+
+class LocalitiesExtractionStep(Step):
     def __init__(self):
-        super().__init__(constants.LOCALITIES, [Province, Department,
-                                                Municipality])
-
-    def _run_internal(self, ctx):
-        # Descargar el archivo de la URL
-        url = ctx.config.get('etl', 'localities_url')
-        filename = extractors.download_url('bahra.zip', url, ctx)
-
-        # Descomprimir el .tar.gz
-        zip_dir = transformers.extract_tarfile(filename, ctx)
-
-        # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name=constants.LOCALITIES_RAW_TABLE,
-                        geom_type='MultiPoint', encoding='latin1',
-                        precision=False, ctx=ctx)
-
-        # Crear una Table automáticamente a partir de la tabla generada por
-        # ogr2ogr
-        raw_localities = utils.automap_table(
-            constants.LOCALITIES_RAW_TABLE, ctx)
-
-        # Aplicar parche
-        self._patch_raw_localities(raw_localities, ctx)
-
-        # Leer la tabla raw_localities para crear las entidades procesadas
-        self._insert_clean_localities(raw_localities, ctx)
-
-        # Borrar la tabla temporal
-        utils.drop_table(raw_localities, ctx)
+        super().__init__('localities_extraction_step')
 
     def _patch_raw_localities(self, raw_localities, ctx):
         # Agregado en ETL2
@@ -73,7 +62,8 @@ class LocalitiesETL(ETL):
         patch.apply_fn(raw_localities, update_ushuaia, ctx, cod_prov='94',
                        cod_depto='014')
 
-    def _insert_clean_localities(self, raw_localities, ctx):
+    def _run_internal(self, raw_localities, ctx):
+        self._patch_raw_localities(raw_localities, ctx)
         localities = []
 
         # TODO: Manejar comparación con municipios que ya están en la base

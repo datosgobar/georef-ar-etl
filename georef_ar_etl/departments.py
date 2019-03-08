@@ -1,40 +1,28 @@
-from .etl import ETL
+from .process import Process, Step, MultiStep
 from .models import Province, Department
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
 
-class DepartmentsETL(ETL):
+def create_process(ctx):
+    return Process(constants.DEPARTMENTS, [
+        utils.CheckDependenciesStep([Province]),
+        extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
+                                   ctx.config.get('etl', 'departments_url')),
+        transformers.ExtractZipStep(),
+        loaders.Ogr2ogrStep(table_name=constants.DEPARTMENTS_RAW_TABLE,
+                            geom_type='MultiPolygon', encoding='utf-8'),
+        MultiStep([
+            DepartmentsExtractionStep(),
+            utils.DropTableStep()
+        ]),
+        utils.FunctionStep(lambda results: results[0])
+    ])
+
+
+class DepartmentsExtractionStep(Step):
     def __init__(self):
-        super().__init__(constants.DEPARTMENTS, [Province])
-
-    def _run_internal(self, ctx):
-        # Descargar el archivo de la URL
-        url = ctx.config.get('etl', 'departments_url')
-        filename = extractors.download_url(constants.DEPARTMENTS + '.zip', url,
-                                           ctx)
-
-        # Descomprimir el .zip
-        zip_dir = transformers.extract_zipfile(filename, ctx)
-
-        # Cargar el archivo .shp a la base de datos
-        loaders.ogr2ogr(zip_dir, table_name=constants.DEPARTMENTS_RAW_TABLE,
-                        geom_type='MultiPolygon', encoding='utf-8',
-                        precision=True, ctx=ctx)
-
-        # Crear una Table automáticamente a partir de la tabla generada por
-        # ogr2ogr
-        raw_departments = utils.automap_table(constants.DEPARTMENTS_RAW_TABLE,
-                                              ctx)
-
-        # Aplicar parche
-        self._patch_raw_departments(raw_departments, ctx)
-
-        # Leer la tabla raw_departments para crear las entidades procesadas
-        self._insert_clean_departments(raw_departments, ctx)
-
-        # Borrar la tabla temporal
-        utils.drop_table(raw_departments, ctx)
+        super().__init__('departments_extraction')
 
     def _patch_raw_departments(self, raw_departments, ctx):
         # Antártida Argentina duplicada
@@ -56,7 +44,8 @@ class DepartmentsETL(ETL):
         patch.update_field(raw_departments, 'in1', '94011', ctx,
                            fna='Departamento Río Grande', nam='Tolhuin')
 
-    def _insert_clean_departments(self, raw_departments, ctx):
+    def _run_internal(self, raw_departments, ctx):
+        self._patch_raw_departments(raw_departments, ctx)
         departments = []
 
         # TODO: Manejar comparación con deptos que ya están en la base
