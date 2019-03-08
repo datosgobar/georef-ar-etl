@@ -24,7 +24,7 @@ class ProvincesExtractionStep(Step):
 
     def _run_internal(self, raw_provinces, ctx):
         provinces = []
-        iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv', ctx)
+        iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv')
         iso_data = {row['id']: row for row in iso_csv}
 
         # TODO: Manejar comparación con provincias que ya están en la base

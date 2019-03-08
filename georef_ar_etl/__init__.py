@@ -1,9 +1,7 @@
 import configparser
 import logging
 import sqlalchemy
-from . import models
-
-CONFIG_PATH = 'config/georef.cfg'
+from . import models, constants
 
 
 def get_logger():
@@ -32,5 +30,5 @@ def create_engine(config, echo=False):
 
 def read_config():
     config = configparser.ConfigParser()
-    config.read(CONFIG_PATH)
+    config.read(constants.CONFIG_PATH)
     return config

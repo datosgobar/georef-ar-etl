@@ -6,7 +6,6 @@ from . import read_config, get_logger, create_engine, constants
 from . import countries, provinces, departments, municipalities, localities
 from . import streets, intersections
 
-DATA_PATH = 'data'
 PROCESSES = [
     constants.COUNTRIES,
     constants.PROVINCES,
@@ -64,9 +63,8 @@ def main():
 
     ctx = Context(
         config=config,
-        data_fs=osfs.OSFS(DATA_PATH),
-        cache_fs=osfs.OSFS(config.get('etl', 'cache_dir'), create=True,
-                           create_mode=0o700),
+        fs=osfs.OSFS(config.get('etl', 'files_dir'), create=True,
+                     create_mode=0o700),
         engine=create_engine(config, echo=args.verbose),
         logger=get_logger(),
         mode=args.mode

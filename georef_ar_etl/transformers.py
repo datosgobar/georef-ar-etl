@@ -10,14 +10,14 @@ class ExtractZipStep(Step):
 
     def _run_internal(self, filename, ctx):
         dirname = filename.split('.')[0]
-        if ctx.cache.isdir(dirname):
+        if ctx.fs.isdir(dirname):
             ctx.logger.info('Zip: Removiendo directorio "%s" anterior.',
                             dirname)
-            ctx.cache.removetree(dirname)
+            ctx.fs.removetree(dirname)
 
-        dirpath = os.path.dirname(ctx.cache.getsyspath(filename))
+        dirpath = os.path.dirname(ctx.fs.getsyspath(filename))
 
-        with ctx.cache.open(filename, 'rb') as f:
+        with ctx.fs.open(filename, 'rb') as f:
             with ZipFile(f) as zipf:
                 zipf.extractall(os.path.join(dirpath, dirname))
 
@@ -30,12 +30,12 @@ class ExtractTarStep(Step):
 
     def _run_internal(self, filename, ctx):
         dirname = filename.split('.')[0]
-        if ctx.cache.isdir(dirname):
+        if ctx.fs.isdir(dirname):
             ctx.logger.info('Tar: Removiendo directorio "%s" anterior.',
                             dirname)
-            ctx.cache.removetree(dirname)
+            ctx.fs.removetree(dirname)
 
-        sys_filename = ctx.cache.getsyspath(filename)
+        sys_filename = ctx.fs.getsyspath(filename)
         dirpath = os.path.dirname(sys_filename)
 
         with tarfile.open(sys_filename) as tarf:

@@ -4,11 +4,10 @@ RUN_MODES = ['normal', 'interactive', 'testing']
 
 
 class Context:
-    def __init__(self, config, data_fs, cache_fs, engine, logger,
+    def __init__(self, config, fs, engine, logger,
                  mode='normal'):
         self._config = config
-        self._data = data_fs
-        self._cache = cache_fs
+        self._fs = fs
         self._engine = engine
         self._logger = logger
 
@@ -24,12 +23,8 @@ class Context:
         return self._config
 
     @property
-    def data(self):
-        return self._data
-
-    @property
-    def cache(self):
-        return self._cache
+    def fs(self):
+        return self._fs
 
     @property
     def engine(self):

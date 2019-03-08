@@ -32,13 +32,13 @@ class Ogr2ogrStep(Step):
         self._precision = precision
 
     def _run_internal(self, dirname, ctx):
-        glob = ctx.cache.glob(os.path.join(dirname, '*.shp'))
+        glob = ctx.fs.glob(os.path.join(dirname, '*.shp'))
         if glob.count().files != 1:
             raise ProcessException(
                 'Se detectó más de un archivo .shp en el directorio.')
 
         shp = next(iter(glob))
-        shp_path = ctx.cache.getsyspath(shp.path)
+        shp_path = ctx.fs.getsyspath(shp.path)
 
         ctx.logger.info('Ejecutando ogr2ogr sobre %s.', shp_path)
         args = [

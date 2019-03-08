@@ -116,4 +116,4 @@ dmypy.json
 .pyre/
 
 # georef-ar-etl
-cache/
+files/

@@ -10,7 +10,7 @@ class DownloadURLStep(Step):
         self._url = url
 
     def _run_internal(self, data, ctx):
-        if ctx.cache.isfile(self._filename) and ctx.mode == 'interactive':
+        if ctx.fs.isfile(self._filename) and ctx.mode == 'interactive':
             ctx.logger.info('Salteando descarga: %s', self._url)
             return self._filename
 
@@ -21,7 +21,7 @@ class DownloadURLStep(Step):
                     'La petición HTTP devolvió código {}.'.format(
                         req.status_code))
 
-            with ctx.cache.open(self._filename, 'wb') as f:
+            with ctx.fs.open(self._filename, 'wb') as f:
                 shutil.copyfileobj(req.raw, f)
 
         return self._filename

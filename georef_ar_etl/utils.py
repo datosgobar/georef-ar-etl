@@ -1,7 +1,9 @@
+import os
 import sys
 import csv
 from tqdm import tqdm
 from .process import Step, ProcessException
+from . import constants
 
 
 class CheckDependenciesStep(Step):
@@ -51,7 +53,7 @@ def pbar(iterator, ctx, total=None):
     yield from tqdm(iterator, file=sys.stderr, total=total)
 
 
-def load_data_csv(filename, ctx):
-    with ctx.data.open(filename, newline='') as f:
+def load_data_csv(filename):
+    with open(os.path.join(constants.DATA_DIR, filename), newline='') as f:
         reader = csv.DictReader(f)
         return list(reader)

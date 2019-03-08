@@ -1,4 +1,6 @@
 ETL_VERSION = '9.0.0'
+DATA_DIR = 'data'
+CONFIG_PATH = 'config/georef.cfg'
 
 BAHRA_TYPES = {
     'E': 'Entidad (E)',
