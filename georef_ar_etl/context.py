@@ -47,3 +47,6 @@ class Context:
 
     def query(self, *args, **kwargs):
         return self.session.query(*args, **kwargs)
+
+    def scalar(self, *args, **kwargs):
+        return self.session.scalar(*args, **kwargs)

@@ -53,6 +53,14 @@ def pbar(iterator, ctx, total=None):
     yield from tqdm(iterator, file=sys.stderr, total=total)
 
 
+def ensure_dir(path, ctx):
+    ctx.fs.makedirs(path, permissions=0o700, recreate=True)
+
+
+def copy_file(src, dst, ctx):
+    ctx.fs.copy(src, dst, overwrite=True)
+
+
 def load_data_csv(filename):
     with open(os.path.join(constants.DATA_DIR, filename), newline='') as f:
         reader = csv.DictReader(f)

@@ -1,3 +1,4 @@
+import json
 from sqlalchemy import Column, String, Float, Integer, ForeignKey
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -61,6 +62,19 @@ class Province(Base, EntityMixin):
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+
+    def to_dict(self, ctx):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'categoria': self.categoria,
+            'iso_id': self.iso_id,
+            'iso_nombre': self.iso_nombre,
+            'lat': self.lat,
+            'lon': self.lon,
+            'geometria': json.loads(ctx.scalar(self.geometria.ST_AsGeoJSON()))
+        }
 
 
 class Department(Base, EntityMixin, InProvinceMixin):

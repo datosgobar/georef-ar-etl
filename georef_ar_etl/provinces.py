@@ -14,7 +14,7 @@ def create_process(ctx):
             ProvincesExtractionStep(),
             utils.DropTableStep()
         ]),
-        utils.FunctionStep(lambda results: results[0])
+        loaders.CreateJSONFileStep(Province, constants.PROVINCES + '.json')
     ])
 
 

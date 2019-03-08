@@ -1,5 +1,6 @@
 ETL_VERSION = '9.0.0'
 DATA_DIR = 'data'
+LATEST_DIR = 'latest'
 CONFIG_PATH = 'config/georef.cfg'
 
 BAHRA_TYPES = {
