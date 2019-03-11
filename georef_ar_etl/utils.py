@@ -54,7 +54,7 @@ def pbar(iterator, ctx, total=None):
 
 
 def ensure_dir(path, ctx):
-    ctx.fs.makedirs(path, permissions=0o700, recreate=True)
+    ctx.fs.makedirs(path, permissions=constants.DIR_PERMS, recreate=True)
 
 
 def copy_file(src, dst, ctx):

@@ -64,7 +64,7 @@ def main():
     ctx = Context(
         config=config,
         fs=osfs.OSFS(config.get('etl', 'files_dir'), create=True,
-                     create_mode=0o700),
+                     create_mode=constants.DIR_PERMS),
         engine=create_engine(config, echo=args.verbose),
         logger=get_logger(),
         mode=args.mode
