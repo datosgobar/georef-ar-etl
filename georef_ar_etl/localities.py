@@ -67,13 +67,13 @@ class LocalitiesExtractionStep(Step):
         localities = []
 
         # TODO: Manejar comparación con municipios que ya están en la base
-        ctx.query(Locality).delete()
+        ctx.session.query(Locality).delete()
 
         # Seleccionar un subconjunto de BAHRA
-        query = ctx.query(raw_localities).filter(raw_localities.tipo_bahra.in_(
-            constants.BAHRA_TYPES.keys()
-        ))
+        query = ctx.session.query(raw_localities).filter(
+            raw_localities.tipo_bahra.in_(constants.BAHRA_TYPES.keys()))
         count = query.count()
+        cached_session = ctx.cached_session()
 
         ctx.logger.info('Insertando localidades procesadas...')
 
@@ -84,8 +84,8 @@ class LocalitiesExtractionStep(Step):
             prov_id = loc_id[:constants.PROVINCE_ID_LEN]
             dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
 
-            province = ctx.query(Province).get(prov_id)
-            department = ctx.query(Department).get(dept_id)
+            province = cached_session.query(Province).get(prov_id)
+            department = cached_session.query(Department).get(dept_id)
             municipality = geometry.get_entity_at_point(Municipality,
                                                         raw_locality.geom, ctx)
 

@@ -44,22 +44,23 @@ class StreetsExtractionStep(Step):
         self._patch_raw_streets(raw_streets, ctx)
         streets = []
 
-        ctx.query(Street).delete()
+        ctx.session.query(Street).delete()
 
         bulk_size = ctx.config.getint('etl', 'bulk_size')
-        query = ctx.query(raw_streets).\
+        query = ctx.session.query(raw_streets).\
             filter(raw_streets.tipo != 'OTRO').\
             yield_per(bulk_size)
 
         count = query.count()
+        cached_session = ctx.cached_session()
 
         for raw_street in utils.pbar(query, ctx, total=count):
             street_id = raw_street.nomencla
             prov_id = street_id[:constants.PROVINCE_ID_LEN]
             dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
 
-            province = ctx.query(Province).get(prov_id)
-            department = ctx.query(Department).get(dept_id)
+            province = cached_session.query(Province).get(prov_id)
+            department = cached_session.query(Department).get(dept_id)
 
             street = Street(
                 id=street_id,

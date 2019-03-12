@@ -49,9 +49,10 @@ class DepartmentsExtractionStep(Step):
         departments = []
 
         # TODO: Manejar comparación con deptos que ya están en la base
-        ctx.query(Department).delete()
-        query = ctx.query(raw_departments)
+        ctx.session.query(Department).delete()
+        query = ctx.session.query(raw_departments)
         count = query.count()
+        cached_session = ctx.cached_session()
 
         ctx.logger.info('Insertando departamentos procesados...')
 
@@ -61,7 +62,7 @@ class DepartmentsExtractionStep(Step):
             dept_id = raw_department.in1
             prov_id = dept_id[:constants.PROVINCE_ID_LEN]
 
-            province = ctx.query(Province).get(prov_id)
+            province = cached_session.query(Province).get(prov_id)
             province_isct = geometry.get_intersection_percentage(
                 province.geometria, raw_department.geom, ctx)
 

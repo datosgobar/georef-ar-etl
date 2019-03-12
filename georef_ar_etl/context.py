@@ -3,6 +3,37 @@ from sqlalchemy.orm import sessionmaker
 RUN_MODES = ['normal', 'interactive', 'testing']
 
 
+class CachedQuery:
+    def __init__(self, query):
+        self._cache = {}
+        self._query = query
+
+    def __getattr__(self, name):
+        return getattr(self._query, name)
+
+    def get(self, key):
+        if key not in self._cache:
+            self._cache[key] = self._query.get(key)
+
+        return self._cache[key]
+
+
+class CachedSession:
+    def __init__(self, session):
+        self._queries = {}
+        self._session = session
+
+    def __getattr__(self, name):
+        return getattr(self._session, name)
+
+    def query(self, query_class):
+        if query_class not in self._queries:
+            self._queries[query_class] = CachedQuery(
+                self._session.query(query_class))
+
+        return self._queries[query_class]
+
+
 class Context:
     def __init__(self, config, fs, engine, logger,
                  mode='normal'):
@@ -45,8 +76,5 @@ class Context:
 
         return self._session
 
-    def query(self, *args, **kwargs):
-        return self.session.query(*args, **kwargs)
-
-    def scalar(self, *args, **kwargs):
-        return self.session.scalar(*args, **kwargs)
+    def cached_session(self):
+        return CachedSession(self.session)

@@ -13,7 +13,7 @@ class CheckDependenciesStep(Step):
 
     def _run_internal(self, data, ctx):
         for dep in self._dependencies:
-            if not ctx.query(dep).first():
+            if not ctx.session.query(dep).first():
                 raise ProcessException(
                     'La tabla "{}" está vacía.'.format(dep.__table__.name))
 

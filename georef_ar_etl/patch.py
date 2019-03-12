@@ -5,7 +5,7 @@ def update_field(table, field, value, ctx, **conditions):
         ctx.logger.info('  > %s = %s', k, v)
     ctx.logger.info('+ Establecer sus %s a: %s.', field, value)
 
-    rows = ctx.query(table).filter_by(**conditions).all()
+    rows = ctx.session.query(table).filter_by(**conditions).all()
     if rows:
         for row in rows:
             setattr(row, field, value)
@@ -29,12 +29,12 @@ def apply_fn(table, fn, ctx, *expressions, **conditions):
         for k, v in conditions.items():
             ctx.logger.info('  > %s = %s', k, v)
 
-        rows = ctx.query(table).filter_by(**conditions).all()
+        rows = ctx.session.query(table).filter_by(**conditions).all()
     else:
         for expr in expressions:
             ctx.logger.info('  > %s', expr)
 
-        rows = ctx.query(table).filter(*expressions).all()
+        rows = ctx.session.query(table).filter(*expressions).all()
 
     if rows:
         for row in rows:
@@ -53,7 +53,7 @@ def delete(table, ctx, **conditions):
     for k, v in conditions.items():
         ctx.logger.info('  > %s = %s', k, v)
 
-    count = ctx.query(table).filter_by(**conditions).delete()
+    count = ctx.session.query(table).filter_by(**conditions).delete()
     if count:
         ctx.logger.info('+ Parche aplicado (entidades eliminadas: %s).', count)
     else:

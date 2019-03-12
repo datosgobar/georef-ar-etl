@@ -85,12 +85,13 @@ class CreateJSONFileStep(Step):
         data['timestamp'] = int(now.timestamp())
         data['version'] = constants.ETL_VERSION
 
-        query = ctx.query(self._table).yield_per(bulk_size)
+        query = ctx.session.query(self._table).yield_per(bulk_size)
         count = query.count()
+        cached_session = ctx.cached_session()
 
         ctx.logger.info('Transformando entidades a JSON...')
         for entity in utils.pbar(query, ctx, total=count):
-            entities.append(entity.to_dict(ctx.session))
+            entities.append(entity.to_dict(cached_session))
 
         data['datos'] = entities
 

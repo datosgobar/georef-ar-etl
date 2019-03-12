@@ -16,10 +16,10 @@ class IntersectionsCreationStep(Step):
         super().__init__('intersections_creation_step')
 
     def _run_internal(self, data, ctx):
-        provinces = ctx.query(Province).all()
+        provinces = ctx.session.query(Province).all()
         total = len(provinces)
 
-        ctx.query(Intersection).delete()
+        ctx.session.query(Intersection).delete()
 
         for i, province in enumerate(provinces):
             self._insert_province_intersections(province, i + 1, total + 1,
@@ -30,7 +30,7 @@ class IntersectionsCreationStep(Step):
     def _build_intersection_query(self, province, bulk_size, ctx):
         StreetA = aliased(Street)
         StreetB = aliased(Street)
-        query = ctx.query(StreetA, StreetB)
+        query = ctx.session.query(StreetA, StreetB)
 
         if province:
             query = query.join(StreetB,
@@ -62,7 +62,7 @@ class IntersectionsCreationStep(Step):
         count = 0
         query = self._build_intersection_query(province, bulk_size, ctx)
 
-        for street_a, street_b in query:
+        for street_a, street_b in utils.pbar(query, ctx):
             intersection = Intersection(
                 id='{}-{}'.format(street_a.id, street_b.id),
                 calle_a_id=street_a.id,

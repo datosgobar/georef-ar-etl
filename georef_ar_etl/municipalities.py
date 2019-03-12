@@ -52,9 +52,10 @@ class MunicipalitiesExtractionStep(Step):
         municipalities = []
 
         # TODO: Manejar comparación con municipios que ya están en la base
-        ctx.query(Municipality).delete()
-        query = ctx.query(raw_municipalities)
+        ctx.session.query(Municipality).delete()
+        query = ctx.session.query(raw_municipalities)
         count = query.count()
+        cached_session = ctx.cached_session()
 
         ctx.logger.info('Insertando municipios procesados...')
 
@@ -64,7 +65,7 @@ class MunicipalitiesExtractionStep(Step):
             muni_id = raw_municipality.in1
             prov_id = muni_id[:constants.PROVINCE_ID_LEN]
 
-            province = ctx.query(Province).get(prov_id)
+            province = cached_session.query(Province).get(prov_id)
             province_isct = geometry.get_intersection_percentage(
                 province.geometria, raw_municipality.geom, ctx)
 
