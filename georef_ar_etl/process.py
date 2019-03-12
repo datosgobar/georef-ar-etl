@@ -21,7 +21,7 @@ class Step:
         return self._name
 
 
-class MultiStep(Step):
+class CompositeStep(Step):
     def __init__(self, steps):
         super().__init__('multistep')
         self._steps = steps
@@ -41,14 +41,15 @@ class Process:
         self._name = name
         self._steps = steps
 
-    def run(self, ctx):
+    def run(self, start, ctx):
         self._print_log_separator(ctx.logger)
         session = ctx.session
         previous_result = None
 
         try:
-            for i, step in enumerate(self._steps):
-                ctx.logger.info('==> Paso #{}: {}'.format(i + 1, step.name))
+            for i, step in enumerate(self._steps[start:]):
+                ctx.logger.info('==> Paso #{}: {}'.format(i + start + 1,
+                                                          step.name))
                 previous_result = step.run(previous_result, ctx)
                 ctx.logger.info('')
 
@@ -56,7 +57,7 @@ class Process:
             ctx.logger.error('')
             ctx.logger.error(
                 'Sucedió un error durante la ejecución del proceso:')
-            ctx.logger.error(e)
+            ctx.logger.exception('Excepción:')
             ctx.logger.error('')
 
         ctx.logger.info('Commit...')

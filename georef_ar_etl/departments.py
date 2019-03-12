@@ -1,22 +1,22 @@
-from .process import Process, Step, MultiStep
+from .process import Process, Step, CompositeStep
 from .models import Province, Department
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
 
-def create_process(ctx):
+def create_process(config):
     return Process(constants.DEPARTMENTS, [
         utils.CheckDependenciesStep([Province]),
         extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
-                                   ctx.config.get('etl', 'departments_url')),
+                                   config.get('etl', 'departments_url')),
         transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.DEPARTMENTS_RAW_TABLE,
                             geom_type='MultiPolygon', encoding='utf-8'),
-        MultiStep([
+        CompositeStep([
             DepartmentsExtractionStep(),
             utils.DropTableStep()
         ]),
-        utils.FunctionStep(lambda results: results[0])
+        loaders.CreateJSONFileStep(Department, constants.DEPARTMENTS + '.json')
     ])
 
 

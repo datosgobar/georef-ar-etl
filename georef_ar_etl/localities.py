@@ -1,23 +1,23 @@
-from .process import Process, Step, MultiStep
+from .process import Process, Step, CompositeStep
 from .models import Province, Department, Municipality, Locality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
 
-def create_process(ctx):
-    return Process(constants.MUNICIPALITIES, [
+def create_process(config):
+    return Process(constants.LOCALITIES, [
         utils.CheckDependenciesStep([Province, Department, Municipality]),
         extractors.DownloadURLStep(constants.LOCALITIES + '.zip',
-                                   ctx.config.get('etl', 'localities_url')),
+                                   config.get('etl', 'localities_url')),
         transformers.ExtractTarStep(),
         loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_RAW_TABLE,
                             geom_type='MultiPoint', encoding='latin1',
                             precision=False),
-        MultiStep([
+        CompositeStep([
             LocalitiesExtractionStep(),
             utils.DropTableStep()
         ]),
-        utils.FunctionStep(lambda results: results[0])
+        loaders.CreateJSONFileStep(Locality, constants.LOCALITIES + '.json')
     ])
 
 

@@ -27,6 +27,8 @@ def parse_args():
                         choices=PROCESSES, help='Procesos ETL a ejecutar.')
     parser.add_argument('-m', '--mode', choices=RUN_MODES, default='normal',
                         help='Modo de ejecución.')
+    parser.add_argument('-s', '--start', default=1, type=int,
+                        help='Paso desde el cual comenzar (número).')
     parser.add_argument('-c', '--console', action='store_true',
                         help='Iniciar una consola interactiva.')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -35,20 +37,22 @@ def parse_args():
     return parser.parse_args()
 
 
-def etl(enabled_processes, ctx):
-    processes = [
-        countries.create_process(ctx),
-        provinces.create_process(ctx),
-        departments.create_process(ctx),
-        municipalities.create_process(ctx),
-        localities.create_process(ctx),
-        streets.create_process(ctx),
-        intersections.create_process(ctx)
+def etl(enabled_processes, start, ctx):
+    modules = [
+        countries,
+        provinces,
+        departments,
+        municipalities,
+        localities,
+        streets,
+        intersections
     ]
+
+    processes = [module.create_process(ctx.config) for module in modules]
 
     for process in processes:
         if not enabled_processes or process.name in enabled_processes:
-            process.run(ctx)
+            process.run(start - 1, ctx)
 
 
 def console(ctx):
@@ -73,7 +77,7 @@ def main():
     if args.console:
         console(ctx)
     else:
-        etl(args.processes, ctx)
+        etl(args.processes, args.start, ctx)
 
 
 main()

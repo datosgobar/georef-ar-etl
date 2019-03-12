@@ -30,16 +30,6 @@ class DropTableStep(Step):
         table.__table__.drop(ctx.engine)
 
 
-class FunctionStep(Step):
-    def __init__(self, fn):
-        super().__init__('function')
-        self._fn = fn
-
-    def _run_internal(self, data, ctx):
-        ctx.logger.info('Ejecutando función.')
-        return self._fn(data)
-
-
 def clean_string(s):
     s = s.splitlines()[0]
     return s.strip()

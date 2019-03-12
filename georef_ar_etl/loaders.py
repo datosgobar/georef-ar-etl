@@ -79,17 +79,18 @@ class CreateJSONFileStep(Step):
         data = {}
         entities = []
         now = datetime.now(timezone.utc)
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
 
         data['fecha_creacion'] = str(now)
         data['timestamp'] = int(now.timestamp())
         data['version'] = constants.ETL_VERSION
 
-        query = ctx.query(self._table)
+        query = ctx.query(self._table).yield_per(bulk_size)
         count = query.count()
 
         ctx.logger.info('Transformando entidades a JSON...')
         for entity in utils.pbar(query, ctx, total=count):
-            entities.append(entity.to_dict(ctx))
+            entities.append(entity.to_dict(ctx.session))
 
         data['datos'] = entities
 
@@ -99,7 +100,7 @@ class CreateJSONFileStep(Step):
         ctx.logger.info('Escribiendo archivo JSON...')
         filepath = os.path.join(constants.ETL_VERSION, self._filename)
         with ctx.fs.open(filepath, 'w') as f:
-            json.dump(data, f)
+            json.dump(data, f, ensure_ascii=False)
 
         ctx.logger.info('Creando copia del archivo...')
         filepath_latest = os.path.join(constants.LATEST_DIR, self._filename)

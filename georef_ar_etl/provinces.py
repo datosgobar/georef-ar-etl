@@ -1,16 +1,16 @@
-from .process import Process, Step, MultiStep
+from .process import Process, Step, CompositeStep
 from .models import Province
 from . import extractors, transformers, loaders, geometry, utils, constants
 
 
-def create_process(ctx):
+def create_process(config):
     return Process(constants.PROVINCES, [
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
-                                   ctx.config.get('etl', 'provinces_url')),
+                                   config.get('etl', 'provinces_url')),
         transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.PROVINCES_RAW_TABLE,
                             geom_type='MultiPolygon', encoding='utf-8'),
-        MultiStep([
+        CompositeStep([
             ProvincesExtractionStep(),
             utils.DropTableStep()
         ]),

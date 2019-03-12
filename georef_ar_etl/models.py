@@ -39,6 +39,11 @@ class InProvinceMixin:
             nullable=False
         )
 
+    def provincia_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
+        return session.query(Province).get(self.provincia_id).nombre
+
 
 class InDepartmentMixin:
     @declared_attr
@@ -49,6 +54,11 @@ class InDepartmentMixin:
                        ondelete='cascade'),
             nullable=False
         )
+
+    def departamento_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
+        return session.query(Department).get(self.departamento_id).nombre
 
 
 class Province(Base, EntityMixin):
@@ -63,17 +73,19 @@ class Province(Base, EntityMixin):
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
 
-    def to_dict(self, ctx):
+    def to_dict(self, session):
         return {
             'id': self.id,
             'nombre': self.nombre,
+            'nombre_completo': self.nombre_completo,
             'fuente': self.fuente,
             'categoria': self.categoria,
             'iso_id': self.iso_id,
             'iso_nombre': self.iso_nombre,
             'lat': self.lat,
             'lon': self.lon,
-            'geometria': json.loads(ctx.scalar(self.geometria.ST_AsGeoJSON()))
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
         }
 
 
@@ -87,6 +99,24 @@ class Department(Base, EntityMixin, InProvinceMixin):
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
 
+    def to_dict(self, session):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'nombre_completo': self.nombre_completo,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session),
+                'interseccion': self.provincia_interseccion,
+            },
+            'fuente': self.fuente,
+            'categoria': self.categoria,
+            'lat': self.lat,
+            'lon': self.lon,
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
+
 
 class Municipality(Base, EntityMixin, InProvinceMixin):
     __tablename__ = constants.MUNICIPALITIES_ETL_TABLE
@@ -97,6 +127,24 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+
+    def to_dict(self, session):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'nombre_completo': self.nombre_completo,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session),
+                'interseccion': self.provincia_interseccion,
+            },
+            'fuente': self.fuente,
+            'categoria': self.categoria,
+            'lat': self.lat,
+            'lon': self.lon,
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
 
 
 class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
@@ -121,6 +169,36 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
 
         return category
 
+    def municipio_nombre(self, session):
+        if not self.municipio_id:
+            return None
+
+        return session.query(Municipality).get(self.municipio_id).nombre
+
+    def to_dict(self, session):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session)
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+            'municipio': {
+                'id': self.municipio_id,
+                'nombre': self.municipio_nombre(session)
+            },
+            'categoria': self.categoria,
+            'lat': self.lat,
+            'lon': self.lon,
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
+
 
 class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     __tablename__ = constants.STREETS_ETL_TABLE
@@ -131,6 +209,42 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     inicio_izquierda = Column(Integer, nullable=False)
     fin_izquierda = Column(Integer, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
+
+    def to_dict(self, session):
+        full_name = '{}, {}, {}'.format(
+            self.nombre,
+            self.departamento_nombre(session),
+            self.provincia_nombre(session)
+        )
+
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session)
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+            # TODO: Remover campo nomenclatura
+            'nomenclatura': full_name,
+            'altura': {
+                'inicio': {
+                    'derecha': self.inicio_derecha,
+                    'izquierda': self.inicio_izquierda
+                },
+                'fin': {
+                    'derecha': self.fin_derecha,
+                    'izquierda': self.fin_izquierda
+                }
+            },
+            'categoria': self.categoria,
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
 
 
 class Intersection(Base):
