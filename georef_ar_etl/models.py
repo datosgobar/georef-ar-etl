@@ -210,13 +210,7 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     fin_izquierda = Column(Integer, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
 
-    def to_dict(self, session):
-        full_name = '{}, {}, {}'.format(
-            self.nombre,
-            self.departamento_nombre(session),
-            self.provincia_nombre(session)
-        )
-
+    def to_dict_simple(self, session):
         return {
             'id': self.id,
             'nombre': self.nombre,
@@ -229,22 +223,31 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
                 'id': self.departamento_id,
                 'nombre': self.departamento_nombre(session)
             },
-            # TODO: Remover campo nomenclatura
-            'nomenclatura': full_name,
-            'altura': {
-                'inicio': {
-                    'derecha': self.inicio_derecha,
-                    'izquierda': self.inicio_izquierda
-                },
-                'fin': {
-                    'derecha': self.fin_derecha,
-                    'izquierda': self.fin_izquierda
-                }
-            },
-            'categoria': self.categoria,
-            'geometria': json.loads(session.scalar(
-                self.geometria.ST_AsGeoJSON()))
+            'categoria': self.categoria
         }
+
+    def to_dict(self, session):
+        base = self.to_dict_simple(session)
+
+        base['nomenclatura'] = '{}, {}, {}'.format(
+            self.nombre,
+            self.departamento_nombre(session),
+            self.provincia_nombre(session)
+        )
+        base['altura'] = {
+            'inicio': {
+                'derecha': self.inicio_derecha,
+                'izquierda': self.inicio_izquierda
+            },
+            'fin': {
+                'derecha': self.fin_derecha,
+                'izquierda': self.fin_izquierda
+            }
+        }
+        base['geometria'] = json.loads(session.scalar(
+            self.geometria.ST_AsGeoJSON()))
+
+        return base
 
 
 class Intersection(Base):
@@ -258,3 +261,15 @@ class Intersection(Base):
                                            ondelete='cascade'),
                         nullable=False)
     geometria = Column(Geometry('POINT'), nullable=False)
+
+    def to_dict(self, session):
+        street_a = session.query(Street).get(self.calle_a_id)
+        street_b = session.query(Street).get(self.calle_b_id)
+
+        return {
+            'id': self.id,
+            'calle_a': street_a.to_dict_simple(session),
+            'calle_b': street_b.to_dict_simple(session),
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
