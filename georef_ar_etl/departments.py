@@ -1,4 +1,4 @@
-from .process import Process, Step, CompositeStep
+from .process import Process, CompositeStep
 from .models import Province, Department
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
@@ -20,11 +20,11 @@ def create_process(config):
     ])
 
 
-class DepartmentsExtractionStep(Step):
+class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('departments_extraction')
+        super().__init__('departments_extraction', Department)
 
-    def _patch_raw_departments(self, raw_departments, ctx):
+    def _patch_raw_entities(self, raw_departments, ctx):
         # Antártida Argentina duplicada
         patch.delete(raw_departments, ctx, ogc_fid=530, in1='94028')
 
@@ -44,40 +44,24 @@ class DepartmentsExtractionStep(Step):
         patch.update_field(raw_departments, 'in1', '94011', ctx,
                            fna='Departamento Río Grande', nam='Tolhuin')
 
-    def _run_internal(self, raw_departments, ctx):
-        self._patch_raw_departments(raw_departments, ctx)
-        departments = []
+    def _process_entity(self, raw_department, cached_session, ctx):
+        lon, lat = geometry.get_centroid_coordinates(raw_department.geom,
+                                                     ctx)
+        dept_id = raw_department.in1
+        prov_id = dept_id[:constants.PROVINCE_ID_LEN]
 
-        # TODO: Manejar comparación con deptos que ya están en la base
-        ctx.session.query(Department).delete()
-        query = ctx.session.query(raw_departments)
-        count = query.count()
-        cached_session = ctx.cached_session()
+        province = cached_session.query(Province).get(prov_id)
+        province_isct = geometry.get_intersection_percentage(
+            province.geometria, raw_department.geom, ctx)
 
-        ctx.logger.info('Insertando departamentos procesados...')
-
-        for raw_department in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid_coordinates(raw_department.geom,
-                                                         ctx)
-            dept_id = raw_department.in1
-            prov_id = dept_id[:constants.PROVINCE_ID_LEN]
-
-            province = cached_session.query(Province).get(prov_id)
-            province_isct = geometry.get_intersection_percentage(
-                province.geometria, raw_department.geom, ctx)
-
-            department = Department(
-                id=dept_id,
-                nombre=utils.clean_string(raw_department.nam),
-                nombre_completo=utils.clean_string(raw_department.fna),
-                categoria=utils.clean_string(raw_department.gna),
-                lon=lon, lat=lat,
-                provincia_interseccion=province_isct,
-                provincia_id=province.id,
-                fuente=utils.clean_string(raw_department.sag),
-                geometria=raw_department.geom
-            )
-
-            departments.append(department)
-
-        ctx.session.add_all(departments)
+        return Department(
+            id=dept_id,
+            nombre=utils.clean_string(raw_department.nam),
+            nombre_completo=utils.clean_string(raw_department.fna),
+            categoria=utils.clean_string(raw_department.gna),
+            lon=lon, lat=lat,
+            provincia_interseccion=province_isct,
+            provincia_id=province.id,
+            fuente=utils.clean_string(raw_department.sag),
+            geometria=raw_department.geom
+        )

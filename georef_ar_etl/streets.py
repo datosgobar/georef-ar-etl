@@ -19,11 +19,11 @@ def create_process(config):
     ])
 
 
-class StreetsExtractionStep(Step):
+class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('streets_extraction_step')
+        super().__init__('streets_extraction_step', Street)
 
-    def _patch_raw_streets(self, raw_streets, ctx):
+    def _patch_raw_entities(self, raw_streets, ctx):
         def update_ushuaia(row):
             row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
             row.codloc = '94015' + row.codloc[constants.DEPARTMENT_ID_LEN:]
@@ -40,46 +40,28 @@ class StreetsExtractionStep(Step):
         patch.apply_fn(raw_streets, update_rio_grande, ctx,
                        raw_streets.nomencla.like('94007%'))
 
-    def _run_internal(self, raw_streets, ctx):
-        self._patch_raw_streets(raw_streets, ctx)
-        streets = []
+    def _build_entities_query(self, raw_entities, ctx):
+        return ctx.session.query(raw_entities).filter(
+            raw_entities.tipo != 'OTRO')
 
-        ctx.session.query(Street).delete()
+    def _process_entity(self, raw_street, cached_session, ctx):
+        street_id = raw_street.nomencla
+        prov_id = street_id[:constants.PROVINCE_ID_LEN]
+        dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
 
-        bulk_size = ctx.config.getint('etl', 'bulk_size')
-        query = ctx.session.query(raw_streets).\
-            filter(raw_streets.tipo != 'OTRO').\
-            yield_per(bulk_size)
+        province = cached_session.query(Province).get(prov_id)
+        department = cached_session.query(Department).get(dept_id)
 
-        count = query.count()
-        cached_session = ctx.cached_session()
-
-        for raw_street in utils.pbar(query, ctx, total=count):
-            street_id = raw_street.nomencla
-            prov_id = street_id[:constants.PROVINCE_ID_LEN]
-            dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
-
-            province = cached_session.query(Province).get(prov_id)
-            department = cached_session.query(Department).get(dept_id)
-
-            street = Street(
-                id=street_id,
-                nombre=utils.clean_string(raw_street.nombre),
-                categoria=utils.clean_string(raw_street.tipo),
-                fuente=constants.STREETS_SOURCE,
-                inicio_derecha=raw_street.desded or 0,
-                fin_derecha=raw_street.hastad or 0,
-                inicio_izquierda=raw_street.desdei or 0,
-                fin_izquierda=raw_street.hastai or 0,
-                geometria=raw_street.geom,
-                provincia_id=province.id,
-                departamento_id=department.id
-            )
-
-            streets.append(street)
-
-            if len(streets) > bulk_size:
-                ctx.session.add_all(streets)
-                streets.clear()
-
-        ctx.session.add_all(streets)
+        return Street(
+            id=street_id,
+            nombre=utils.clean_string(raw_street.nombre),
+            categoria=utils.clean_string(raw_street.tipo),
+            fuente=constants.STREETS_SOURCE,
+            inicio_derecha=raw_street.desded or 0,
+            fin_derecha=raw_street.hastad or 0,
+            inicio_izquierda=raw_street.desdei or 0,
+            fin_izquierda=raw_street.hastai or 0,
+            geometria=raw_street.geom,
+            provincia_id=province.id,
+            departamento_id=department.id
+        )

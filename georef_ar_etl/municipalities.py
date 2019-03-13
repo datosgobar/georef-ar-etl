@@ -21,11 +21,11 @@ def create_process(config):
     ])
 
 
-class MunicipalitiesExtractionStep(Step):
+class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('municipalities_extraction_step')
+        super().__init__('municipalities_extraction_step', Municipality)
 
-    def _patch_raw_municipalities(self, raw_municipalities, ctx):
+    def _patch_raw_entities(self, raw_municipalities, ctx):
         patch.delete(raw_municipalities, ctx, in1=None)
         patch.delete(raw_municipalities, ctx, gna=None)
 
@@ -47,40 +47,24 @@ class MunicipalitiesExtractionStep(Step):
         patch.update_field(raw_municipalities, 'in1', '629999', ctx,
                            in1='829999')
 
-    def _run_internal(self, raw_municipalities, ctx):
-        self._patch_raw_municipalities(raw_municipalities, ctx)
-        municipalities = []
+    def _process_entity(self, raw_municipality, cached_session, ctx):
+        lon, lat = geometry.get_centroid_coordinates(raw_municipality.geom,
+                                                     ctx)
+        muni_id = raw_municipality.in1
+        prov_id = muni_id[:constants.PROVINCE_ID_LEN]
 
-        # TODO: Manejar comparación con municipios que ya están en la base
-        ctx.session.query(Municipality).delete()
-        query = ctx.session.query(raw_municipalities)
-        count = query.count()
-        cached_session = ctx.cached_session()
+        province = cached_session.query(Province).get(prov_id)
+        province_isct = geometry.get_intersection_percentage(
+            province.geometria, raw_municipality.geom, ctx)
 
-        ctx.logger.info('Insertando municipios procesados...')
-
-        for raw_municipality in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid_coordinates(raw_municipality.geom,
-                                                         ctx)
-            muni_id = raw_municipality.in1
-            prov_id = muni_id[:constants.PROVINCE_ID_LEN]
-
-            province = cached_session.query(Province).get(prov_id)
-            province_isct = geometry.get_intersection_percentage(
-                province.geometria, raw_municipality.geom, ctx)
-
-            municipality = Municipality(
-                id=muni_id,
-                nombre=utils.clean_string(raw_municipality.nam),
-                nombre_completo=utils.clean_string(raw_municipality.fna),
-                categoria=utils.clean_string(raw_municipality.gna),
-                lon=lon, lat=lat,
-                provincia_interseccion=province_isct,
-                provincia_id=province.id,
-                fuente=utils.clean_string(raw_municipality.sag),
-                geometria=raw_municipality.geom
-            )
-
-            municipalities.append(municipality)
-
-        ctx.session.add_all(municipalities)
+        return Municipality(
+            id=muni_id,
+            nombre=utils.clean_string(raw_municipality.nam),
+            nombre_completo=utils.clean_string(raw_municipality.fna),
+            categoria=utils.clean_string(raw_municipality.gna),
+            lon=lon, lat=lat,
+            provincia_interseccion=province_isct,
+            provincia_id=province.id,
+            fuente=utils.clean_string(raw_municipality.sag),
+            geometria=raw_municipality.geom
+        )

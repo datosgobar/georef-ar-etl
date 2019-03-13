@@ -1,4 +1,4 @@
-from .process import Process, Step, CompositeStep
+from .process import Process, CompositeStep
 from .models import Province
 from . import extractors, transformers, loaders, geometry, utils, constants
 
@@ -18,39 +18,24 @@ def create_process(config):
     ])
 
 
-class ProvincesExtractionStep(Step):
+class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('provinces_extraction')
-
-    def _run_internal(self, raw_provinces, ctx):
-        provinces = []
+        super().__init__('provinces_extraction', Province)
         iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv')
-        iso_data = {row['id']: row for row in iso_csv}
+        self._iso_data = {row['id']: row for row in iso_csv}
 
-        # TODO: Manejar comparación con provincias que ya están en la base
-        ctx.session.query(Province).delete()
-        query = ctx.session.query(raw_provinces)
-        count = query.count()
+    def _process_entity(self, raw_province, cached_session, ctx):
+        lon, lat = geometry.get_centroid_coordinates(raw_province.geom, ctx)
+        prov_id = raw_province.in1
 
-        ctx.logger.info('Insertando provincias procesadas...')
-
-        for raw_province in utils.pbar(query, ctx, total=count):
-            lon, lat = geometry.get_centroid_coordinates(raw_province.geom,
-                                                         ctx)
-            prov_id = raw_province.in1
-
-            province = Province(
-                id=prov_id,
-                nombre=utils.clean_string(raw_province.nam),
-                nombre_completo=utils.clean_string(raw_province.fna),
-                iso_id=iso_data[prov_id]['3166-2 code'],
-                iso_nombre=iso_data[prov_id]['subdivision name'],
-                categoria=utils.clean_string(raw_province.gna),
-                lon=lon, lat=lat,
-                fuente=utils.clean_string(raw_province.sag),
-                geometria=raw_province.geom
-            )
-
-            provinces.append(province)
-
-        ctx.session.add_all(provinces)
+        return Province(
+            id=prov_id,
+            nombre=utils.clean_string(raw_province.nam),
+            nombre_completo=utils.clean_string(raw_province.fna),
+            iso_id=self._iso_data[prov_id]['3166-2 code'],
+            iso_nombre=self._iso_data[prov_id]['subdivision name'],
+            categoria=utils.clean_string(raw_province.gna),
+            lon=lon, lat=lat,
+            fuente=utils.clean_string(raw_province.sag),
+            geometria=raw_province.geom
+        )
