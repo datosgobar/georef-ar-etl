@@ -8,7 +8,7 @@ from . import constants
 
 class CheckDependenciesStep(Step):
     def __init__(self, dependencies):
-        super().__init__('check_dependencies')
+        super().__init__('check_dependencies', reads_input=False)
         self._dependencies = dependencies
 
     def _run_internal(self, data, ctx):

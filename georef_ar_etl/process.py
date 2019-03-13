@@ -3,14 +3,11 @@ class ProcessException(Exception):
 
 
 class Step:
-    def __init__(self, name, default_input=None):
+    def __init__(self, name, reads_input=True):
         self._name = name
-        self._default_input = default_input
+        self._reads_input = reads_input
 
     def run(self, data, ctx):
-        if data is None:
-            data = self._default_input
-
         return self._run_internal(data, ctx)
 
     def _run_internal(self, data, ctx):
@@ -19,6 +16,9 @@ class Step:
     @property
     def name(self):
         return self._name
+
+    def reads_input(self):
+        return self._reads_input
 
 
 class CompositeStep(Step):
@@ -35,6 +35,9 @@ class CompositeStep(Step):
 
         return results
 
+    def reads_input(self):
+        return any(step.reads_input() for step in self._steps)
+
 
 class Process:
     def __init__(self, name, steps):
@@ -46,6 +49,15 @@ class Process:
         session = ctx.session
         previous_result = None
 
+        initial = self._steps[start]
+        if initial.reads_input():
+            ctx.logger.error('')
+            ctx.logger.error(
+                'El paso #{} requiere un valor de entrada.'.format(start + 1))
+            ctx.logger.error('Utilizar otro paso como paso inicial.')
+            ctx.logger.error('')
+            return previous_result
+
         try:
             for i, step in enumerate(self._steps[start:]):
                 ctx.logger.info('==> Paso #{}: {}'.format(i + start + 1,
@@ -53,7 +65,7 @@ class Process:
                 previous_result = step.run(previous_result, ctx)
                 ctx.logger.info('')
 
-        except ProcessException as e:
+        except ProcessException:
             ctx.logger.error('')
             ctx.logger.error(
                 'Sucedió un error durante la ejecución del proceso:')
@@ -62,6 +74,7 @@ class Process:
 
         ctx.logger.info('Commit...')
         session.commit()
+        ctx.logger.info('Ejecución de proceso finalizada.')
         ctx.logger.info('')
 
         return previous_result

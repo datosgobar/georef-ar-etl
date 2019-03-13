@@ -5,7 +5,7 @@ from .process import Step, ProcessException
 
 class DownloadURLStep(Step):
     def __init__(self, filename, url):
-        super().__init__('download_url')
+        super().__init__('download_url', reads_input=False)
         self._filename = filename
         self._url = url
 

@@ -71,7 +71,7 @@ class Ogr2ogrStep(Step):
 
 class CreateJSONFileStep(Step):
     def __init__(self, table, filename):
-        super().__init__('create_json_file')
+        super().__init__('create_json_file', reads_input=False)
         self._table = table
         self._filename = filename
 
