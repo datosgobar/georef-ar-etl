@@ -11,10 +11,10 @@ class DownloadURLStep(Step):
 
     def _run_internal(self, data, ctx):
         if ctx.fs.isfile(self._filename) and ctx.mode == 'interactive':
-            ctx.logger.info('Salteando descarga: %s', self._url)
+            ctx.report.info('Salteando descarga: %s', self._url)
             return self._filename
 
-        ctx.logger.info('Descargando: %s', self._url)
+        ctx.report.info('Descargando: %s', self._url)
         with requests.get(self._url, stream=True) as req:
             if req.status_code != 200:
                 raise ProcessException(

@@ -12,7 +12,7 @@ class ExtractZipStep(Step):
     def _run_internal(self, filename, ctx):
         dirname = filename.split('.')[0]
         if ctx.fs.isdir(dirname):
-            ctx.logger.info('Zip: Removiendo directorio "%s" anterior.',
+            ctx.report.info('Zip: Removiendo directorio "%s" anterior.',
                             dirname)
             ctx.fs.removetree(dirname)
 
@@ -32,7 +32,7 @@ class ExtractTarStep(Step):
     def _run_internal(self, filename, ctx):
         dirname = filename.split('.')[0]
         if ctx.fs.isdir(dirname):
-            ctx.logger.info('Tar: Removiendo directorio "%s" anterior.',
+            ctx.report.info('Tar: Removiendo directorio "%s" anterior.',
                             dirname)
             ctx.fs.removetree(dirname)
 
@@ -63,7 +63,7 @@ class EntitiesExtractionStep(Step):
         count = query.count()
         cached_session = ctx.cached_session()
 
-        ctx.logger.info('Insertando entidades procesadas...')
+        ctx.report.info('Insertando entidades procesadas...')
 
         for raw_entity in utils.pbar(query, ctx, total=count):
             new_entity = self._process_entity(raw_entity, cached_session, ctx)

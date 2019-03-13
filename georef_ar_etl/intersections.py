@@ -85,5 +85,4 @@ class IntersectionsCreationStep(Step):
 
         ctx.session.add_all(intersections)
         count += len(intersections)
-        ctx.logger.info('Intersecciones creadas, cantidad: %s.', count)
-        ctx.logger.info('')
+        ctx.logger.info('Intersecciones creadas, cantidad: %s\n.', count)

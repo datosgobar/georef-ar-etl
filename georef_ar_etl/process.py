@@ -29,8 +29,7 @@ class CompositeStep(Step):
     def _run_internal(self, data, ctx):
         results = []
         for i, step in enumerate(self._steps):
-            ctx.logger.info('')
-            ctx.logger.info('===> Sub-paso #{}: {}'.format(i + 1, step.name))
+            ctx.report.info('===> Sub-paso #{}: {}'.format(i + 1, step.name))
             results.append(step.run(data, ctx))
 
         return results
@@ -45,37 +44,32 @@ class Process:
         self._steps = steps
 
     def run(self, start, ctx):
-        self._print_log_separator(ctx.logger)
+        self._print_title(ctx.report.logger)
         session = ctx.session
         previous_result = None
 
         initial = self._steps[start]
         if initial.reads_input():
-            ctx.logger.error('')
-            ctx.logger.error(
+            ctx.report.error(
                 'El paso #{} requiere un valor de entrada.'.format(start + 1))
-            ctx.logger.error('Utilizar otro paso como paso inicial.')
-            ctx.logger.error('')
+            ctx.report.error('Utilizar otro paso como paso inicial.\n')
             return previous_result
 
         try:
             for i, step in enumerate(self._steps[start:]):
-                ctx.logger.info('==> Paso #{}: {}'.format(i + start + 1,
+                ctx.report.info('==> Paso #{}: {}'.format(i + start + 1,
                                                           step.name))
                 previous_result = step.run(previous_result, ctx)
-                ctx.logger.info('')
+                ctx.report.info('Paso finalizado.\n')
 
         except ProcessException:
-            ctx.logger.error('')
-            ctx.logger.error(
+            ctx.report.error(
                 'Sucedió un error durante la ejecución del proceso:')
-            ctx.logger.exception('Excepción:')
-            ctx.logger.error('')
+            ctx.report.exception('Excepción:')
 
-        ctx.logger.info('Commit...')
+        ctx.report.info('Commit...')
         session.commit()
-        ctx.logger.info('Ejecución de proceso finalizada.')
-        ctx.logger.info('')
+        ctx.report.info('Ejecución de proceso finalizada.')
 
         return previous_result
 
@@ -83,12 +77,11 @@ class Process:
     def name(self):
         return self._name
 
-    def _print_log_separator(self, l, separator_width=60):
+    def _print_title(self, l, separator_width=60):
         l.info("=" * separator_width)
         l.info("|" + " " * (separator_width - 2) + "|")
 
         l.info("|" + self._name.title().center(separator_width - 2) + "|")
 
         l.info("|" + " " * (separator_width - 2) + "|")
-        l.info("=" * separator_width)
-        l.info('')
+        l.info("=" * separator_width + '\n')

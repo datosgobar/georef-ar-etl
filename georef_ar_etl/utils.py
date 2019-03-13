@@ -23,7 +23,7 @@ class DropTableStep(Step):
         super().__init__('drop_table')
 
     def _run_internal(self, table, ctx):
-        ctx.logger.info('Eliminando tabla: "{}"'.format(table.__table__.name))
+        ctx.report.info('Eliminando tabla: "{}"'.format(table.__table__.name))
         # Asegurarse de ejecutar cualquier transacción pendiende primero
         ctx.session.commit()
         # Eliminar la tabla

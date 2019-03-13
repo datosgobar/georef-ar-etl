@@ -41,7 +41,7 @@ class Ogr2ogrStep(Step):
         shp = next(iter(glob))
         shp_path = ctx.fs.getsyspath(shp.path)
 
-        ctx.logger.info('Ejecutando ogr2ogr sobre %s.', shp_path)
+        ctx.report.info('Ejecutando ogr2ogr sobre %s.', shp_path)
         args = [
             'ogr2ogr', '-overwrite', '-f', 'PostgreSQL',
             ('PG:host={host} ' +
@@ -89,7 +89,7 @@ class CreateJSONFileStep(Step):
         count = query.count()
         cached_session = ctx.cached_session()
 
-        ctx.logger.info('Transformando entidades a JSON...')
+        ctx.report.info('Transformando entidades a JSON...')
         for entity in utils.pbar(query, ctx, total=count):
             entities.append(entity.to_dict(cached_session))
 
@@ -98,11 +98,11 @@ class CreateJSONFileStep(Step):
         utils.ensure_dir(constants.ETL_VERSION, ctx)
         utils.ensure_dir(constants.LATEST_DIR, ctx)
 
-        ctx.logger.info('Escribiendo archivo JSON...')
+        ctx.report.info('Escribiendo archivo JSON...')
         filepath = os.path.join(constants.ETL_VERSION, self._filename)
         with ctx.fs.open(filepath, 'w') as f:
             json.dump(data, f, ensure_ascii=False)
 
-        ctx.logger.info('Creando copia del archivo...')
+        ctx.report.info('Creando copia del archivo...')
         filepath_latest = os.path.join(constants.LATEST_DIR, self._filename)
         utils.copy_file(filepath, filepath_latest, ctx)
