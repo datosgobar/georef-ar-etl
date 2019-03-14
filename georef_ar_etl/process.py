@@ -31,6 +31,7 @@ class CompositeStep(Step):
         for i, step in enumerate(self._steps):
             ctx.report.info('===> Sub-paso #{}: {}'.format(i + 1, step.name))
             results.append(step.run(data, ctx))
+            ctx.report.info('Sub-paso finalizado.\n')
 
         return results
 

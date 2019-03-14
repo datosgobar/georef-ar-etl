@@ -23,7 +23,9 @@ def create_process(config):
 
 class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('localities_extraction_step', Locality)
+        super().__init__('localities_extraction_step', Locality,
+                         entity_class_pkey='id',
+                         raw_entity_class_pkey='cod_bahra')
 
     def _patch_raw_entities(self, raw_localities, ctx):
         # Agregado en ETL2

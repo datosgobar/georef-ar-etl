@@ -18,7 +18,7 @@ class DownloadURLStep(Step):
         with requests.get(self._url, stream=True) as req:
             if req.status_code != 200:
                 raise ProcessException(
-                    'La petición HTTP devolvió código {}.'.format(
+                    'La petición HTTP retornó código {}.'.format(
                         req.status_code))
 
             with ctx.fs.open(self._filename, 'wb') as f:

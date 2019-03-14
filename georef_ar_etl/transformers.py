@@ -46,27 +46,40 @@ class ExtractTarStep(Step):
 
 
 class EntitiesExtractionStep(Step):
-    def __init__(self, name, entity_class):
+    def __init__(self, name, entity_class, entity_class_pkey,
+                 raw_entity_class_pkey):
         super().__init__(name)
         self._entity_class = entity_class
+        self._entity_class_pkey = entity_class_pkey
+        self._raw_entity_class_pkey = raw_entity_class_pkey
 
     def _run_internal(self, raw_entities, ctx):
         self._patch_raw_entities(raw_entities, ctx)
-
-        # TODO: Manejar comparación con entidades que ya están en la base
-        ctx.session.query(self._entity_class).delete()
 
         entities = []
         bulk_size = ctx.config.getint('etl', 'bulk_size')
         query = self._build_entities_query(raw_entities, ctx).yield_per(
             bulk_size)
-        count = query.count()
         cached_session = ctx.cached_session()
+        deleted = []
+        updated = set()
+        added = set()
 
         ctx.report.info('Insertando entidades procesadas...')
 
-        for raw_entity in utils.pbar(query, ctx, total=count):
+        for raw_entity in utils.pbar(query, ctx, total=query.count()):
             new_entity = self._process_entity(raw_entity, cached_session, ctx)
+            new_entity_id = getattr(new_entity, self._entity_class_pkey)
+            found = ctx.session.query(self._entity_class).\
+                filter(getattr(self._entity_class, self._entity_class_pkey) ==
+                       new_entity_id).\
+                delete()
+
+            if found:
+                updated.add(new_entity_id)
+            else:
+                added.add(new_entity_id)
+
             entities.append(new_entity)
 
             if len(entities) > bulk_size:
@@ -74,6 +87,28 @@ class EntitiesExtractionStep(Step):
                 entities.clear()
 
         ctx.session.add_all(entities)
+
+        ctx.report.info('Buscando entidades eliminadas...')
+
+        query = ctx.session.query(self._entity_class).yield_per(bulk_size)
+        for entity in utils.pbar(query, ctx, total=query.count()):
+            entity_id = getattr(entity, self._entity_class_pkey)
+
+            if entity_id not in updated and entity_id not in added:
+                ctx.session.query(self._entity_class).\
+                    filter(getattr(self._entity_class,
+                                   self._entity_class_pkey) == entity_id).\
+                    delete()
+                deleted.append(entity_id)
+
+        ctx.report.info('Entidades nuevas: %s', len(added))
+        ctx.report.info('Entidades actualizadas: %s', len(updated))
+        ctx.report.info('Entidades eliminadas: %s', len(deleted))
+
+        ctx.report.add_data(self.name, 'IDs de nuevas entidades agregadas',
+                            list(added))
+        ctx.report.add_data(self.name, 'IDs de entidades eliminadas', deleted)
+
         return self._entity_class
 
     def _build_entities_query(self, raw_entities, ctx):

@@ -23,7 +23,8 @@ def create_process(config):
 
 class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('municipalities_extraction_step', Municipality)
+        super().__init__('municipalities_extraction_step', Municipality,
+                         entity_class_pkey='id', raw_entity_class_pkey='in1')
 
     def _patch_raw_entities(self, raw_municipalities, ctx):
         patch.delete(raw_municipalities, ctx, in1=None)

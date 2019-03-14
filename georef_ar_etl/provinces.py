@@ -20,7 +20,8 @@ def create_process(config):
 
 class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('provinces_extraction', Province)
+        super().__init__('provinces_extraction', Province,
+                         entity_class_pkey='id', raw_entity_class_pkey='in1')
         iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv')
         self._iso_data = {row['id']: row for row in iso_csv}
 

@@ -22,7 +22,8 @@ def create_process(config):
 
 class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('departments_extraction', Department)
+        super().__init__('departments_extraction', Department,
+                         entity_class_pkey='id', raw_entity_class_pkey='in1')
 
     def _patch_raw_entities(self, raw_departments, ctx):
         # Antártida Argentina duplicada

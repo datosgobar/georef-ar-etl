@@ -21,7 +21,9 @@ def create_process(config):
 
 class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('streets_extraction_step', Street)
+        super().__init__('streets_extraction_step', Street,
+                         entity_class_pkey='id',
+                         raw_entity_class_pkey='nomencla')
 
     def _patch_raw_entities(self, raw_streets, ctx):
         def update_ushuaia(row):
