@@ -1,4 +1,5 @@
-from .process import Process, Step, CompositeStep
+from .exceptions import ValidationException
+from .process import Process, CompositeStep
 from .models import Province, Department, Street
 from . import extractors, transformers, loaders, utils, constants, patch
 
@@ -52,7 +53,14 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
+        if not province:
+            raise ValidationException(
+                'No existe la provincia con ID {}'.format(prov_id))
+
         department = cached_session.query(Department).get(dept_id)
+        if not department:
+            raise ValidationException(
+                'No existe el departamento con ID {}'.format(dept_id))
 
         return Street(
             id=street_id,

@@ -1,4 +1,5 @@
-from .process import Process, Step, CompositeStep
+from .exceptions import ValidationException
+from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, Locality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
@@ -76,7 +77,15 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
+        if not province:
+            raise ValidationException(
+                'No existe la provincia con ID {}'.format(prov_id))
+
         department = cached_session.query(Department).get(dept_id)
+        if not department:
+            raise ValidationException(
+                'No existe el departamento con ID {}'.format(dept_id))
+
         municipality = geometry.get_entity_at_point(Municipality,
                                                     raw_locality.geom, ctx)
 

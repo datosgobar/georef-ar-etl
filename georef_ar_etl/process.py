@@ -1,5 +1,4 @@
-class ProcessException(Exception):
-    pass
+from .exceptions import ProcessException
 
 
 class Step:

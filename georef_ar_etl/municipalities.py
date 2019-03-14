@@ -1,4 +1,5 @@
-from .process import Process, Step, CompositeStep
+from .exceptions import ValidationException
+from .process import Process, CompositeStep
 from .models import Province, Municipality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
@@ -55,6 +56,10 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         prov_id = muni_id[:constants.PROVINCE_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
+        if not province:
+            raise ValidationException(
+                'No existe la provincia con ID {}'.format(prov_id))
+
         province_isct = geometry.get_intersection_percentage(
             province.geometria, raw_municipality.geom, ctx)
 

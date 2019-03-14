@@ -3,13 +3,10 @@ from sqlalchemy import Column, String, Float, Integer, ForeignKey
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from geoalchemy2 import Geometry
+from .exceptions import ValidationException
 from . import constants
 
 Base = declarative_base()
-
-
-class ValidationException(Exception):
-    pass
 
 
 class EntityMixin:

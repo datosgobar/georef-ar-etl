@@ -1,6 +1,7 @@
 import os
 from zipfile import ZipFile
 import tarfile
+from .exceptions import ValidationException
 from .process import Step
 from . import utils
 
@@ -64,11 +65,20 @@ class EntitiesExtractionStep(Step):
         deleted = []
         updated = set()
         added = set()
+        errors = []
 
         ctx.report.info('Insertando entidades procesadas...')
 
         for raw_entity in utils.pbar(query, ctx, total=query.count()):
-            new_entity = self._process_entity(raw_entity, cached_session, ctx)
+            try:
+                new_entity = self._process_entity(raw_entity, cached_session,
+                                                  ctx)
+            except ValidationException as e:
+                errors.append(
+                    (getattr(raw_entity, self._raw_entity_class_pkey), str(e))
+                )
+                continue
+
             new_entity_id = getattr(new_entity, self._entity_class_pkey)
             found = ctx.session.query(self._entity_class).\
                 filter(getattr(self._entity_class, self._entity_class_pkey) ==
@@ -104,10 +114,12 @@ class EntitiesExtractionStep(Step):
         ctx.report.info('Entidades nuevas: %s', len(added))
         ctx.report.info('Entidades actualizadas: %s', len(updated))
         ctx.report.info('Entidades eliminadas: %s', len(deleted))
+        ctx.report.info('Errores: %s\n', len(errors))
 
         ctx.report.add_data(self.name, 'IDs de nuevas entidades agregadas',
                             list(added))
         ctx.report.add_data(self.name, 'IDs de entidades eliminadas', deleted)
+        ctx.report.add_data(self.name, 'IDs y errores de entidades', errors)
 
         return self._entity_class
 
