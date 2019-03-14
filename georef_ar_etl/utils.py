@@ -1,9 +1,18 @@
 import os
 import sys
 import csv
+from sqlalchemy.sql import sqltypes
+from geoalchemy2 import types as geotypes
 from tqdm import tqdm
-from .process import Step, ProcessException
+from .exceptions import ProcessException
+from .process import Step
 from . import constants
+
+_SQL_TYPES = {
+    'varchar': sqltypes.VARCHAR,
+    'integer': sqltypes.INTEGER,
+    'geometry': geotypes.Geometry
+}
 
 
 class CheckDependenciesStep(Step):
@@ -28,6 +37,30 @@ class DropTableStep(Step):
         ctx.session.commit()
         # Eliminar la tabla
         table.__table__.drop(ctx.engine)
+
+
+class ValidateTableSchemaStep(Step):
+    def __init__(self, schema):
+        super().__init__('validate_table_schema')
+
+        for value in schema.values():
+            if value not in _SQL_TYPES:
+                raise ValueError('Unknown type: {}'.format(value))
+
+        self._schema = schema
+
+    def _run_internal(self, table, ctx):
+        for name, col_type in table.__table__.columns:
+            if name not in self._schema:
+                raise ProcessException(
+                    'La columna "{}" no está presente en el esquema'.format(
+                        name))
+
+            col_class = _SQL_TYPES[self._schema[name]]
+            if not isinstance(col_type, col_class):
+                raise ProcessException('')
+
+        return table
 
 
 def clean_string(s):
