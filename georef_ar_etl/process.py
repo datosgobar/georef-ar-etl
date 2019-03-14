@@ -70,7 +70,7 @@ class Process:
 
         ctx.report.info('Commit...')
         session.commit()
-        ctx.report.info('Ejecución de proceso finalizada.')
+        ctx.report.info('Ejecución de proceso finalizada.\n')
 
         return previous_result
 

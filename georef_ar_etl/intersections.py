@@ -54,9 +54,9 @@ class IntersectionsCreationStep(Step):
 
     def _insert_province_intersections(self, province, i, total, ctx):
         province_name = province.iso_nombre if province else 'interprovincial'
-        ctx.logger.info('Creando intersecciones para: %s [%s/%s]',
+        ctx.report.info('Creando intersecciones para: %s [%s/%s]',
                         province_name, i, total)
-        ctx.logger.info('Procesando...')
+        ctx.report.info('Procesando...')
 
         bulk_size = ctx.config.getint('etl', 'bulk_size')
 
@@ -85,4 +85,4 @@ class IntersectionsCreationStep(Step):
 
         ctx.session.add_all(intersections)
         count += len(intersections)
-        ctx.logger.info('Intersecciones creadas, cantidad: %s\n.', count)
+        ctx.report.info('Intersecciones creadas, cantidad: %s.\n', count)
