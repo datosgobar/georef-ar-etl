@@ -17,16 +17,16 @@ class ETLTestCase(TestCase):
         cls._ctx = Context(
             config=config,
             fs=tempfs.TempFS(),
-            engine=create_engine(config, echo=True),
+            engine=create_engine(config),
             logger=logger,
             mode='testing'
         )
 
-    @classmethod
-    def tearDownClass(cls):
-        cls._ctx.session.commit()
-        cls._metadata.drop_all(cls._ctx.engine)
-        cls._ctx.fs.clean()
+    def tearDown(self):
+        self._ctx.session.commit()
+        self._metadata.drop_all(self._ctx.engine)
+        self._metadata.clear()
+        self._ctx.fs.clean()
 
     def create_table(self, name, columns_data, pkey=None):
         if not pkey:
