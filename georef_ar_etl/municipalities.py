@@ -26,6 +26,8 @@ def create_process(config):
             MunicipalitiesExtractionStep(),
             utils.DropTableStep()
         ]),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=1800, tolerance=100),
         loaders.CreateJSONFileStep(Municipality,
                                    constants.MUNICIPALITIES + '.json')
     ])

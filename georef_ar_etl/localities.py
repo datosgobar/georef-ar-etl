@@ -38,6 +38,8 @@ def create_process(config):
             LocalitiesExtractionStep(),
             utils.DropTableStep()
         ]),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=4100, tolerance=100),
         loaders.CreateJSONFileStep(Locality, constants.LOCALITIES + '.json')
     ])
 

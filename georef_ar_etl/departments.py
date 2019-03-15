@@ -26,6 +26,8 @@ def create_process(config):
             DepartmentsExtractionStep(),
             utils.DropTableStep()
         ]),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=529),
         loaders.CreateJSONFileStep(Department, constants.DEPARTMENTS + '.json')
     ])
 

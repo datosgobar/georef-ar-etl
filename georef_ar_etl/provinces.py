@@ -23,6 +23,8 @@ def create_process(config):
             ProvincesExtractionStep(),
             utils.DropTableStep()
         ]),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=24),
         loaders.CreateJSONFileStep(Province, constants.PROVINCES + '.json')
     ])
 

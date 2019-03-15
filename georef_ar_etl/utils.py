@@ -73,6 +73,41 @@ class ValidateTableSchemaStep(Step):
         return table
 
 
+class ValidateTableSizeStep(Step):
+    def __init__(self, size=None, tolerance=0):
+        super().__init__('validate_table_size')
+        self._size = size
+        self._tolerance = tolerance
+
+    def _run_internal(self, table, ctx):
+        count = ctx.session.query(table).count()
+        diff = abs(self._size - count)
+
+        if diff > self._tolerance:
+            raise ProcessException(
+                'La tabla contiene {} elementos, pero debe contar con {} '
+                '(margen de error: {}).'.format(count, self._size,
+                                                self._tolerance))
+        elif diff > 0:
+            ctx.report.info(
+                'La cantidad de elementos es {} (esperado: {})'.format(
+                    count, self._size))
+
+        return table
+
+
+class FunctionStep(Step):
+    def __init__(self, fn):
+        super().__init__('apply_function')
+        self._fn = fn
+
+    def _run_internal(self, data, ctx):
+        return self._fn(data)
+
+
+FirstResultStep = FunctionStep(lambda xs: xs[0])
+
+
 def clean_string(s):
     s = s.splitlines()[0]
     return s.strip()
