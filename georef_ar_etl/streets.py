@@ -12,6 +12,21 @@ def create_process(config):
         transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.STREETS_RAW_TABLE,
                             geom_type='MultiLineString', encoding='latin1'),
+        utils.ValidateTableSchemaStep({
+            'ogc_fid': 'integer',
+            'nomencla': 'varchar',
+            'codigo': 'double',
+            'tipo': 'varchar',
+            'nombre': 'varchar',
+            'desdei': 'double',
+            'desded': 'double',
+            'hastai': 'double',
+            'hastad': 'double',
+            'codloc': 'varchar',
+            'codaglo': 'varchar',
+            'link': 'varchar',
+            'geom': 'geometry'
+        }),
         CompositeStep([
             StreetsExtractionStep(),
             utils.DropTableStep()

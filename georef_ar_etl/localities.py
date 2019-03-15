@@ -14,6 +14,26 @@ def create_process(config):
         loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_RAW_TABLE,
                             geom_type='MultiPoint', encoding='latin1',
                             precision=False),
+        utils.ValidateTableSchemaStep({
+            'ogc_fid': 'integer',
+            'cod_prov': 'varchar',
+            'nom_prov': 'varchar',
+            'cod_depto': 'varchar',
+            'nom_depto': 'varchar',
+            'cod_loc': 'varchar',
+            'cod_sit': 'varchar',
+            'cod_entida': 'varchar',
+            'cod_bahra': 'varchar',
+            'tipo_bahra': 'varchar',
+            'nombre_bah': 'varchar',
+            'lat_gd': 'double',
+            'long_gd': 'double',
+            'lat_gms': 'varchar',
+            'long_gms': 'varchar',
+            'fuente_ubi': 'varchar',
+            'gid': 'integer',
+            'geom': 'geometry'
+        }),
         CompositeStep([
             LocalitiesExtractionStep(),
             utils.DropTableStep()

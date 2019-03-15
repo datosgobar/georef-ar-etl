@@ -2,6 +2,7 @@ import os
 import sys
 import csv
 from sqlalchemy.sql import sqltypes
+from sqlalchemy.dialects.postgresql import base as pgtypes
 from geoalchemy2 import types as geotypes
 from tqdm import tqdm
 from .exceptions import ProcessException
@@ -11,6 +12,7 @@ from . import constants
 _SQL_TYPES = {
     'varchar': sqltypes.VARCHAR,
     'integer': sqltypes.INTEGER,
+    'double': pgtypes.DOUBLE_PRECISION,
     'geometry': geotypes.Geometry
 }
 
@@ -50,15 +52,23 @@ class ValidateTableSchemaStep(Step):
         self._schema = schema
 
     def _run_internal(self, table, ctx):
-        for name, col_type in table.__table__.columns:
+        for name, col_info in table.__table__.columns.items():
             if name not in self._schema:
                 raise ProcessException(
                     'La columna "{}" no está presente en el esquema'.format(
                         name))
 
             col_class = _SQL_TYPES[self._schema[name]]
-            if not isinstance(col_type, col_class):
-                raise ProcessException('')
+            if not isinstance(col_info.type, col_class):
+                raise ProcessException(
+                    'La columna "{}" debería ser de tipo {}.'.format(
+                        name, self._schema[name]))
+
+        for name in self._schema:
+            if name not in table.__table__.columns:
+                raise ProcessException(
+                    'La columna "{}" no está presente en la tabla.'.format(
+                        name))
 
         return table
 

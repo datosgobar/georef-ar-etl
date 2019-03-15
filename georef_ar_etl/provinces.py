@@ -10,6 +10,15 @@ def create_process(config):
         transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.PROVINCES_RAW_TABLE,
                             geom_type='MultiPolygon', encoding='utf-8'),
+        utils.ValidateTableSchemaStep({
+            'ogc_fid': 'integer',
+            'fna': 'varchar',
+            'gna': 'varchar',
+            'nam': 'varchar',
+            'sag': 'varchar',
+            'in1': 'varchar',
+            'geom': 'geometry'
+        }),
         CompositeStep([
             ProvincesExtractionStep(),
             utils.DropTableStep()
