@@ -80,6 +80,9 @@ class ValidateTableSizeStep(Step):
         self._tolerance = tolerance
 
     def _run_internal(self, table, ctx):
+        if ctx.mode == 'interactive':
+            return table
+
         count = ctx.session.query(table).count()
         diff = abs(self._size - count)
 

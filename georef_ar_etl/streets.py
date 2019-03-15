@@ -31,6 +31,8 @@ def create_process(config):
             StreetsExtractionStep(),
             utils.DropTableStep()
         ]),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=151000, tolerance=500),
         loaders.CreateJSONFileStep(Street, constants.STREETS + '.json')
     ])
 

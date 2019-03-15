@@ -8,6 +8,8 @@ def create_process(config):
     return Process(constants.INTERSECTIONS, [
         utils.CheckDependenciesStep([Province, Department, Street]),
         IntersectionsCreationStep(),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=624000, tolerance=1000),
         loaders.CreateJSONFileStep(Intersection,
                                    constants.INTERSECTIONS + '.json')
     ])
@@ -26,8 +28,9 @@ class IntersectionsCreationStep(Step):
         for i, province in enumerate(provinces):
             self._insert_province_intersections(province, i + 1, total + 1,
                                                 ctx)
-
         self._insert_province_intersections(None, total + 1, total + 1, ctx)
+
+        return Intersection
 
     def _build_intersection_query(self, province, bulk_size, ctx):
         StreetA = aliased(Street)
