@@ -55,7 +55,7 @@ class ValidateTableSchemaStep(Step):
         for name, col_info in table.__table__.columns.items():
             if name not in self._schema:
                 raise ProcessException(
-                    'La columna "{}" no está presente en el esquema'.format(
+                    'La columna "{}" no está presente en el esquema.'.format(
                         name))
 
             col_class = _SQL_TYPES[self._schema[name]]

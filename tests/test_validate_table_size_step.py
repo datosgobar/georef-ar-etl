@@ -8,9 +8,9 @@ class TestValidateTableSizeStep(ETLTestCase):
     def test_size(self):
         """El validador debería retornar la tabla de entrada si su tamaño es el
         correcto."""
-        t1 = self.create_table('t1', [
-            ('id', sqltypes.Integer)
-        ])
+        t1 = self.create_table('t1', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
 
         self._ctx.session.add(t1(id=1))
 
@@ -21,9 +21,9 @@ class TestValidateTableSizeStep(ETLTestCase):
     def test_size_tolerance(self):
         """El validador debería retornar la tabla de entrada si su tamaño es el
         correcto, con un margen de error."""
-        t1 = self.create_table('t1', [
-            ('id', sqltypes.Integer)
-        ])
+        t1 = self.create_table('t1', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
 
         self._ctx.session.add(t1(id=1))
         self._ctx.session.add(t1(id=2))
@@ -35,9 +35,9 @@ class TestValidateTableSizeStep(ETLTestCase):
     def test_size_tolerance_error(self):
         """El validador debería retornar un error si la tabla no tiene el
         tamaño deseado."""
-        t1 = self.create_table('t1', [
-            ('id', sqltypes.Integer)
-        ])
+        t1 = self.create_table('t1', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
 
         self._ctx.session.add(t1(id=1))
 

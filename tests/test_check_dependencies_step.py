@@ -8,9 +8,9 @@ class TestCheckDependenciesStep(ETLTestCase):
     def test_empty_dep(self):
         """El paso debería fallar si una de las dependencias (tablas) está
         vacía."""
-        t1 = self.create_table('t1', [
-            ('id', sqltypes.Integer)
-        ])
+        t1 = self.create_table('t1', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
 
         step = CheckDependenciesStep([t1])
         with self.assertRaises(ProcessException):
@@ -19,9 +19,9 @@ class TestCheckDependenciesStep(ETLTestCase):
     def test_nonempty_dep(self):
         """El paso no debería fallar si todas las dependencias contienen
         elementos."""
-        t1 = self.create_table('t1', [
-            ('id', sqltypes.Integer)
-        ])
+        t1 = self.create_table('t1', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
 
         self._ctx.session.add(t1(id=1))
 

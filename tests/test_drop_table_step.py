@@ -6,9 +6,9 @@ from . import ETLTestCase
 class TestDropTableStep(ETLTestCase):
     def test_drop(self):
         """El paso debería eliminar la tabla (DROP)."""
-        tbl = self.create_table('tbl', [
-            ('id', sqltypes.Integer)
-        ])
+        tbl = self.create_table('tbl', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
         self.assertTrue(self._metadata.tables['tbl'].exists(
             bind=self._ctx.engine))
 

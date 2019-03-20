@@ -31,13 +31,10 @@ class ETLTestCase(TestCase):
         self._metadata.clear()
         self._ctx.fs.clean()
 
-    def create_table(self, name, columns_data, pkey=None):
-        if not pkey:
-            pkey = columns_data[0][0]
-
+    def create_table(self, name, columns_data, pkey):
         columns = [
-            Column(*column_data, primary_key=(column_data[0] == pkey))
-            for column_data in columns_data
+            Column(col_name, col_type, primary_key=(col_name == pkey))
+            for col_name, col_type in columns_data.items()
         ]
 
         table = Table(name, self._metadata, *columns)
