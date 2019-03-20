@@ -45,15 +45,12 @@ class Process:
 
     def run(self, start, ctx):
         self._print_title(ctx.report.logger)
-        session = ctx.session
         previous_result = None
 
         initial = self._steps[start]
         if initial.reads_input():
-            ctx.report.error(
+            raise ProcessException(
                 'El paso #{} requiere un valor de entrada.'.format(start + 1))
-            ctx.report.error('Utilizar otro paso como paso inicial.\n')
-            return previous_result
 
         try:
             for i, step in enumerate(self._steps[start:]):
@@ -61,21 +58,20 @@ class Process:
                                                           step.name))
                 previous_result = step.run(previous_result, ctx)
                 ctx.report.info('Paso finalizado.\n')
+        finally:
+            ctx.report.info('Commit...')
+            ctx.session.commit()
 
-        except ProcessException:
-            ctx.report.error(
-                'Sucedió un error durante la ejecución del proceso:')
-            ctx.report.exception('Excepción:')
-
-        ctx.report.info('Commit...')
-        session.commit()
         ctx.report.info('Ejecución de proceso finalizada.\n')
-
         return previous_result
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def steps(self):
+        return self._steps
 
     def _print_title(self, l, separator_width=60):
         l.info("=" * separator_width)
