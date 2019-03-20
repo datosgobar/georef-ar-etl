@@ -28,7 +28,8 @@ def create_engine(config, echo=False):
     return engine
 
 
-def read_config():
+def read_config(testing=False):
     config = configparser.ConfigParser()
-    config.read(constants.CONFIG_PATH)
+    config.read(
+        constants.TEST_CONFIG_PATH if testing else constants.CONFIG_PATH)
     return config

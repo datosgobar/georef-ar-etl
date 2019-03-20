@@ -11,13 +11,12 @@ from .process import Step, ProcessException
 
 class Ogr2ogrStep(Step):
     def __init__(self, table_name, geom_type, encoding, precision=True,
-                 db_config_key='db', metadata=None):
+                 metadata=None):
         super().__init__('ogr2ogr')
         self._table_name = table_name
         self._geom_type = geom_type
         self._encoding = encoding
         self._precision = precision
-        self._db_config_key = db_config_key
         self._metadata = metadata or MetaData()
 
     def new_env(self, new_vars):
@@ -40,9 +39,9 @@ class Ogr2ogrStep(Step):
             raise ProcessException(
                 'Se detectó más de un archivo .shp en el directorio.')
 
-        shp = next(iter(glob))
+        shp = list(glob)[0]
         shp_path = ctx.fs.getsyspath(shp.path)
-        config = ctx.config[self._db_config_key]
+        config = ctx.config['db']
 
         ctx.report.info('Ejecutando ogr2ogr sobre %s.', shp_path)
         args = [

@@ -20,3 +20,15 @@ code_checks:
 
 test:
 	python -m unittest
+
+
+# Desarrollo
+
+# Crear archivos de prueba utilizando la provincia de Santa Fe como dato
+create_test_files:
+	ogr2ogr \
+		-f "ESRI Shapefile" \
+		tests/test_files/test_provincias \
+		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
+		-sql "select * from raw_provincias where in1='82'" \
+		-nln "test_provincias"

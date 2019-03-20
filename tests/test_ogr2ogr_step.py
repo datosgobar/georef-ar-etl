@@ -9,8 +9,7 @@ class TestOgr2ogrStep(ETLTestCase):
         datos utilizando la herramienta externa ogr2ogr."""
         table_name = 't1'
         step = Ogr2ogrStep(table_name=table_name, geom_type='MultiPoint',
-                           encoding='utf-8', db_config_key='test_db',
-                           metadata=self._metadata)
+                           encoding='utf-8', metadata=self._metadata)
 
         # Archivo generado con georef-ar-api
         self.copy_test_file('test_shp/localidades.shp')
