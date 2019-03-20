@@ -10,12 +10,15 @@ from .process import Step, ProcessException
 
 
 class Ogr2ogrStep(Step):
-    def __init__(self, table_name, geom_type, encoding, precision=True):
+    def __init__(self, table_name, geom_type, encoding, precision=True,
+                 db_config_key='db', metadata=None):
         super().__init__('ogr2ogr')
         self._table_name = table_name
         self._geom_type = geom_type
         self._encoding = encoding
         self._precision = precision
+        self._db_config_key = db_config_key
+        self._metadata = metadata or MetaData()
 
     def new_env(self, new_vars):
         env = os.environ.copy()
@@ -25,9 +28,8 @@ class Ogr2ogrStep(Step):
         return env
 
     def automap_table(self, ctx):
-        metadata = MetaData()
-        metadata.reflect(ctx.engine, only=[self._table_name])
-        base = automap_base(metadata=metadata)
+        self._metadata.reflect(ctx.engine, only=[self._table_name])
+        base = automap_base(metadata=self._metadata)
         base.prepare()
 
         return getattr(base.classes, self._table_name)
@@ -40,6 +42,7 @@ class Ogr2ogrStep(Step):
 
         shp = next(iter(glob))
         shp_path = ctx.fs.getsyspath(shp.path)
+        config = ctx.config[self._db_config_key]
 
         ctx.report.info('Ejecutando ogr2ogr sobre %s.', shp_path)
         args = [
@@ -47,7 +50,7 @@ class Ogr2ogrStep(Step):
             ('PG:host={host} ' +
              'user={user} ' +
              'password={password} ' +
-             'dbname={database}').format(**ctx.config['db']),
+             'dbname={database}').format(**config),
             '-nln', self._table_name,
             '-nlt', self._geom_type,
             '-lco', 'GEOMETRY_NAME=geom'

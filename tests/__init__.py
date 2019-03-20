@@ -6,7 +6,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.schema import Table, Column
 from unittest import TestCase
 from georef_ar_etl.context import Context
-from georef_ar_etl import read_config, create_engine
+from georef_ar_etl import read_config, create_engine, constants
 
 TEST_FILES_DIR = 'tests/test_files'
 
@@ -47,5 +47,11 @@ class ETLTestCase(TestCase):
 
         return getattr(base.classes, name)
 
-    def get_test_file_path(self, filename):
-        return os.path.join(TEST_FILES_DIR, filename)
+    def copy_test_file(self, filepath):
+        dirname = os.path.dirname(filepath)
+        if dirname:
+            self._ctx.fs.makedirs(dirname, permissions=constants.DIR_PERMS,
+                                  recreate=True)
+
+        with open(os.path.join(TEST_FILES_DIR, filepath), 'rb') as f:
+            self._ctx.fs.upload(filepath, f)

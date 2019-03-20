@@ -7,8 +7,7 @@ class TestExtractTarStep(ETLTestCase):
     def test_extract_tar(self):
         """El paso debería extraer correctamente un archivo .tar."""
         filename = 'test.tar.gz'
-        with open(self.get_test_file_path(filename), 'rb') as f:
-            self._ctx.fs.upload(filename, f)
+        self.copy_test_file(filename)
 
         step = ExtractTarStep()
         directory = step.run(filename, self._ctx)

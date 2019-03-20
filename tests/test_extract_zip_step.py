@@ -7,8 +7,7 @@ class TestExtractZipStep(ETLTestCase):
     def test_extract_zip(self):
         """El paso debería extraer correctamente un archivo .zip."""
         filename = 'test.zip'
-        with open(self.get_test_file_path(filename), 'rb') as f:
-            self._ctx.fs.upload(filename, f)
+        self.copy_test_file(filename)
 
         step = ExtractZipStep()
         directory = step.run(filename, self._ctx)
