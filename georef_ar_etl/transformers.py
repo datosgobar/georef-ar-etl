@@ -48,18 +48,18 @@ class ExtractTarStep(Step):
 
 class EntitiesExtractionStep(Step):
     def __init__(self, name, entity_class, entity_class_pkey,
-                 raw_entity_class_pkey):
+                 tmp_entity_class_pkey):
         super().__init__(name)
         self._entity_class = entity_class
         self._entity_class_pkey = entity_class_pkey
-        self._raw_entity_class_pkey = raw_entity_class_pkey
+        self._tmp_entity_class_pkey = tmp_entity_class_pkey
 
-    def _run_internal(self, raw_entities, ctx):
-        self._patch_raw_entities(raw_entities, ctx)
+    def _run_internal(self, tmp_entities, ctx):
+        self._patch_tmp_entities(tmp_entities, ctx)
 
         entities = []
         bulk_size = ctx.config.getint('etl', 'bulk_size')
-        query = self._build_entities_query(raw_entities, ctx).yield_per(
+        query = self._build_entities_query(tmp_entities, ctx).yield_per(
             bulk_size)
         cached_session = ctx.cached_session()
         deleted = []
@@ -69,13 +69,13 @@ class EntitiesExtractionStep(Step):
 
         ctx.report.info('Insertando entidades procesadas...')
 
-        for raw_entity in utils.pbar(query, ctx, total=query.count()):
+        for tmp_entity in utils.pbar(query, ctx, total=query.count()):
             try:
-                new_entity = self._process_entity(raw_entity, cached_session,
+                new_entity = self._process_entity(tmp_entity, cached_session,
                                                   ctx)
             except ValidationException as e:
                 errors.append(
-                    (getattr(raw_entity, self._raw_entity_class_pkey), str(e))
+                    (getattr(tmp_entity, self._tmp_entity_class_pkey), str(e))
                 )
                 continue
 
@@ -123,12 +123,12 @@ class EntitiesExtractionStep(Step):
 
         return self._entity_class
 
-    def _build_entities_query(self, raw_entities, ctx):
-        return ctx.session.query(raw_entities)
+    def _build_entities_query(self, tmp_entities, ctx):
+        return ctx.session.query(tmp_entities)
 
     def _process_entity(self, entity, cached_session, ctx):
         raise NotImplementedError()
 
-    def _patch_raw_entities(self, raw_entities, ctx):
+    def _patch_tmp_entities(self, tmp_entities, ctx):
         # Implementación default: noop
         pass

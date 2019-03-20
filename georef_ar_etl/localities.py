@@ -11,7 +11,7 @@ def create_process(config):
         extractors.DownloadURLStep(constants.LOCALITIES + '.zip',
                                    config.get('etl', 'localities_url')),
         transformers.ExtractTarStep(),
-        loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_RAW_TABLE,
+        loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_TMP_TABLE,
                             geom_type='MultiPoint', encoding='latin1',
                             precision=False),
         utils.ValidateTableSchemaStep({
@@ -48,11 +48,11 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
         super().__init__('localities_extraction_step', Locality,
                          entity_class_pkey='id',
-                         raw_entity_class_pkey='cod_bahra')
+                         tmp_entity_class_pkey='cod_bahra')
 
-    def _patch_raw_entities(self, raw_localities, ctx):
+    def _patch_tmp_entities(self, tmp_localities, ctx):
         # Agregado en ETL2
-        patch.delete(raw_localities, ctx, cod_bahra='02000010000')
+        patch.delete(tmp_localities, ctx, cod_bahra='02000010000')
 
         # Actualizar códigos de comunas (departamentos)
         def update_commune_data(row):
@@ -61,13 +61,13 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             row.cod_bahra = (row.cod_prov + row.cod_depto + row.cod_loc +
                              row.cod_entida)
 
-        patch.apply_fn(raw_localities, update_commune_data, ctx, cod_prov='02')
+        patch.apply_fn(tmp_localities, update_commune_data, ctx, cod_prov='02')
 
         # Borrar entidades sin ID
-        patch.delete(raw_localities, ctx, cod_bahra=None)
+        patch.delete(tmp_localities, ctx, cod_bahra=None)
 
         # Borrar 'EL FICAL'
-        patch.delete(raw_localities, ctx, cod_bahra='70056060001',
+        patch.delete(tmp_localities, ctx, cod_bahra='70056060001',
                      nombre_bah='EL FICAL')
 
         # Actualiza códigos para los asentamientos del departamento de Río
@@ -76,7 +76,7 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             row.cod_depto = '008'
             row.cod_bahra = (row.cod_prov + row.cod_depto + row.cod_loc +
                              row.cod_entida)
-        patch.apply_fn(raw_localities, update_rio_grande, ctx, cod_prov='94',
+        patch.apply_fn(tmp_localities, update_rio_grande, ctx, cod_prov='94',
                        cod_depto='007')
 
         # Actualiza códigos para los asentamientos del departamento de Usuhaia
@@ -84,17 +84,17 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             row.cod_depto = '015'
             row.cod_bahra = (row.cod_prov + row.cod_depto + row.cod_loc +
                              row.cod_entida)
-        patch.apply_fn(raw_localities, update_ushuaia, ctx, cod_prov='94',
+        patch.apply_fn(tmp_localities, update_ushuaia, ctx, cod_prov='94',
                        cod_depto='014')
 
-    def _build_entities_query(self, raw_entities, ctx):
-        return ctx.session.query(raw_entities).filter(
-            raw_entities.tipo_bahra.in_(constants.BAHRA_TYPES.keys()))
+    def _build_entities_query(self, tmp_entities, ctx):
+        return ctx.session.query(tmp_entities).filter(
+            tmp_entities.tipo_bahra.in_(constants.BAHRA_TYPES.keys()))
 
-    def _process_entity(self, raw_locality, cached_session, ctx):
-        lon, lat = geometry.get_centroid_coordinates(raw_locality.geom,
+    def _process_entity(self, tmp_locality, cached_session, ctx):
+        lon, lat = geometry.get_centroid_coordinates(tmp_locality.geom,
                                                      ctx)
-        loc_id = raw_locality.cod_bahra
+        loc_id = tmp_locality.cod_bahra
         prov_id = loc_id[:constants.PROVINCE_ID_LEN]
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
 
@@ -109,16 +109,16 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                 'No existe el departamento con ID {}'.format(dept_id))
 
         municipality = geometry.get_entity_at_point(Municipality,
-                                                    raw_locality.geom, ctx)
+                                                    tmp_locality.geom, ctx)
 
         return Locality(
             id=loc_id,
-            nombre=utils.clean_string(raw_locality.nombre_bah),
-            categoria=utils.clean_string(raw_locality.tipo_bahra),
+            nombre=utils.clean_string(tmp_locality.nombre_bah),
+            categoria=utils.clean_string(tmp_locality.tipo_bahra),
             lon=lon, lat=lat,
             provincia_id=province.id,
             departamento_id=department.id,
             municipio_id=municipality.id if municipality else None,
-            fuente=utils.clean_string(raw_locality.fuente_ubi),
-            geometria=raw_locality.geom
+            fuente=utils.clean_string(tmp_locality.fuente_ubi),
+            geometria=tmp_locality.geom
         )

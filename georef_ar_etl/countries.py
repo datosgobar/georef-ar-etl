@@ -7,7 +7,7 @@ def create_process(config):
         extractors.DownloadURLStep(constants.COUNTRIES + '.zip',
                                    config.get('etl', 'countries_url')),
         transformers.ExtractZipStep(),
-        loaders.Ogr2ogrStep(table_name=constants.COUNTRIES_RAW_TABLE,
+        loaders.Ogr2ogrStep(table_name=constants.COUNTRIES_TMP_TABLE,
                             geom_type='MultiPolygon', encoding='latin1'),
         utils.DropTableStep()
     ])

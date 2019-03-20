@@ -58,7 +58,7 @@ class ETLTestCase(TestCase):
         cls.copy_test_file('test_provincias/test_provincias.shx')
         cls.copy_test_file('test_provincias/test_provincias.prj')
 
-        loader = Ogr2ogrStep(table_name='raw_provincias',
+        loader = Ogr2ogrStep(table_name='tmp_provincias',
                              geom_type='MultiPolygon', encoding='utf-8',
                              metadata=cls._metadata)
 

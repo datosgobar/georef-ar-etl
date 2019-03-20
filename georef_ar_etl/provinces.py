@@ -8,7 +8,7 @@ def create_process(config):
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
                                    config.get('etl', 'provinces_url')),
         transformers.ExtractZipStep(),
-        loaders.Ogr2ogrStep(table_name=constants.PROVINCES_RAW_TABLE,
+        loaders.Ogr2ogrStep(table_name=constants.PROVINCES_TMP_TABLE,
                             geom_type='MultiPolygon', encoding='utf-8'),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
@@ -32,22 +32,22 @@ def create_process(config):
 class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
         super().__init__('provinces_extraction', Province,
-                         entity_class_pkey='id', raw_entity_class_pkey='in1')
+                         entity_class_pkey='id', tmp_entity_class_pkey='in1')
         iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv')
         self._iso_data = {row['id']: row for row in iso_csv}
 
-    def _process_entity(self, raw_province, cached_session, ctx):
-        lon, lat = geometry.get_centroid_coordinates(raw_province.geom, ctx)
-        prov_id = raw_province.in1
+    def _process_entity(self, tmp_province, cached_session, ctx):
+        lon, lat = geometry.get_centroid_coordinates(tmp_province.geom, ctx)
+        prov_id = tmp_province.in1
 
         return Province(
             id=prov_id,
-            nombre=utils.clean_string(raw_province.nam),
-            nombre_completo=utils.clean_string(raw_province.fna),
+            nombre=utils.clean_string(tmp_province.nam),
+            nombre_completo=utils.clean_string(tmp_province.fna),
             iso_id=self._iso_data[prov_id]['3166-2 code'],
             iso_nombre=self._iso_data[prov_id]['subdivision name'],
-            categoria=utils.clean_string(raw_province.gna),
+            categoria=utils.clean_string(tmp_province.gna),
             lon=lon, lat=lat,
-            fuente=utils.clean_string(raw_province.sag),
-            geometria=raw_province.geom
+            fuente=utils.clean_string(tmp_province.sag),
+            geometria=tmp_province.geom
         )
