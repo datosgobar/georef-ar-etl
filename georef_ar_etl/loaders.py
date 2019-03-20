@@ -11,13 +11,14 @@ from .process import Step, ProcessException
 
 class Ogr2ogrStep(Step):
     def __init__(self, table_name, geom_type, encoding, precision=True,
-                 metadata=None):
+                 metadata=None, db_config=None):
         super().__init__('ogr2ogr')
         self._table_name = table_name
         self._geom_type = geom_type
         self._encoding = encoding
         self._precision = precision
         self._metadata = metadata or MetaData()
+        self._db_config = db_config
 
     def new_env(self, new_vars):
         env = os.environ.copy()
@@ -41,7 +42,7 @@ class Ogr2ogrStep(Step):
 
         shp = list(glob)[0]
         shp_path = ctx.fs.getsyspath(shp.path)
-        config = ctx.config['db']
+        db_config = self._db_config or ctx.config['db']
 
         ctx.report.info('Ejecutando ogr2ogr sobre %s.', shp_path)
         args = [
@@ -49,7 +50,7 @@ class Ogr2ogrStep(Step):
             ('PG:host={host} ' +
              'user={user} ' +
              'password={password} ' +
-             'dbname={database}').format(**config),
+             'dbname={database}').format(**db_config),
             '-nln', self._table_name,
             '-nlt', self._geom_type,
             '-lco', 'GEOMETRY_NAME=geom'

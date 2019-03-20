@@ -17,12 +17,12 @@ class ETLTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         logger = logging.getLogger('georef-ar-etl')
-        config = read_config(testing=True)
+        config = read_config()
         cls._metadata = MetaData()
         cls._ctx = Context(
             config=config,
             fs=tempfs.TempFS(),
-            engine=create_engine(config),
+            engine=create_engine(config['test_db']),
             logger=logger,
             mode='testing'
         )
@@ -60,7 +60,8 @@ class ETLTestCase(TestCase):
 
         loader = Ogr2ogrStep(table_name='tmp_provincias',
                              geom_type='MultiPolygon', encoding='utf-8',
-                             metadata=cls._metadata)
+                             metadata=cls._metadata,
+                             db_config=cls._ctx.config['test_db'])
 
         return loader.run('test_provincias', cls._ctx)
 

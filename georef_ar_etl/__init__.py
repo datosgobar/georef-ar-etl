@@ -19,17 +19,16 @@ def get_logger():
     return logger
 
 
-def create_engine(config, echo=False):
+def create_engine(db_config, echo=False):
     engine = sqlalchemy.create_engine(
         'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
-            **config['db']), echo=echo)
+            **db_config), echo=echo)
 
     models.Base.metadata.create_all(engine)
     return engine
 
 
-def read_config(testing=False):
+def read_config():
     config = configparser.ConfigParser()
-    config.read(
-        constants.TEST_CONFIG_PATH if testing else constants.CONFIG_PATH)
+    config.read(constants.CONFIG_PATH)
     return config

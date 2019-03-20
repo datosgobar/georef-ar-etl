@@ -70,7 +70,7 @@ def main():
         config=config,
         fs=osfs.OSFS(config.get('etl', 'files_dir'), create=True,
                      create_mode=constants.DIR_PERMS),
-        engine=create_engine(config, echo=args.verbose),
+        engine=create_engine(config['db'], echo=args.verbose),
         logger=get_logger(),
         mode=args.mode
     )
