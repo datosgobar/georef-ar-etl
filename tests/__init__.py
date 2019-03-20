@@ -1,3 +1,4 @@
+import os
 import logging
 from fs import tempfs
 from sqlalchemy.ext.automap import automap_base
@@ -6,6 +7,8 @@ from sqlalchemy.schema import Table, Column
 from unittest import TestCase
 from georef_ar_etl.context import Context
 from georef_ar_etl import read_config, create_engine
+
+TEST_FILES_DIR = 'tests/test_files'
 
 
 class ETLTestCase(TestCase):
@@ -43,3 +46,6 @@ class ETLTestCase(TestCase):
         base.prepare()
 
         return getattr(base.classes, name)
+
+    def get_test_file_path(self, filename):
+        return os.path.join(TEST_FILES_DIR, filename)
