@@ -21,8 +21,8 @@ def get_logger():
 
 def create_engine(config, echo=False):
     engine = sqlalchemy.create_engine(
-            'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
-                **config['db']), echo=echo)
+        'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(
+            **config['db']), echo=echo)
 
     models.Base.metadata.create_all(engine)
     return engine

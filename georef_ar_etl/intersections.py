@@ -4,7 +4,7 @@ from .models import Province, Department, Street, Intersection
 from . import constants, geometry, utils, loaders
 
 
-def create_process(config):
+def create_process(_config):
     return Process(constants.INTERSECTIONS, [
         utils.CheckDependenciesStep([Province, Department, Street]),
         IntersectionsCreationStep(),

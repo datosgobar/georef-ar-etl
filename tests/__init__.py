@@ -1,10 +1,10 @@
 import os
 import logging
+from unittest import TestCase
 from fs import tempfs
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.schema import Table, Column
-from unittest import TestCase
 from georef_ar_etl.context import Context
 from georef_ar_etl import read_config, create_engine, constants
 

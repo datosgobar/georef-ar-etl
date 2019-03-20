@@ -1,6 +1,6 @@
-from . import ETLTestCase
 from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl.utils import ValidateTableSchemaStep, ValidateTableSizeStep
+from . import ETLTestCase
 
 
 class TestOgr2ogrStep(ETLTestCase):

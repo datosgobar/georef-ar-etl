@@ -1,7 +1,7 @@
 from sqlalchemy.sql import sqltypes
-from . import ETLTestCase
 from georef_ar_etl.utils import CheckDependenciesStep
 from georef_ar_etl.exceptions import ProcessException
+from . import ETLTestCase
 
 
 class TestCheckDependenciesStep(ETLTestCase):

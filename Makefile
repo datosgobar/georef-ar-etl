@@ -15,8 +15,8 @@ history:
 # Testing/Linting
 
 code_checks:
-	pyflakes georef_ar_etl
-	pylint georef_ar_etl
+	pyflakes georef_ar_etl tests
+	pylint georef_ar_etl tests
 
 test:
 	python -m unittest

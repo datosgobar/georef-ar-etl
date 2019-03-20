@@ -1,6 +1,6 @@
 from sqlalchemy.sql import sqltypes
-from . import ETLTestCase
 from georef_ar_etl.utils import DropTableStep
+from . import ETLTestCase
 
 
 class TestDropTableStep(ETLTestCase):

@@ -1,6 +1,6 @@
 import os
-from . import ETLTestCase
 from georef_ar_etl.transformers import ExtractZipStep
+from . import ETLTestCase
 
 
 class TestExtractZipStep(ETLTestCase):

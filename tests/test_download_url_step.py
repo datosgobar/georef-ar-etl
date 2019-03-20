@@ -1,9 +1,10 @@
 import responses
-from . import ETLTestCase
 from georef_ar_etl.extractors import DownloadURLStep
 from georef_ar_etl.exceptions import ProcessException
+from . import ETLTestCase
 
 
+# pylint: disable=no-member
 class TestDownloadURLStep(ETLTestCase):
     @responses.activate
     def test_download(self):

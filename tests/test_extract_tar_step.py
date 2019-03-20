@@ -1,6 +1,6 @@
 import os
-from . import ETLTestCase
 from georef_ar_etl.transformers import ExtractTarStep
+from . import ETLTestCase
 
 
 class TestExtractTarStep(ETLTestCase):

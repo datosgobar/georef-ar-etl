@@ -1,3 +1,4 @@
+# pylint: disable=no-self-argument
 import json
 from sqlalchemy import Column, String, Float, Integer, ForeignKey
 from sqlalchemy.orm import validates

@@ -55,10 +55,11 @@ def etl(enabled_processes, start, ctx):
             process.run(start - 1, ctx)
 
 
+# pylint: disable=unused-argument
 def console(ctx):
-    console = code.InteractiveConsole(locals=locals())
-    console.push('from georef_ar_etl import models')
-    console.interact()
+    repl = code.InteractiveConsole(locals=locals())
+    repl.push('from georef_ar_etl import models')
+    repl.interact()
 
 
 def main():
