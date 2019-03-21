@@ -52,6 +52,24 @@ class TestDepartmentsExtractionStep(ETLTestCase):
             one().nombre
         self.assertEqual(name, '8 de Julio')
 
+    def test_id_change(self):
+        """Si se modifica el ID de un departamento, se debería eliminar el
+        departamento con el ID antiguo y se debería generar uno nuevo en la
+        tabla georef_departamentos."""
+        # Ejecutar la extracción por primera vez
+        step = DepartmentsExtractionStep()
+        step.run(self._tmp_departments, self._ctx)
+
+        # Modificar el ID de un departamento
+        self._ctx.session.query(self._tmp_departments).\
+            filter_by(in1='82077').\
+            update({'in1': '82078'})
+
+        step.run(self._tmp_departments, self._ctx)
+        report_data = self._ctx.report.get_data('departments_extraction')
+        self.assertListEqual(report_data['new_entities_ids'], ['82078'])
+        self.assertListEqual(report_data['deleted_entities_ids'], ['82077'])
+
     def test_clean_string(self):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
