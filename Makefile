@@ -1,4 +1,5 @@
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
+TEST_FILES ?= *.py
 
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
 # datos para SQLAlchemy.
@@ -21,14 +22,26 @@ code_checks:
 test:
 	python -m unittest
 
+test_custom:
+	python -m unittest tests/$(TEST_FILES)
+
 
 # Desarrollo
 
 # Crear archivos de prueba utilizando la provincia de Santa Fe como dato
 create_test_files:
-	ogr2ogr \
-		-f "ESRI Shapefile" \
+	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_provincias \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
 		-sql "select * from tmp_provincias where in1='82'" \
-		-nln "test_provincias"
+		-nln "test_provincias" \
+		-lco "ENCODING=utf-8" \
+		-overwrite
+
+	ogr2ogr -f "ESRI Shapefile" \
+		tests/test_files/test_departamentos \
+		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
+		-sql "select * from tmp_departamentos where in1 like '82%'" \
+		-nln "test_departamentos" \
+		-lco "ENCODING=utf-8" \
+		-overwrite

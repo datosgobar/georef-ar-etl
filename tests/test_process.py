@@ -15,6 +15,8 @@ def get_mock_step(return_value=None, raises_exception=False, reads_input=True):
 
 
 class TestCheckDependenciesStep(ETLTestCase):
+    _uses_db = False
+
     def test_process(self):
         """Un proceso debería ejecutar todos sus pasos y retornar el valor
         final producido."""

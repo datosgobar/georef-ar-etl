@@ -4,6 +4,8 @@ from . import ETLTestCase
 
 
 class TestExtractTarStep(ETLTestCase):
+    _uses_db = False
+
     def test_extract_tar(self):
         """El paso debería extraer correctamente un archivo .tar."""
         filename = 'test.tar.gz'

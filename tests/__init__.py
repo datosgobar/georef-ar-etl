@@ -13,31 +13,37 @@ TEST_FILES_DIR = 'tests/test_files'
 
 
 class ETLTestCase(TestCase):
+    _uses_db = True
+
     @classmethod
     def setUpClass(cls):
         logger = logging.getLogger('georef-ar-etl')
+        logger.addHandler(logging.NullHandler())
         config = read_config()
         cls._metadata = MetaData()
         cls._ctx = Context(
             config=config,
             fs=tempfs.TempFS(),
-            engine=create_engine(config['test_db']),
+            engine=create_engine(config['test_db'], init_models=cls._uses_db),
             logger=logger,
             mode='testing'
         )
 
     @classmethod
     def tearDownClass(cls):
-        models.Base.metadata.drop_all(cls._ctx.engine)
+        if cls._uses_db:
+            models.Base.metadata.drop_all(cls._ctx.engine)
 
     def tearDown(self):
-        for table in models.Base.metadata.tables.values():
-            result = self._ctx.engine.execute(table.delete())
-            result.close()
+        if self._uses_db:
+            for table in models.Base.metadata.tables.values():
+                result = self._ctx.engine.execute(table.delete())
+                result.close()
 
-        self._ctx.session.commit()
-        self._metadata.drop_all(self._ctx.engine)
-        self._metadata.clear()
+            self._ctx.session.commit()
+            self._metadata.drop_all(self._ctx.engine)
+            self._metadata.clear()
+
         self._ctx.fs.clean()
         self._ctx.report.reset()
 
@@ -57,6 +63,7 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def create_test_provinces(cls):
+        # Cargar la provincia de Santa Fe
         cls.copy_test_file('test_provincias/test_provincias.dbf')
         cls.copy_test_file('test_provincias/test_provincias.shp')
         cls.copy_test_file('test_provincias/test_provincias.shx')
@@ -68,6 +75,21 @@ class ETLTestCase(TestCase):
                              db_config=cls._ctx.config['test_db'])
 
         return loader.run('test_provincias', cls._ctx)
+
+    @classmethod
+    def create_test_departments(cls):
+        # Cargar los departamentos de la provincia de Santa Fe
+        cls.copy_test_file('test_departamentos/test_departamentos.dbf')
+        cls.copy_test_file('test_departamentos/test_departamentos.shp')
+        cls.copy_test_file('test_departamentos/test_departamentos.shx')
+        cls.copy_test_file('test_departamentos/test_departamentos.prj')
+
+        loader = Ogr2ogrStep(table_name='tmp_departamentos',
+                             geom_type='MultiPolygon', encoding='utf-8',
+                             metadata=cls._metadata,
+                             db_config=cls._ctx.config['test_db'])
+
+        return loader.run('test_departamentos', cls._ctx)
 
     @classmethod
     def copy_test_file(cls, filepath):

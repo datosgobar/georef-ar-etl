@@ -48,7 +48,7 @@ class Report:
         self._logger.info(*args, **kwargs)
 
     def warn(self, *args, **kwargs):
-        self._logger.warn(*args, **kwargs)
+        self._logger.warning(*args, **kwargs)
 
     def error(self, *args, **kwargs):
         self._logger.error(*args, **kwargs)

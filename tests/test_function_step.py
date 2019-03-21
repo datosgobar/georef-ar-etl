@@ -4,6 +4,8 @@ from . import ETLTestCase
 
 
 class TestFunctionStep(ETLTestCase):
+    _uses_db = False
+
     def test_fn(self):
         """El paso debería ejecutar la función especificada."""
         fn = Mock()

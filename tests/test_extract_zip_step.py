@@ -4,6 +4,8 @@ from . import ETLTestCase
 
 
 class TestExtractZipStep(ETLTestCase):
+    _uses_db = False
+
     def test_extract_zip(self):
         """El paso debería extraer correctamente un archivo .zip."""
         filename = 'test.zip'

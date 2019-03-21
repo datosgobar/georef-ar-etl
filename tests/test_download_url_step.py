@@ -6,6 +6,8 @@ from . import ETLTestCase
 
 # pylint: disable=no-member
 class TestDownloadURLStep(ETLTestCase):
+    _uses_db = False
+
     @responses.activate
     def test_download(self):
         """El paso debería descargar un archivo remoto, y devolver la ruta
