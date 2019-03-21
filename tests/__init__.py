@@ -7,8 +7,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.schema import Table, Column
 from georef_ar_etl.context import Context
 from georef_ar_etl.loaders import Ogr2ogrStep
-from georef_ar_etl.models import Base
-from georef_ar_etl import read_config, create_engine, constants
+from georef_ar_etl import read_config, create_engine, constants, models
 
 TEST_FILES_DIR = 'tests/test_files'
 
@@ -29,13 +28,18 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        Base.metadata.drop_all(cls._ctx.engine)
+        models.Base.metadata.drop_all(cls._ctx.engine)
 
     def tearDown(self):
+        for table in models.Base.metadata.tables.values():
+            result = self._ctx.engine.execute(table.delete())
+            result.close()
+
         self._ctx.session.commit()
         self._metadata.drop_all(self._ctx.engine)
         self._metadata.clear()
         self._ctx.fs.clean()
+        self._ctx.report.reset()
 
     @classmethod
     def create_table(cls, name, columns_data, pkey):

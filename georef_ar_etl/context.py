@@ -38,14 +38,11 @@ class CachedSession:
 class Report:
     def __init__(self, logger):
         self._logger = logger
-        self._data = defaultdict(list)
+        self._data = defaultdict(dict)
 
-    def add_data(self, key, description, data):
-        self.info('Dato "%s" agregado al reporte.', description)
-        self._data[key].append({
-            'dato': data,
-            'descripcion': description
-        })
+    def add_data(self, creator, key, data):
+        self.info('Dato "%s" agregado al reporte.', key)
+        self._data[creator][key] = data
 
     def info(self, *args, **kwargs):
         self._logger.info(*args, **kwargs)
@@ -59,22 +56,26 @@ class Report:
     def exception(self, *args, **kwargs):
         self._logger.exception(*args, **kwargs)
 
+    def reset(self):
+        self._data = defaultdict(dict)
+
+    def get_data(self, creator):
+        return self._data[creator]
+
     @property
     def logger(self):
         return self._logger
 
 
 class Context:
-    def __init__(self, config, fs, engine, logger,
-                 mode='normal'):
+    def __init__(self, config, fs, engine, logger, mode='normal'):
+        if mode not in RUN_MODES:
+            raise ValueError('Invalid run mode')
+
         self._config = config
         self._fs = fs
         self._engine = engine
         self._report = Report(logger)
-
-        if mode not in RUN_MODES:
-            raise ValueError('Invalid run mode')
-
         self._mode = mode
         self._session_maker = sessionmaker(bind=engine)
         self._session = None
