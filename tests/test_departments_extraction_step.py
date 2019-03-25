@@ -84,6 +84,21 @@ class TestDepartmentsExtractionStep(ETLTestCase):
             one().nombre
         self.assertEqual(name, '8 de Julio')
 
+    def test_id_length(self):
+        """Si se recibe un departamento con longitud de ID inválida, no
+        debería procesarse."""
+        self._ctx.session.query(self._tmp_departments).\
+            filter_by(in1='82077').\
+            update({'in1': '820077'})
+
+        step = DepartmentsExtractionStep()
+        departments = step.run(self._tmp_departments, self._ctx)
+        self.assertEqual(self._ctx.session.query(departments).count(),
+                         SANTA_FE_DEPT_COUNT - 1)
+
+        report_data = self._ctx.report.get_data('departments_extraction')
+        self.assertEqual(report_data['errors'][0][0], '820077')
+
     def test_invalid_province(self):
         """Si un departamento hace referencia a una provincia inexistente, se
         debería reportar el error."""
@@ -98,6 +113,6 @@ class TestDepartmentsExtractionStep(ETLTestCase):
         self.assertEqual(query.count(), 0)
 
         report_data = self._ctx.report.get_data('departments_extraction')
-        self.assertEqual(len(report_data['error_count']), 1)
+        self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
                          SANTA_FE_DEPT_COUNT - 1)

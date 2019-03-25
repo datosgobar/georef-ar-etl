@@ -45,3 +45,17 @@ class TestProvincesExtractionStep(ETLTestCase):
         report_data = self._ctx.report.get_data('provinces_extraction')
         self.assertListEqual(report_data['new_entities_ids'], [])
         self.assertListEqual(report_data['deleted_entities_ids'], [])
+
+    def test_invalid_id(self):
+        """Si se recibe una provincia con ID inválido (no figura en la tabla de
+        códigos ISO), no debería procesarse."""
+        self._ctx.session.query(self._tmp_provinces).\
+            filter_by(in1='82').\
+            update({'in1': '83'})
+
+        step = ProvincesExtractionStep()
+        provinces = step.run(self._tmp_provinces, self._ctx)
+        self.assertEqual(self._ctx.session.query(provinces).count(), 0)
+
+        report_data = self._ctx.report.get_data('provinces_extraction')
+        self.assertEqual(report_data['errors'][0][0], '83')

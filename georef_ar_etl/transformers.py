@@ -119,7 +119,7 @@ class EntitiesExtractionStep(Step):
         ctx.report.add_data(self.name, 'new_entities_ids', list(added))
         ctx.report.add_data(self.name, 'updated_entities_count', len(updated))
         ctx.report.add_data(self.name, 'deleted_entities_ids', deleted)
-        ctx.report.add_data(self.name, 'error_count', errors)
+        ctx.report.add_data(self.name, 'errors', errors)
 
         return self._entity_class
 

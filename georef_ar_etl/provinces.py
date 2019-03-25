@@ -1,5 +1,6 @@
 from .process import Process, CompositeStep
 from .models import Province
+from .exceptions import ValidationException
 from . import extractors, transformers, loaders, geometry, utils, constants
 
 
@@ -40,12 +41,18 @@ class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
         lon, lat = geometry.get_centroid_coordinates(tmp_province.geom, ctx)
         prov_id = tmp_province.in1
 
+        try:
+            iso_id = self._iso_data[prov_id]['3166-2 code']
+            iso_nombre = self._iso_data[prov_id]['subdivision name']
+        except KeyError:
+            raise ValidationException('ID de provincia inválido')
+
         return Province(
             id=prov_id,
             nombre=utils.clean_string(tmp_province.nam),
             nombre_completo=utils.clean_string(tmp_province.fna),
-            iso_id=self._iso_data[prov_id]['3166-2 code'],
-            iso_nombre=self._iso_data[prov_id]['subdivision name'],
+            iso_id=iso_id,
+            iso_nombre=iso_nombre,
             categoria=utils.clean_string(tmp_province.gna),
             lon=lon, lat=lat,
             fuente=utils.clean_string(tmp_province.sag),
