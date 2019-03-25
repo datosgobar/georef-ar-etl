@@ -63,7 +63,6 @@ class Province(Base, EntityMixin):
     __tablename__ = constants.PROVINCES_ETL_TABLE
     _id_len = constants.PROVINCE_ID_LEN
 
-    # TODO: Agregar país
     nombre_completo = Column(String, nullable=False)
     iso_id = Column(String, nullable=False)
     iso_nombre = Column(String, nullable=False)
