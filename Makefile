@@ -1,3 +1,5 @@
+# Makefile para georef-ar-etl
+
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
 TEST_FILES ?= *.py
 
@@ -26,7 +28,7 @@ test_custom:
 	python -m unittest tests/$(TEST_FILES)
 
 
-# Desarrollo
+# Recetas para uso de desarrollo del ETL.
 
 # Crear archivos de prueba utilizando la provincia de Santa Fe como dato
 create_test_files:
@@ -51,5 +53,13 @@ create_test_files:
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
 		-sql "select * from tmp_municipios where in1 like '82%'" \
 		-nln "test_municipios" \
+		-lco "ENCODING=utf-8" \
+		-overwrite
+
+	ogr2ogr -f "ESRI Shapefile" \
+		tests/test_files/test_localidades \
+		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
+		-sql "select * from tmp_localidades where cod_bahra like '82%'" \
+		-nln "test_localidades" \
 		-lco "ENCODING=utf-8" \
 		-overwrite

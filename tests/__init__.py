@@ -9,6 +9,8 @@ from georef_ar_etl import get_logger
 from georef_ar_etl.context import Context
 from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl.provinces import ProvincesExtractionStep
+from georef_ar_etl.departments import DepartmentsExtractionStep
+from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
 from georef_ar_etl import read_config, create_engine, constants, models
 
 TEST_FILES_DIR = 'tests/test_files'
@@ -22,6 +24,7 @@ class ETLTestCase(TestCase):
         self._tmp_provinces = None
         self._tmp_departments = None
         self._tmp_municipalities = None
+        self._tmp_localities = None
 
     @classmethod
     def setUpClass(cls):
@@ -92,7 +95,7 @@ class ETLTestCase(TestCase):
         return cls._tmp_provinces
 
     @classmethod
-    def create_test_departments(cls):
+    def create_test_departments(cls, extract=False):
         # Cargar los departamentos de la provincia de Santa Fe
         cls.copy_test_file('test_departamentos/test_departamentos.dbf')
         cls.copy_test_file('test_departamentos/test_departamentos.shp')
@@ -105,10 +108,15 @@ class ETLTestCase(TestCase):
                              db_config=cls._ctx.config['test_db'])
 
         cls._tmp_departments = loader.run('test_departamentos', cls._ctx)
+
+        if extract:
+            step = DepartmentsExtractionStep()
+            step.run(cls._tmp_departments, cls._ctx)
+
         return cls._tmp_departments
 
     @classmethod
-    def create_test_municipalities(cls):
+    def create_test_municipalities(cls, extract=False):
         # Cargar los municipios de la provincia de Santa Fe
         cls.copy_test_file('test_municipios/test_municipios.dbf')
         cls.copy_test_file('test_municipios/test_municipios.shp')
@@ -121,7 +129,28 @@ class ETLTestCase(TestCase):
                              db_config=cls._ctx.config['test_db'])
 
         cls._tmp_municipalities = loader.run('test_municipios', cls._ctx)
+
+        if extract:
+            step = MunicipalitiesExtractionStep()
+            step.run(cls._tmp_municipalities, cls._ctx)
+
         return cls._tmp_municipalities
+
+    @classmethod
+    def create_test_localities(cls):
+        # Cargar las localidades de la provincia de Santa Fe
+        cls.copy_test_file('test_localidades/test_localidades.dbf')
+        cls.copy_test_file('test_localidades/test_localidades.shp')
+        cls.copy_test_file('test_localidades/test_localidades.shx')
+        cls.copy_test_file('test_localidades/test_localidades.prj')
+
+        loader = Ogr2ogrStep(table_name='tmp_localidades',
+                             geom_type='MultiPoint', encoding='utf-8',
+                             metadata=cls._metadata,
+                             db_config=cls._ctx.config['test_db'])
+
+        cls._tmp_localities = loader.run('test_localidades', cls._ctx)
+        return cls._tmp_localities
 
     @classmethod
     def copy_test_file(cls, filepath):
