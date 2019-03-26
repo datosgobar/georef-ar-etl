@@ -2,7 +2,7 @@ from georef_ar_etl.models import Department
 from georef_ar_etl.departments import DepartmentsExtractionStep
 from . import ETLTestCase
 
-SANTA_FE_DEPT_COUNT = 19
+SAN_JUAN_DEPT_COUNT = 19
 
 
 class TestDepartmentsExtractionStep(ETLTestCase):
@@ -28,13 +28,12 @@ class TestDepartmentsExtractionStep(ETLTestCase):
         step = DepartmentsExtractionStep()
         departments = step.run(self._tmp_departments, self._ctx)
 
-        # Santa Fe tiene 19 departamentos
         self.assertEqual(self._ctx.session.query(departments).count(),
-                         SANTA_FE_DEPT_COUNT)
+                         SAN_JUAN_DEPT_COUNT)
 
         report_data = self._ctx.report.get_data('departments_extraction')
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_DEPT_COUNT)
+                         SAN_JUAN_DEPT_COUNT)
 
     def test_field_change(self):
         """Si se modifica un campo de un departamento (no el ID), luego de la
@@ -44,14 +43,14 @@ class TestDepartmentsExtractionStep(ETLTestCase):
         step.run(self._tmp_departments, self._ctx)
 
         self._ctx.session.query(self._tmp_departments).\
-            filter_by(in1='82077').\
-            update({'nam': '8 de Julio'})
+            filter_by(in1='70105').\
+            update({'nam': 'Sarmientoo'})
 
         departments = step.run(self._tmp_departments, self._ctx)
         name = self._ctx.session.query(departments).\
-            filter_by(id='82077').\
+            filter_by(id='70105').\
             one().nombre
-        self.assertEqual(name, '8 de Julio')
+        self.assertEqual(name, 'Sarmientoo')
 
     def test_id_change(self):
         """Si se modifica el ID de un departamento, se debería eliminar el
@@ -63,49 +62,49 @@ class TestDepartmentsExtractionStep(ETLTestCase):
 
         # Modificar el ID de un departamento
         self._ctx.session.query(self._tmp_departments).\
-            filter_by(in1='82077').\
-            update({'in1': '82078'})
+            filter_by(in1='70105').\
+            update({'in1': '70100'})
 
         step.run(self._tmp_departments, self._ctx)
         report_data = self._ctx.report.get_data('departments_extraction')
-        self.assertListEqual(report_data['new_entities_ids'], ['82078'])
-        self.assertListEqual(report_data['deleted_entities_ids'], ['82077'])
+        self.assertListEqual(report_data['new_entities_ids'], ['70100'])
+        self.assertListEqual(report_data['deleted_entities_ids'], ['70105'])
 
     def test_clean_string(self):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
         self._ctx.session.query(self._tmp_departments).\
-            filter_by(in1='82077').\
-            update({'nam': '  8 de Julio\n\n9 de Julio'})
+            filter_by(in1='70105').\
+            update({'nam': '  Sarmiento\n\nSarmiento'})
 
         step = DepartmentsExtractionStep()
         departments = step.run(self._tmp_departments, self._ctx)
         name = self._ctx.session.query(departments).\
-            filter_by(id='82077').\
+            filter_by(id='70105').\
             one().nombre
-        self.assertEqual(name, '8 de Julio')
+        self.assertEqual(name, 'Sarmiento')
 
     def test_id_length(self):
         """Si se recibe un departamento con longitud de ID inválida, no
         debería procesarse."""
         self._ctx.session.query(self._tmp_departments).\
-            filter_by(in1='82077').\
-            update({'in1': '820077'})
+            filter_by(in1='70105').\
+            update({'in1': '701055'})
 
         step = DepartmentsExtractionStep()
         departments = step.run(self._tmp_departments, self._ctx)
         self.assertEqual(self._ctx.session.query(departments).count(),
-                         SANTA_FE_DEPT_COUNT - 1)
+                         SAN_JUAN_DEPT_COUNT - 1)
 
         report_data = self._ctx.report.get_data('departments_extraction')
-        self.assertEqual(report_data['errors'][0][0], '820077')
+        self.assertEqual(report_data['errors'][0][0], '701055')
 
     def test_invalid_province(self):
         """Si un departamento hace referencia a una provincia inexistente, se
         debería reportar el error."""
-        new_id = '83077'
+        new_id = '79105'
         self._ctx.session.query(self._tmp_departments).\
-            filter_by(in1='82077').\
+            filter_by(in1='70105').\
             update({'in1': new_id})
 
         step = DepartmentsExtractionStep()
@@ -116,4 +115,4 @@ class TestDepartmentsExtractionStep(ETLTestCase):
         report_data = self._ctx.report.get_data('departments_extraction')
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_DEPT_COUNT - 1)
+                         SAN_JUAN_DEPT_COUNT - 1)

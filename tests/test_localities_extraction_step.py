@@ -3,7 +3,7 @@ from georef_ar_etl.exceptions import ValidationException
 from georef_ar_etl.localities import LocalitiesExtractionStep
 from . import ETLTestCase
 
-SANTA_FE_LOCALITIES_COUNT = 386
+SAN_JUAN_LOCALITIES_COUNT = 99
 
 
 class TestLocalitiesExtractionStep(ETLTestCase):
@@ -32,29 +32,29 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         localities = step.run(self._tmp_localities, self._ctx)
 
         self.assertEqual(self._ctx.session.query(localities).count(),
-                         SANTA_FE_LOCALITIES_COUNT)
+                         SAN_JUAN_LOCALITIES_COUNT)
 
         report_data = self._ctx.report.get_data('localities_extraction')
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_LOCALITIES_COUNT)
+                         SAN_JUAN_LOCALITIES_COUNT)
 
     def test_field_change(self):
         """Si se modifica un campo de una localidad (no el ID), luego de la
         extracción el campo nuevo debería figurar en georef_localidades."""
         # Ejecutar la extracción por primera vez
-        locality_id = '82091145000'
+        locality_id = '70049040000'
         step = LocalitiesExtractionStep()
         step.run(self._tmp_localities, self._ctx)
 
         self._ctx.session.query(self._tmp_localities).\
             filter_by(cod_bahra=locality_id).\
-            update({'nombre_bah': 'LA LA LUCILA'})
+            update({'nombre_bah': 'LAS LAS FLORES'})
 
         localities = step.run(self._tmp_localities, self._ctx)
         name = self._ctx.session.query(localities).\
             filter_by(id=locality_id).\
             one().nombre
-        self.assertEqual(name, 'LA LA LUCILA')
+        self.assertEqual(name, 'LAS LAS FLORES')
 
     def test_id_change(self):
         """Si se modifica el ID de una localidad, se debería eliminar la
@@ -66,39 +66,39 @@ class TestLocalitiesExtractionStep(ETLTestCase):
 
         # Modificar el ID de un localidad
         self._ctx.session.query(self._tmp_localities).\
-            filter_by(cod_bahra='82091145000').\
-            update({'cod_bahra': '82091145001'})
+            filter_by(cod_bahra='70049040000').\
+            update({'cod_bahra': '70021000099'})
 
         step.run(self._tmp_localities, self._ctx)
         report_data = self._ctx.report.get_data('localities_extraction')
-        self.assertListEqual(report_data['new_entities_ids'], ['82091145001'])
+        self.assertListEqual(report_data['new_entities_ids'], ['70021000099'])
         self.assertListEqual(report_data['deleted_entities_ids'],
-                             ['82091145000'])
+                             ['70049040000'])
 
     def test_clean_string(self):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
-        locality_id = '82091145000'
+        locality_id = '70049040000'
         self._ctx.session.query(self._tmp_localities).\
             filter_by(cod_bahra=locality_id).\
-            update({'nombre_bah': '  La Lucila   \n\nLa Lucila'})
+            update({'nombre_bah': '  LAS FLORES   \n\nLAS FLORES2'})
 
         step = LocalitiesExtractionStep()
         localities = step.run(self._tmp_localities, self._ctx)
         name = self._ctx.session.query(localities).\
             filter_by(id=locality_id).\
             one().nombre
-        self.assertEqual(name, 'La Lucila')
+        self.assertEqual(name, 'LAS FLORES')
 
     def test_id_length(self):
         """No se debería poder crear una localidad con longitud de ID
         inválida."""
         step = LocalitiesExtractionStep()
         locality = self._ctx.session.query(self._tmp_localities).\
-            filter_by(cod_bahra='82091145000').one()
+            filter_by(cod_bahra='70049040000').one()
 
         self._ctx.session.expunge(locality)
-        locality.cod_bahra = '8209114500000'
+        locality.cod_bahra = '7004904000000'
 
         # pylint: disable=protected-access
         with self.assertRaises(ValidationException):
@@ -108,9 +108,9 @@ class TestLocalitiesExtractionStep(ETLTestCase):
     def test_invalid_province(self):
         """Si una localidad hace referencia a una provincia inexistente, se
         debería reportar el error."""
-        new_id = '29091145000'
+        new_id = '99049040000'
         self._ctx.session.query(self._tmp_localities).\
-            filter_by(cod_bahra='82091145000').\
+            filter_by(cod_bahra='70049040000').\
             update({'cod_bahra': new_id})
 
         step = LocalitiesExtractionStep()
@@ -121,14 +121,14 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         report_data = self._ctx.report.get_data('localities_extraction')
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_LOCALITIES_COUNT - 1)
+                         SAN_JUAN_LOCALITIES_COUNT - 1)
 
     def test_invalid_department(self):
         """Si una localidad hace referencia a un departamento inexistente, se
         debería reportar el error."""
-        new_id = '82000145000'
+        new_id = '70999040000'
         self._ctx.session.query(self._tmp_localities).\
-            filter_by(cod_bahra='82091145000').\
+            filter_by(cod_bahra='70049040000').\
             update({'cod_bahra': new_id})
 
         step = LocalitiesExtractionStep()
@@ -139,4 +139,4 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         report_data = self._ctx.report.get_data('localities_extraction')
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_LOCALITIES_COUNT - 1)
+                         SAN_JUAN_LOCALITIES_COUNT - 1)

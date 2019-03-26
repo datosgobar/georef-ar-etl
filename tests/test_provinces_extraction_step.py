@@ -27,7 +27,7 @@ class TestProvincesExtractionStep(ETLTestCase):
             self._ctx.session.query(self._tmp_provinces).first().nam)
 
         report_data = self._ctx.report.get_data('provinces_extraction')
-        self.assertListEqual(report_data['new_entities_ids'], ['82'])
+        self.assertListEqual(report_data['new_entities_ids'], ['70'])
 
     def test_field_change(self):
         """Si se modifica un campo de una provincia (no el ID), luego de la
@@ -37,12 +37,12 @@ class TestProvincesExtractionStep(ETLTestCase):
         step.run(self._tmp_provinces, self._ctx)
 
         self._ctx.session.query(self._tmp_provinces).\
-            filter_by(in1='82').\
-            update({'nam': 'Sta Fe'})
+            filter_by(in1='70').\
+            update({'nam': 'Juan'})
 
         provinces = step.run(self._tmp_provinces, self._ctx)
         self.assertEqual(self._ctx.session.query(provinces).first().nombre,
-                         'Sta Fe')
+                         'Juan')
 
         report_data = self._ctx.report.get_data('provinces_extraction')
         self.assertListEqual(report_data['new_entities_ids'], [])
@@ -52,7 +52,7 @@ class TestProvincesExtractionStep(ETLTestCase):
         """Si se recibe una provincia con ID inválido (no figura en la tabla de
         códigos ISO), no debería procesarse."""
         self._ctx.session.query(self._tmp_provinces).\
-            filter_by(in1='82').\
+            filter_by(in1='70').\
             update({'in1': '83'})
 
         step = ProvincesExtractionStep()

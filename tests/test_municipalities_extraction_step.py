@@ -3,7 +3,7 @@ from georef_ar_etl.exceptions import ValidationException
 from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
 from . import ETLTestCase
 
-SANTA_FE_MUNI_COUNT = 359
+SAN_JUAN_MUNI_COUNT = 19
 
 
 class TestMunicipalitiesExtractionStep(ETLTestCase):
@@ -30,29 +30,29 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
         municipalities = step.run(self._tmp_municipalities, self._ctx)
 
         self.assertEqual(self._ctx.session.query(municipalities).count(),
-                         SANTA_FE_MUNI_COUNT)
+                         SAN_JUAN_MUNI_COUNT)
 
         report_data = self._ctx.report.get_data('municipalities_extraction')
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_MUNI_COUNT)
+                         SAN_JUAN_MUNI_COUNT)
 
     def test_field_change(self):
         """Si se modifica un campo de un municipio (no el ID), luego de la
         extracción el campo nuevo debería figurar en georef_municipios."""
         # Ejecutar la extracción por primera vez
-        muni_id = '822273'
+        muni_id = '700133'
         step = MunicipalitiesExtractionStep()
         step.run(self._tmp_municipalities, self._ctx)
 
         self._ctx.session.query(self._tmp_municipalities).\
             filter_by(in1=muni_id).\
-            update({'nam': 'Humberto Primo Primo'})
+            update({'nam': 'Zonda Zonda'})
 
         municipalities = step.run(self._tmp_municipalities, self._ctx)
         name = self._ctx.session.query(municipalities).\
             filter_by(id=muni_id).\
             one().nombre
-        self.assertEqual(name, 'Humberto Primo Primo')
+        self.assertEqual(name, 'Zonda Zonda')
 
     def test_id_change(self):
         """Si se modifica el ID de un municipio, se debería eliminar el
@@ -64,37 +64,37 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
 
         # Modificar el ID de un municipio
         self._ctx.session.query(self._tmp_municipalities).\
-            filter_by(in1='822273').\
-            update({'in1': '820000'})
+            filter_by(in1='700133').\
+            update({'in1': '700500'})
 
         step.run(self._tmp_municipalities, self._ctx)
         report_data = self._ctx.report.get_data('municipalities_extraction')
-        self.assertListEqual(report_data['new_entities_ids'], ['820000'])
-        self.assertListEqual(report_data['deleted_entities_ids'], ['822273'])
+        self.assertListEqual(report_data['new_entities_ids'], ['700500'])
+        self.assertListEqual(report_data['deleted_entities_ids'], ['700133'])
 
     def test_clean_string(self):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
         self._ctx.session.query(self._tmp_municipalities).\
-            filter_by(in1='822273').\
-            update({'nam': '  Humberto Primo   \n\n'})
+            filter_by(in1='700133').\
+            update({'nam': '  Zonda   \n\n'})
 
         step = MunicipalitiesExtractionStep()
         municipalities = step.run(self._tmp_municipalities, self._ctx)
         name = self._ctx.session.query(municipalities).\
-            filter_by(id='822273').\
+            filter_by(id='700133').\
             one().nombre
-        self.assertEqual(name, 'Humberto Primo')
+        self.assertEqual(name, 'Zonda')
 
     def test_id_length(self):
         """No se debería poder crear un municipio con longitud de ID
         inválida."""
         step = MunicipalitiesExtractionStep()
         municipality = self._ctx.session.query(self._tmp_municipalities).\
-            filter_by(in1='822273').one()
+            filter_by(in1='700133').one()
 
         self._ctx.session.expunge(municipality)
-        municipality.in1 = '8222733'
+        municipality.in1 = '7001333'
 
         # pylint: disable=protected-access
         with self.assertRaises(ValidationException):
@@ -104,9 +104,9 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
     def test_invalid_province(self):
         """Si un municipio hace referencia a una provincia inexistente, se
         debería reportar el error."""
-        new_id = '832273'
+        new_id = '790133'
         self._ctx.session.query(self._tmp_municipalities).\
-            filter_by(in1='822273').\
+            filter_by(in1='700133').\
             update({'in1': new_id})
 
         step = MunicipalitiesExtractionStep()
@@ -117,4 +117,4 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
         report_data = self._ctx.report.get_data('municipalities_extraction')
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
-                         SANTA_FE_MUNI_COUNT - 1)
+                         SAN_JUAN_MUNI_COUNT - 1)
