@@ -1,4 +1,4 @@
-from .exceptions import ValidationException
+from .exceptions import ValidationException, ProcessException
 from .process import Process, CompositeStep
 from .models import Province, Department
 from . import extractors, transformers, loaders, geometry, utils, constants
@@ -38,6 +38,27 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
 
     def _patch_tmp_entities(self, tmp_departments, ctx):
+        # Actualizar códigos de comunas (departamentos de CABA)
+        def update_commune_data(row):
+            # De XX014 pasar a XX002
+            prov_id_part = row.in1[:constants.PROVINCE_ID_LEN]
+            dept_id_part = row.in1[constants.PROVINCE_ID_LEN:]
+
+            dept_id_int = int(dept_id_part)
+            if dept_id_int % constants.CABA_DIV_FACTOR:
+                # Alguno de los IDs no es divisible por el factor de división
+                raise ProcessException(
+                    'El ID de comuna {} no es divisible por {}.'.format(
+                        dept_id_part,
+                        constants.CABA_DIV_FACTOR))
+
+            dept_new_id_int = dept_id_int // constants.CABA_DIV_FACTOR
+            row.in1 = prov_id_part + str(dept_new_id_int).rjust(
+                len(dept_id_part), '0')
+
+        patch.apply_fn(tmp_departments, update_commune_data, ctx,
+                       tmp_departments.in1.like('02%'))
+
         # Antártida Argentina duplicada
         patch.delete(tmp_departments, ctx, ogc_fid=530, in1='94028')
 

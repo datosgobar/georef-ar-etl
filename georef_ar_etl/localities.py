@@ -54,15 +54,6 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
         # Agregado en ETL2
         patch.delete(tmp_localities, ctx, cod_bahra='02000010000')
 
-        # Actualizar códigos de comunas (departamentos)
-        def update_commune_data(row):
-            dept_id = int(row.cod_depto)
-            row.cod_depto = str(dept_id * 7).rjust(len(row.cod_depto), '0')
-            row.cod_bahra = (row.cod_prov + row.cod_depto + row.cod_loc +
-                             row.cod_entida)
-
-        patch.apply_fn(tmp_localities, update_commune_data, ctx, cod_prov='02')
-
         # Borrar entidades sin ID
         patch.delete(tmp_localities, ctx, cod_bahra=None)
 

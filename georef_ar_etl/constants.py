@@ -10,6 +10,14 @@ BAHRA_TYPES = {
     'LS': 'Localidad simple (LS)'
 }
 
+# Existen dos numeraciones posibles para las comunas de CABA:
+# Del 1 al 15,
+# O del 7 al 105 (1 * 7 al 15 * 7)
+# La numeración preferida es la del 1 al 15, por lo que los datos
+# que usan la numeración alterna deben ser modificados para usar
+# la otra. Para lograr esto, se divide por 7 el ID de la comuna.
+CABA_DIV_FACTOR = 7
+
 PROVINCES = 'provincias'
 DEPARTMENTS = 'departamentos'
 MUNICIPALITIES = 'municipios'
