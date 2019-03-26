@@ -37,8 +37,12 @@ class DropTableStep(Step):
         ctx.report.info('Eliminando tabla: "{}"'.format(table.__table__.name))
         # Asegurarse de ejecutar cualquier transacción pendiende primero
         ctx.session.commit()
-        # Eliminar la tabla
-        table.__table__.drop(ctx.engine)
+
+        if ctx.mode == 'interactive':
+            ctx.report.info('Salteando eliminado de tabla.')
+        else:
+            # Eliminar la tabla
+            table.__table__.drop(ctx.engine)
 
 
 class ValidateTableSchemaStep(Step):
