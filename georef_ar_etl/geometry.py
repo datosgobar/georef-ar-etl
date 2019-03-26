@@ -19,7 +19,7 @@ def get_intersection_percentage(geom_a, geom_b, ctx):
     area_a = ctx.session.scalar(geom_a.ST_Area())
 
     if area_a <= 0:
-        raise ValueError('geom_a has area size 0')
+        raise ValueError('geom_a has area size 0.')
 
     area_isct = ctx.session.scalar(geom_a.ST_Intersection(geom_b).ST_Area())
     return area_isct / area_a

@@ -70,7 +70,7 @@ class Report:
 class Context:
     def __init__(self, config, fs, engine, logger, mode='normal'):
         if mode not in RUN_MODES:
-            raise ValueError('Invalid run mode')
+            raise ValueError('Invalid run mode.')
 
         self._config = config
         self._fs = fs

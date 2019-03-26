@@ -17,7 +17,7 @@ def update_field(table, field, value, ctx, **conditions):
 
 def apply_fn(table, fn, ctx, *expressions, **conditions):
     if bool(expressions) == bool(conditions):
-        raise RuntimeError('Use only SQL expressions or keyword expressions')
+        raise RuntimeError('Use only SQL expressions or keyword expressions.')
 
     ctx.report.info('Parche: apply_fn')
     ctx.report.info('+ Aplicar función %s a las entidades que cumplan con:',

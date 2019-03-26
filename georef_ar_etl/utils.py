@@ -47,7 +47,7 @@ class ValidateTableSchemaStep(Step):
 
         for value in schema.values():
             if value not in _SQL_TYPES:
-                raise ValueError('Unknown type: {}'.format(value))
+                raise ValueError('Unknown type: {}.'.format(value))
 
         self._schema = schema
 

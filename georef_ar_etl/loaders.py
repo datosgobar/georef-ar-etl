@@ -1,6 +1,7 @@
 import os
 import subprocess
 import json
+import shutil
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy import MetaData
@@ -8,11 +9,16 @@ from sqlalchemy.ext.automap import automap_base
 from . import constants, utils
 from .process import Step, ProcessException
 
+OGR2OGR_CMD = 'ogr2ogr'
+
 
 class Ogr2ogrStep(Step):
     def __init__(self, table_name, geom_type, encoding, precision=True,
                  metadata=None, db_config=None):
         super().__init__('ogr2ogr')
+        if not shutil.which(OGR2OGR_CMD):
+            raise RuntimeError('ogr2ogr is not installed.')
+
         self._table_name = table_name
         self._geom_type = geom_type
         self._encoding = encoding
@@ -46,7 +52,7 @@ class Ogr2ogrStep(Step):
 
         ctx.report.info('Ejecutando ogr2ogr sobre %s.', shp_path)
         args = [
-            'ogr2ogr', '-overwrite', '-f', 'PostgreSQL',
+            OGR2OGR_CMD, '-overwrite', '-f', 'PostgreSQL',
             ('PG:host={host} ' +
              'user={user} ' +
              'password={password} ' +
