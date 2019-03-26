@@ -35,7 +35,7 @@ def create_process(config):
 
 class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('municipalities_extraction_step', Municipality,
+        super().__init__('municipalities_extraction', Municipality,
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
 
     def _patch_tmp_entities(self, tmp_municipalities, ctx):

@@ -45,3 +45,11 @@ create_test_files:
 		-nln "test_departamentos" \
 		-lco "ENCODING=utf-8" \
 		-overwrite
+
+	ogr2ogr -f "ESRI Shapefile" \
+		tests/test_files/test_municipios \
+		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
+		-sql "select * from tmp_municipios where in1 like '82%'" \
+		-nln "test_municipios" \
+		-lco "ENCODING=utf-8" \
+		-overwrite

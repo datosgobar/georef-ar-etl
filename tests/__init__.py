@@ -5,6 +5,7 @@ from fs import tempfs
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.schema import Table, Column
+from georef_ar_etl import get_logger
 from georef_ar_etl.context import Context
 from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl import read_config, create_engine, constants, models
@@ -17,8 +18,12 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        logger = logging.getLogger('georef-ar-etl')
-        logger.addHandler(logging.NullHandler())
+        if 'VERBOSE' in os.environ:
+            logger = get_logger()
+        else:
+            logger = logging.getLogger('georef-ar-etl')
+            logger.addHandler(logging.NullHandler())
+
         config = read_config()
         cls._metadata = MetaData()
         cls._ctx = Context(
@@ -90,6 +95,21 @@ class ETLTestCase(TestCase):
                              db_config=cls._ctx.config['test_db'])
 
         return loader.run('test_departamentos', cls._ctx)
+
+    @classmethod
+    def create_test_municipalities(cls):
+        # Cargar los municipios de la provincia de Santa Fe
+        cls.copy_test_file('test_municipios/test_municipios.dbf')
+        cls.copy_test_file('test_municipios/test_municipios.shp')
+        cls.copy_test_file('test_municipios/test_municipios.shx')
+        cls.copy_test_file('test_municipios/test_municipios.prj')
+
+        loader = Ogr2ogrStep(table_name='tmp_municipios',
+                             geom_type='MultiPolygon', encoding='utf-8',
+                             metadata=cls._metadata,
+                             db_config=cls._ctx.config['test_db'])
+
+        return loader.run('test_municipios', cls._ctx)
 
     @classmethod
     def copy_test_file(cls, filepath):

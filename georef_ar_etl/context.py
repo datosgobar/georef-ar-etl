@@ -1,4 +1,3 @@
-from collections import defaultdict
 from sqlalchemy.orm import sessionmaker
 
 RUN_MODES = ['normal', 'interactive', 'testing']
@@ -38,11 +37,12 @@ class CachedSession:
 class Report:
     def __init__(self, logger):
         self._logger = logger
-        self._data = defaultdict(dict)
+        self.reset()
 
     def add_data(self, creator, key, data):
         self.info('Dato "%s" agregado al reporte.', key)
-        self._data[creator][key] = data
+        creator_data = self._data.setdefault(creator, {})
+        creator_data[key] = data
 
     def info(self, *args, **kwargs):
         self._logger.info(*args, **kwargs)
@@ -57,7 +57,7 @@ class Report:
         self._logger.exception(*args, **kwargs)
 
     def reset(self):
-        self._data = defaultdict(dict)
+        self._data = {}
 
     def get_data(self, creator):
         return self._data[creator]
