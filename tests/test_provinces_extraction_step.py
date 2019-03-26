@@ -1,3 +1,4 @@
+from georef_ar_etl.models import Province
 from georef_ar_etl.provinces import ProvincesExtractionStep
 from . import ETLTestCase
 
@@ -9,6 +10,7 @@ class TestProvincesExtractionStep(ETLTestCase):
 
     def tearDown(self):
         self._ctx.session.commit()
+        self._ctx.session.query(Province).delete()
         self._ctx.session.query(self._tmp_provinces).delete()
         super().tearDown()
 

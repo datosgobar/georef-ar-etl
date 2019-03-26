@@ -8,6 +8,7 @@ from sqlalchemy.schema import Table, Column
 from georef_ar_etl import get_logger
 from georef_ar_etl.context import Context
 from georef_ar_etl.loaders import Ogr2ogrStep
+from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl import read_config, create_engine, constants, models
 
 TEST_FILES_DIR = 'tests/test_files'
@@ -15,6 +16,12 @@ TEST_FILES_DIR = 'tests/test_files'
 
 class ETLTestCase(TestCase):
     _uses_db = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._tmp_provinces = None
+        self._tmp_departments = None
+        self._tmp_municipalities = None
 
     @classmethod
     def setUpClass(cls):
@@ -37,14 +44,11 @@ class ETLTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         if cls._uses_db:
+            cls._ctx.session.commit()
             models.Base.metadata.drop_all(cls._ctx.engine)
 
     def tearDown(self):
         if self._uses_db:
-            for table in models.Base.metadata.tables.values():
-                result = self._ctx.engine.execute(table.delete())
-                result.close()
-
             self._ctx.session.commit()
             self._metadata.drop_all(self._ctx.engine)
             self._metadata.clear()
@@ -67,7 +71,7 @@ class ETLTestCase(TestCase):
         return getattr(base.classes, name)
 
     @classmethod
-    def create_test_provinces(cls):
+    def create_test_provinces(cls, extract=False):
         # Cargar la provincia de Santa Fe
         cls.copy_test_file('test_provincias/test_provincias.dbf')
         cls.copy_test_file('test_provincias/test_provincias.shp')
@@ -79,7 +83,13 @@ class ETLTestCase(TestCase):
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        return loader.run('test_provincias', cls._ctx)
+        cls._tmp_provinces = loader.run('test_provincias', cls._ctx)
+
+        if extract:
+            step = ProvincesExtractionStep()
+            step.run(cls._tmp_provinces, cls._ctx)
+
+        return cls._tmp_provinces
 
     @classmethod
     def create_test_departments(cls):
@@ -94,7 +104,8 @@ class ETLTestCase(TestCase):
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        return loader.run('test_departamentos', cls._ctx)
+        cls._tmp_departments = loader.run('test_departamentos', cls._ctx)
+        return cls._tmp_departments
 
     @classmethod
     def create_test_municipalities(cls):
@@ -109,7 +120,8 @@ class ETLTestCase(TestCase):
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        return loader.run('test_municipios', cls._ctx)
+        cls._tmp_municipalities = loader.run('test_municipios', cls._ctx)
+        return cls._tmp_municipalities
 
     @classmethod
     def copy_test_file(cls, filepath):

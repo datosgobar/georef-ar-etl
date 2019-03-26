@@ -1,5 +1,5 @@
+from georef_ar_etl.models import Municipality
 from georef_ar_etl.exceptions import ValidationException
-from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
 from . import ETLTestCase
 
@@ -7,18 +7,19 @@ SANTA_FE_MUNI_COUNT = 359
 
 
 class TestMunicipalitiesExtractionStep(ETLTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.create_test_provinces(extract=True)
+
     def setUp(self):
         super().setUp()
-        self._tmp_provinces = self.create_test_provinces()
         self._tmp_municipalities = self.create_test_municipalities()
-
-        step = ProvincesExtractionStep()
-        step.run(self._tmp_provinces, self._ctx)
 
     def tearDown(self):
         self._ctx.session.commit()
+        self._ctx.session.query(Municipality).delete()
         self._ctx.session.query(self._tmp_municipalities).delete()
-        self._ctx.session.query(self._tmp_provinces).delete()
         super().tearDown()
 
     def test_single(self):

@@ -1,4 +1,4 @@
-from georef_ar_etl.provinces import ProvincesExtractionStep
+from georef_ar_etl.models import Department
 from georef_ar_etl.departments import DepartmentsExtractionStep
 from . import ETLTestCase
 
@@ -6,18 +6,19 @@ SANTA_FE_DEPT_COUNT = 19
 
 
 class TestDepartmentsExtractionStep(ETLTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.create_test_provinces(extract=True)
+
     def setUp(self):
         super().setUp()
-        self._tmp_provinces = self.create_test_provinces()
         self._tmp_departments = self.create_test_departments()
-
-        step = ProvincesExtractionStep()
-        step.run(self._tmp_provinces, self._ctx)
 
     def tearDown(self):
         self._ctx.session.commit()
+        self._ctx.session.query(Department).delete()
         self._ctx.session.query(self._tmp_departments).delete()
-        self._ctx.session.query(self._tmp_provinces).delete()
         super().tearDown()
 
     def test_single(self):
