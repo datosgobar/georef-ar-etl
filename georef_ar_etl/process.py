@@ -16,6 +16,7 @@ class Step:
     def name(self):
         return self._name
 
+    @property
     def reads_input(self):
         return self._reads_input
 
@@ -43,18 +44,28 @@ class Process:
         self._name = name
         self._steps = steps
 
-    def run(self, start, ctx):
-        self._print_title(ctx.report.logger)
+    def run(self, ctx, start=None, end=None):
+        self._print_title(ctx)
         previous_result = None
+        start = start or 1
+        end = len(self._steps) if end is None else end
 
-        initial = self._steps[start]
-        if initial.reads_input():
+        if start < 1 or end < 1 or end < start:
+            raise ProcessException('Rango de pasos mal formado: {}-{}.'.format(
+                start, end))
+
+        if start > len(self._steps) or end > len(self._steps):
+            raise ProcessException('Rango de pasos inválido: {}-{}.'.format(
+                start, end))
+
+        initial = self._steps[start - 1]
+        if initial.reads_input:
             raise ProcessException(
-                'El paso #{} requiere un valor de entrada.'.format(start + 1))
+                'El paso #{} requiere un valor de entrada.'.format(start))
 
         try:
-            for i, step in enumerate(self._steps[start:]):
-                ctx.report.info('==> Paso #{}: {}'.format(i + start + 1,
+            for i, step in enumerate(self._steps[start - 1:end]):
+                ctx.report.info('==> Paso #{}: {}'.format(i + start,
                                                           step.name))
                 previous_result = step.run(previous_result, ctx)
                 ctx.report.info('Paso finalizado.\n')
@@ -73,11 +84,23 @@ class Process:
     def steps(self):
         return self._steps
 
-    def _print_title(self, l, separator_width=60):
-        l.info("=" * separator_width)
-        l.info("|" + " " * (separator_width - 2) + "|")
+    def print_info(self, ctx):
+        self._print_title(ctx)
+        for i, step in enumerate(self._steps):
+            ctx.report.info('{} {}: {}'.format(
+                ' ' if step.reads_input else '>',
+                i + 1,
+                step.name
+            ))
 
-        l.info("|" + self._name.title().center(separator_width - 2) + "|")
+        ctx.report.info('\n')
 
-        l.info("|" + " " * (separator_width - 2) + "|")
-        l.info("=" * separator_width + '\n')
+    def _print_title(self, ctx, separator_width=60):
+        ctx.report.info("=" * separator_width)
+        ctx.report.info("|" + " " * (separator_width - 2) + "|")
+
+        ctx.report.info("|" + self._name.title().center(
+            separator_width - 2) + "|")
+
+        ctx.report.info("|" + " " * (separator_width - 2) + "|")
+        ctx.report.info("=" * separator_width + '\n')

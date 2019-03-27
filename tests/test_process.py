@@ -7,7 +7,7 @@ from . import ETLTestCase
 def get_mock_step(return_value=None, raises_exception=False, reads_input=True):
     step = mock.MagicMock(spec=Step)
     step.run.return_value = return_value
-    step.reads_input.return_value = reads_input
+    step.reads_input = reads_input
     if raises_exception:
         step.run.side_effect = ProcessException
 
@@ -26,7 +26,7 @@ class TestCheckDependenciesStep(ETLTestCase):
             get_mock_step(return_value='test'),
         ])
 
-        result = process.run(0, self._ctx)
+        result = process.run(self._ctx)
         self.assertEqual(result, 'test')
         for step in process.steps:
             step.run.assert_called_once()
@@ -40,7 +40,7 @@ class TestCheckDependenciesStep(ETLTestCase):
         ])
 
         with self.assertRaises(ProcessException):
-            process.run(0, self._ctx)
+            process.run(self._ctx)
 
     def test_process_exception_initial(self):
         """Si se especifica un paso que requiere datos de entrada como paso
@@ -51,4 +51,4 @@ class TestCheckDependenciesStep(ETLTestCase):
         ])
 
         with self.assertRaises(ProcessException):
-            process.run(1, self._ctx)
+            process.run(self._ctx, start=2)
