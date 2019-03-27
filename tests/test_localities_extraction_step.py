@@ -140,3 +140,12 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
                          SAN_JUAN_LOCALITIES_COUNT - 1)
+
+    def test_municipality(self):
+        """Si una localidad está geográficamente contenida por un municipio, se
+        debería establecer ese municipio como su propiedad 'municipio_id'."""
+        step = LocalitiesExtractionStep()
+        localities = step.run(self._tmp_localities, self._ctx)
+
+        locality = self._ctx.session.query(localities).get('70070050002')
+        self.assertEqual(locality.municipio_id, '700070')
