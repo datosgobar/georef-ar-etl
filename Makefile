@@ -1,6 +1,7 @@
 # Makefile para georef-ar-etl
 
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
+ETL_COMMAND = python -m georef_ar_etl
 TEST_FILES ?= *.py
 
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
@@ -33,6 +34,12 @@ test_custom:
 # Crear archivos de prueba utilizando una sola provincia como dato
 TEST_PROVINCE = 70
 create_test_files:
+	$(ETL_COMMAND) -p provincias --end 3
+	$(ETL_COMMAND) -p departamentos --end 4
+	$(ETL_COMMAND) -p municipios --end 4
+	$(ETL_COMMAND) -p localidades --end 4
+	$(ETL_COMMAND) -p calles --end 4
+
 	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_provincias \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
