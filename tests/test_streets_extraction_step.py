@@ -4,6 +4,8 @@ from georef_ar_etl.streets import StreetsExtractionStep
 from . import ETLTestCase
 
 SAN_JUAN_STREETS_COUNT = 754
+TEST_MULTILINESTRING = 'SRID=4326;MULTILINESTRING((10 10, 20 20, 10 40),' + \
+    '(40 40, 30 30, 40 20, 30 10))'
 
 
 class TestStreetsExtractionStep(ETLTestCase):
@@ -151,3 +153,35 @@ class TestStreetsExtractionStep(ETLTestCase):
 
         with self.assertRaises(ProcessException):
             step.run(self._tmp_streets, self._ctx)
+
+    def test_report_invalid_nums(self):
+        """Las calles con alturas inválidas (0-0) deberían aparecer en el
+        reporte."""
+        self._ctx.session.query(self._tmp_streets).delete()
+
+        tmp_street = self._tmp_streets(
+            ogc_fid='99999',
+            tipo='CALLE',
+            nomencla='7003501000900',
+            nombre='test',
+            geom=TEST_MULTILINESTRING,
+            desdei=0, desded=0, hastai=0, hastad=0
+        )
+        self._ctx.session.add(tmp_street)
+
+        tmp_street = self._tmp_streets(
+            ogc_fid='99998',
+            tipo='CALLE',
+            nomencla='7003501000901',
+            nombre='test',
+            geom=TEST_MULTILINESTRING,
+            desdei=0, desded=1, hastai=100, hastad=101
+        )
+        self._ctx.session.add(tmp_street)
+
+        step = StreetsExtractionStep()
+        step.run(self._tmp_streets, self._ctx)
+        report_data = self._ctx.report.get_data('streets_extraction')
+
+        self.assertListEqual(report_data['invalid_num_streets_ids'],
+                             ['7003501000900'])

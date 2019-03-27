@@ -69,15 +69,20 @@ class EntitiesExtractionStep(Step):
         bulk_size = ctx.config.getint('etl', 'bulk_size')
         query = self._build_entities_query(tmp_entities, ctx).yield_per(
             bulk_size)
+        count = query.count()
         cached_session = ctx.cached_session()
         deleted = []
         updated = set()
         added = set()
         errors = []
 
+        if not count:
+            raise ProcessException('No hay entidades a procesar.')
+
+        ctx.report.info('Entidades a procesar: {}'.format(count))
         ctx.report.info('Insertando entidades procesadas...')
 
-        for tmp_entity in utils.pbar(query, ctx, total=query.count()):
+        for tmp_entity in utils.pbar(query, ctx, total=count):
             try:
                 new_entity = self._process_entity(tmp_entity, cached_session,
                                                   ctx)
