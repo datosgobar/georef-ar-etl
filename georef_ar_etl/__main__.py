@@ -60,6 +60,8 @@ def etl(enabled_processes, start, end, ctx):
         if not enabled_processes or process.name in enabled_processes:
             process.run(ctx, start, end)
 
+    ctx.report.write(ctx.config['etl']['reports_dir'])
+
 
 # pylint: disable=unused-argument
 def console(ctx):
@@ -98,8 +100,6 @@ def main():
         info(ctx)
     else:
         raise RuntimeError('Invalid command.')
-
-    ctx.report.write(config['etl']['reports_dir'])
 
 
 main()
