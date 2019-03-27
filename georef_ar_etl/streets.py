@@ -86,6 +86,11 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         return ctx.session.query(tmp_entities).filter(
             tmp_entities.tipo != 'OTRO')
 
+    def _street_valid_num(self, tmp_street):
+        start = min(tmp_street.desdei or 0, tmp_street.desded or 0)
+        end = max(tmp_street.hastai or 0, tmp_street.hastad or 0)
+        return end - start > 0
+
     def _process_entity(self, tmp_street, cached_session, ctx):
         street_id = tmp_street.nomencla
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
@@ -101,11 +106,11 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        if (tmp_street.desdei == 0 and tmp_street.desded == 0) or \
-           (tmp_street.hastai == 0 and tmp_street.hastad == 0):
+        if not self._street_valid_num(tmp_street):
             report_data = ctx.report.get_data(self.name)
             invalid_num_streets_ids = report_data.setdefault(
                 'invalid_num_streets_ids', [])
+
             invalid_num_streets_ids.append(street_id)
 
         return Street(
