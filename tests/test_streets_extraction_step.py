@@ -1,5 +1,5 @@
 from georef_ar_etl.models import Street
-from georef_ar_etl.exceptions import ValidationException
+from georef_ar_etl.exceptions import ValidationException, ProcessException
 from georef_ar_etl.streets import StreetsExtractionStep
 from . import ETLTestCase
 
@@ -140,3 +140,14 @@ class TestStreetsExtractionStep(ETLTestCase):
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
                          SAN_JUAN_STREETS_COUNT - 1)
+
+    def test_invalid_commune(self):
+        """Si una calle de CABA tiene un ID de departamento no divisible por 7,
+        debería generarse un error. Ver comentario en constants.py para más
+        información."""
+        self._ctx.session.add(self._tmp_streets(ogc_fid=9999,
+                                                nomencla='0200200000000'))
+        step = StreetsExtractionStep()
+
+        with self.assertRaises(ProcessException):
+            step.run(self._tmp_streets, self._ctx)

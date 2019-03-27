@@ -28,6 +28,10 @@ test:
 test_custom:
 	python -m unittest tests/$(TEST_FILES)
 
+coverage:
+	coverage run --source=georef_ar_etl --omit=georef_ar_etl/__main__.py -m unittest
+	coverage report
+
 
 # Recetas para uso de desarrollo del ETL.
 
