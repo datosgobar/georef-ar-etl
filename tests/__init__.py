@@ -25,6 +25,7 @@ class ETLTestCase(TestCase):
         self._tmp_departments = None
         self._tmp_municipalities = None
         self._tmp_localities = None
+        self._tmp_streets = None
 
     @classmethod
     def setUpClass(cls):
@@ -75,7 +76,7 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def create_test_provinces(cls, extract=False):
-        # Cargar la provincia de Santa Fe
+        # Cargar la provincia de prueba
         cls.copy_test_file('test_provincias/test_provincias.dbf')
         cls.copy_test_file('test_provincias/test_provincias.shp')
         cls.copy_test_file('test_provincias/test_provincias.shx')
@@ -96,7 +97,7 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def create_test_departments(cls, extract=False):
-        # Cargar los departamentos de la provincia de Santa Fe
+        # Cargar los departamentos de la provincia de prueba
         cls.copy_test_file('test_departamentos/test_departamentos.dbf')
         cls.copy_test_file('test_departamentos/test_departamentos.shp')
         cls.copy_test_file('test_departamentos/test_departamentos.shx')
@@ -117,7 +118,7 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def create_test_municipalities(cls, extract=False):
-        # Cargar los municipios de la provincia de Santa Fe
+        # Cargar los municipios de la provincia de prueba
         cls.copy_test_file('test_municipios/test_municipios.dbf')
         cls.copy_test_file('test_municipios/test_municipios.shp')
         cls.copy_test_file('test_municipios/test_municipios.shx')
@@ -138,7 +139,7 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def create_test_localities(cls):
-        # Cargar las localidades de la provincia de Santa Fe
+        # Cargar las localidades de la provincia de prueba
         cls.copy_test_file('test_localidades/test_localidades.dbf')
         cls.copy_test_file('test_localidades/test_localidades.shp')
         cls.copy_test_file('test_localidades/test_localidades.shx')
@@ -150,6 +151,22 @@ class ETLTestCase(TestCase):
                              db_config=cls._ctx.config['test_db'])
 
         cls._tmp_localities = loader.run('test_localidades', cls._ctx)
+        return cls._tmp_localities
+
+    @classmethod
+    def create_test_streets(cls):
+        # Cargar las calles de la provincia de prueba
+        cls.copy_test_file('test_calles/test_calles.dbf')
+        cls.copy_test_file('test_calles/test_calles.shp')
+        cls.copy_test_file('test_calles/test_calles.shx')
+        cls.copy_test_file('test_calles/test_calles.prj')
+
+        loader = Ogr2ogrStep(table_name='tmp_calles',
+                             geom_type='MultiLineString', encoding='utf-8',
+                             metadata=cls._metadata,
+                             db_config=cls._ctx.config['test_db'])
+
+        cls._tmp_localities = loader.run('test_calles', cls._ctx)
         return cls._tmp_localities
 
     @classmethod

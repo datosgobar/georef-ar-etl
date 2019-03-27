@@ -64,3 +64,11 @@ create_test_files:
 		-nln "test_localidades" \
 		-lco "ENCODING=utf-8" \
 		-overwrite
+
+	ogr2ogr -f "ESRI Shapefile" \
+		tests/test_files/test_calles \
+		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
+		-sql "select * from tmp_calles where nomencla like '$(TEST_PROVINCE)%'" \
+		-nln "test_calles" \
+		-lco "ENCODING=utf-8" \
+		-overwrite

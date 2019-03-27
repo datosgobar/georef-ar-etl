@@ -39,7 +39,7 @@ def create_process(config):
 
 class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('streets_extraction_step', Street,
+        super().__init__('streets_extraction', Street,
                          entity_class_pkey='id',
                          tmp_entity_class_pkey='nomencla')
 
