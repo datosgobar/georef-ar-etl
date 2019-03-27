@@ -101,6 +101,13 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
+        if (tmp_street.desdei == 0 and tmp_street.desded == 0) or \
+           (tmp_street.hastai == 0 and tmp_street.hastad == 0):
+            report_data = ctx.report.get_data(self.name)
+            invalid_num_streets_ids = report_data.setdefault(
+                'invalid_num_streets_ids', [])
+            invalid_num_streets_ids.append(street_id)
+
         return Street(
             id=street_id,
             nombre=utils.clean_string(tmp_street.nombre),

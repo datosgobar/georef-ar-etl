@@ -6,7 +6,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.schema import Table, Column
 from georef_ar_etl import get_logger
-from georef_ar_etl.context import Context
+from georef_ar_etl.context import Context, Report
 from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl.departments import DepartmentsExtractionStep
@@ -31,7 +31,7 @@ class ETLTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         if 'VERBOSE' in os.environ:
-            logger = get_logger()
+            logger, _ = get_logger()
         else:
             logger = logging.getLogger('georef-ar-etl')
             logger.addHandler(logging.NullHandler())
@@ -42,7 +42,7 @@ class ETLTestCase(TestCase):
             config=config,
             fs=tempfs.TempFS(),
             engine=create_engine(config['test_db'], init_models=cls._uses_db),
-            logger=logger,
+            report=Report(logger),
             mode='testing'
         )
 

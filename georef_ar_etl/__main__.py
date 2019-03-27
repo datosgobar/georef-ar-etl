@@ -1,7 +1,7 @@
 import argparse
 import code
 from fs import osfs
-from .context import Context, RUN_MODES
+from .context import Context, Report, RUN_MODES
 from . import read_config, get_logger, create_engine, constants
 from . import provinces, departments, municipalities, localities
 from . import streets, intersections
@@ -79,13 +79,14 @@ def info(ctx):
 def main():
     args = parse_args()
     config = read_config()
+    logger, logger_stream = get_logger()
 
     ctx = Context(
         config=config,
         fs=osfs.OSFS(config.get('etl', 'files_dir'), create=True,
                      create_mode=constants.DIR_PERMS),
         engine=create_engine(config['db'], echo=args.verbose),
-        logger=get_logger(),
+        report=Report(logger, logger_stream),
         mode=args.mode
     )
 
@@ -97,6 +98,8 @@ def main():
         info(ctx)
     else:
         raise RuntimeError('Invalid command.')
+
+    ctx.report.write(config['etl']['reports_dir'])
 
 
 main()

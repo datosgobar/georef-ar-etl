@@ -1,4 +1,8 @@
+import os
+import json
+import time
 from sqlalchemy.orm import sessionmaker
+from . import constants
 
 RUN_MODES = ['normal', 'interactive', 'testing']
 
@@ -35,14 +39,16 @@ class CachedSession:
 
 
 class Report:
-    def __init__(self, logger):
+    def __init__(self, logger, logger_stream=None):
         self._logger = logger
+        self._logger_stream = logger_stream
         self.reset()
 
-    def add_data(self, creator, key, data):
-        self.info('Dato "%s" agregado al reporte.', key)
-        creator_data = self._data.setdefault(creator, {})
-        creator_data[key] = data
+    def get_data(self, creator):
+        if creator not in self._data:
+            self._data[creator] = {}
+
+        return self._data[creator]
 
     def info(self, *args, **kwargs):
         self._logger.info(*args, **kwargs)
@@ -57,10 +63,22 @@ class Report:
         self._logger.exception(*args, **kwargs)
 
     def reset(self):
+        self._creation_time = time.localtime()
         self._data = {}
 
-    def get_data(self, creator):
-        return self._data[creator]
+    def write(self, dirname):
+        os.makedirs(dirname, exist_ok=True, mode=constants.DIR_PERMS)
+        filename_base = time.strftime('georef-etl-%Y.%m.%d-%H.%M.%S.{}',
+                                      self._creation_time)
+        filename_json = filename_base.format('json')
+        filename_txt = filename_base.format('txt')
+
+        if self._logger_stream:
+            with open(os.path.join(dirname, filename_txt), 'w') as f:
+                f.write(self._logger_stream.getvalue())
+
+        with open(os.path.join(dirname, filename_json), 'w') as f:
+            json.dump(self._data, f, ensure_ascii=False, indent=4)
 
     @property
     def logger(self):
@@ -68,14 +86,14 @@ class Report:
 
 
 class Context:
-    def __init__(self, config, fs, engine, logger, mode='normal'):
+    def __init__(self, config, fs, engine, report, mode='normal'):
         if mode not in RUN_MODES:
             raise ValueError('Invalid run mode.')
 
         self._config = config
         self._fs = fs
         self._engine = engine
-        self._report = Report(logger)
+        self._report = report
         self._mode = mode
         self._session_maker = sessionmaker(bind=engine)
         self._session = None

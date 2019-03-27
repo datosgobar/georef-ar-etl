@@ -124,10 +124,11 @@ class EntitiesExtractionStep(Step):
         ctx.report.info('Entidades eliminadas: %s', len(deleted))
         ctx.report.info('Errores: %s\n', len(errors))
 
-        ctx.report.add_data(self.name, 'new_entities_ids', list(added))
-        ctx.report.add_data(self.name, 'updated_entities_count', len(updated))
-        ctx.report.add_data(self.name, 'deleted_entities_ids', deleted)
-        ctx.report.add_data(self.name, 'errors', errors)
+        report_data = ctx.report.get_data(self.name)
+        report_data['new_entities_ids'] = list(added)
+        report_data['updated_entities_count'] = len(updated)
+        report_data['deleted_entities_ids'] = deleted
+        report_data['errors'] = errors
 
         return self._entity_class
 
