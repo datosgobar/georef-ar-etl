@@ -1,7 +1,7 @@
 import os
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 import tarfile
-from .exceptions import ValidationException
+from .exceptions import ValidationException, ProcessException
 from .process import Step
 from . import utils
 
@@ -19,9 +19,13 @@ class ExtractZipStep(Step):
 
         dirpath = os.path.dirname(ctx.fs.getsyspath(filename))
 
-        with ctx.fs.open(filename, 'rb') as f:
-            with ZipFile(f) as zipf:
-                zipf.extractall(os.path.join(dirpath, dirname))
+        try:
+            with ctx.fs.open(filename, 'rb') as f:
+                with ZipFile(f) as zipf:
+                    zipf.extractall(os.path.join(dirpath, dirname))
+        except BadZipFile as e:
+            raise ProcessException(
+                'No se pudo extraer el archivo .zip: {}'.format(e))
 
         return dirname
 
@@ -40,8 +44,12 @@ class ExtractTarStep(Step):
         sys_filename = ctx.fs.getsyspath(filename)
         dirpath = os.path.dirname(sys_filename)
 
-        with tarfile.open(sys_filename) as tarf:
-            tarf.extractall(os.path.join(dirpath, dirname))
+        try:
+            with tarfile.open(sys_filename) as tarf:
+                tarf.extractall(os.path.join(dirpath, dirname))
+        except tarfile.ReadError as e:
+            raise ProcessException(
+                'No se pudo extraer el archivo .tar: {}'.format(e))
 
         return dirname
 

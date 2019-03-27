@@ -58,7 +58,7 @@ class ETLTestCase(TestCase):
             self._metadata.drop_all(self._ctx.engine)
             self._metadata.clear()
 
-        self._ctx.fs.clean()
+        self._ctx.fs.removetree('.')
         self._ctx.report.reset()
 
     @classmethod

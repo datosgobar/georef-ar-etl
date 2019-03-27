@@ -8,7 +8,7 @@ from . import patch
 def create_process(config):
     return Process(constants.LOCALITIES, [
         utils.CheckDependenciesStep([Province, Department, Municipality]),
-        extractors.DownloadURLStep(constants.LOCALITIES + '.zip',
+        extractors.DownloadURLStep(constants.LOCALITIES + '.tar.gz',
                                    config.get('etl', 'localities_url')),
         transformers.ExtractTarStep(),
         loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_TMP_TABLE,
