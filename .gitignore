@@ -118,3 +118,4 @@ dmypy.json
 # georef-ar-etl
 files/
 reports/
+config/georef.cfg

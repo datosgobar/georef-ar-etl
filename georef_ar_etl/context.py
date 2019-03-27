@@ -1,10 +1,50 @@
 import os
+import smtplib
 import json
 import time
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from sqlalchemy.orm import sessionmaker
 from . import constants
 
 RUN_MODES = ['normal', 'interactive', 'testing']
+SMTP_TIMEOUT = 10
+
+
+def send_email(host, user, password, subject, message, recipients,
+               attachments=None, timeout=SMTP_TIMEOUT):
+    """Envía un mail a un listado de destinatarios.
+
+    Args:
+        host (str): Hostname de servidor SMTP.
+        user (str): Usuario del servidor SMTP.
+        password (str): Contraseña para el usuario.
+        subject (str): Asunto a utilizar en el mail enviado.
+        message (str): Contenido del mail a enviar.
+        recipients (list): Lista de destinatarios.
+        attachments (dict): Diccionario de contenidos <str, str> a adjuntar en
+            el mail. Las claves representan los nombres de los contenidos y los
+            valores representan los contenidos en sí.
+        timeout (int): Tiempo máximo a esperar en segundos para establecer la
+            conexión al servidor SMTP.
+
+    """
+    with smtplib.SMTP_SSL(host, timeout=timeout) as smtp:
+        smtp.login(user, password)
+
+        msg = MIMEMultipart()
+        msg['Subject'] = subject
+        msg["From"] = user
+        msg["To"] = ",".join(recipients)
+        msg.attach(MIMEText(message))
+
+        for name, contents in (attachments or {}).items():
+            attachment = MIMEText(contents)
+            attachment['Content-Disposition'] = \
+                'attachment; filename="{}"'.format(name)
+            msg.attach(attachment)
+
+        smtp.send_message(msg)
 
 
 class CachedQuery:
@@ -54,24 +94,27 @@ class Report:
         self._logger.info(*args, **kwargs)
 
     def warn(self, *args, **kwargs):
+        self._warnings += 1
         self._logger.warning(*args, **kwargs)
 
     def error(self, *args, **kwargs):
+        self._errors += 1
         self._logger.error(*args, **kwargs)
 
     def exception(self, *args, **kwargs):
+        self._errors += 1
         self._logger.exception(*args, **kwargs)
 
     def reset(self):
-        self._creation_time = time.localtime()
+        self._errors = 0
+        self._warnings = 0
+        self._filename_base = time.strftime('georef-etl-%Y.%m.%d-%H.%M.%S.{}')
         self._data = {}
 
     def write(self, dirname):
         os.makedirs(dirname, exist_ok=True, mode=constants.DIR_PERMS)
-        filename_base = time.strftime('georef-etl-%Y.%m.%d-%H.%M.%S.{}',
-                                      self._creation_time)
-        filename_json = filename_base.format('json')
-        filename_txt = filename_base.format('txt')
+        filename_json = self._filename_base.format('json')
+        filename_txt = self._filename_base.format('txt')
 
         if self._logger_stream:
             with open(os.path.join(dirname, filename_txt), 'w') as f:
@@ -79,6 +122,21 @@ class Report:
 
         with open(os.path.join(dirname, filename_json), 'w') as f:
             json.dump(self._data, f, ensure_ascii=False, indent=4)
+
+    def email(self, host, user, password, recipients, environment):
+        if not self._logger_stream:
+            raise RuntimeError('Cannot send email: no logger stream defined.')
+
+        subject = 'Georef ETL [{}] - Errores: {} - Warnings: {}'.format(
+            environment,
+            self._errors,
+            self._warnings
+        )
+        msg = 'Reporte de entidades de Georef ETL.'
+        report_txt = self._logger_stream.getvalue()
+        send_email(host, user, password, subject, msg, recipients, {
+            self._filename_base.format('txt'): report_txt
+        })
 
     @property
     def logger(self):
