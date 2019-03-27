@@ -1,6 +1,7 @@
 import argparse
 import code
 from fs import osfs
+from .exceptions import ProcessException
 from .context import Context, Report, RUN_MODES
 from . import read_config, get_logger, create_engine, constants
 from . import provinces, departments, municipalities, localities
@@ -58,9 +59,35 @@ def etl(enabled_processes, start, end, ctx):
 
     for process in processes:
         if not enabled_processes or process.name in enabled_processes:
-            process.run(ctx, start, end)
+            try:
+                process.run(ctx, start, end)
+            except ProcessException:
+                ctx.report.exception(
+                    'Ocurrió un error durante la ejecución del proceso:')
+                ctx.report.info('Continuando...')
+            except Exception:  # pylint: disable=broad-except
+                ctx.report.exception('Ocurrió un error desconocido:')
+                ctx.report.info('Interrumpiendo la ejecución de procesos.')
+                break
 
     ctx.report.write(ctx.config['etl']['reports_dir'])
+
+    if ctx.config.getboolean('mailer', 'enabled'):
+        ctx.report.info('Enviando mail...')
+        recipients = [
+            r.strip()
+            for r in ctx.config['mailer']['recipients'].split(',')
+        ]
+
+        ctx.report.email(
+            host=ctx.config['mailer']['host'],
+            user=ctx.config['mailer']['user'],
+            password=ctx.config['mailer']['password'],
+            recipients=recipients,
+            environment=ctx.config['etl']['environment']
+        )
+
+        ctx.report.info('Mail enviado.')
 
 
 # pylint: disable=unused-argument
