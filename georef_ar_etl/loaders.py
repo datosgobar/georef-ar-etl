@@ -84,15 +84,15 @@ class CreateJSONFileStep(Step):
         self._table = table
         self._filename = filename
 
-    def _run_internal(self, _, ctx):
-        data = {}
+    def _run_internal(self, data, ctx):
+        contents = {}
         entities = []
         now = datetime.now(timezone.utc)
         bulk_size = ctx.config.getint('etl', 'bulk_size')
 
-        data['fecha_creacion'] = str(now)
-        data['timestamp'] = int(now.timestamp())
-        data['version'] = constants.ETL_VERSION
+        contents['fecha_creacion'] = str(now)
+        contents['timestamp'] = int(now.timestamp())
+        contents['version'] = constants.ETL_VERSION
 
         query = ctx.session.query(self._table).yield_per(bulk_size)
         count = query.count()
@@ -102,7 +102,7 @@ class CreateJSONFileStep(Step):
         for entity in utils.pbar(query, ctx, total=count):
             entities.append(entity.to_dict(cached_session))
 
-        data['datos'] = entities
+        contents['datos'] = entities
 
         utils.ensure_dir(constants.ETL_VERSION, ctx)
         utils.ensure_dir(constants.LATEST_DIR, ctx)
@@ -110,7 +110,7 @@ class CreateJSONFileStep(Step):
         ctx.report.info('Escribiendo archivo JSON...')
         filepath = os.path.join(constants.ETL_VERSION, self._filename)
         with ctx.fs.open(filepath, 'w') as f:
-            json.dump(data, f, ensure_ascii=False)
+            json.dump(contents, f, ensure_ascii=False)
 
         ctx.report.info('Creando copia del archivo...')
         filepath_latest = os.path.join(constants.LATEST_DIR, self._filename)

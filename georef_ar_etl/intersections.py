@@ -17,7 +17,7 @@ def create_process(_config):
 
 class IntersectionsCreationStep(Step):
     def __init__(self):
-        super().__init__('intersections_creation_step')
+        super().__init__('intersections_creation_step', reads_input=False)
 
     def _run_internal(self, data, ctx):
         provinces = ctx.session.query(Province).all()

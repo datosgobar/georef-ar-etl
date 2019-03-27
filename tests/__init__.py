@@ -11,6 +11,7 @@ from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl.departments import DepartmentsExtractionStep
 from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
+from georef_ar_etl.streets import StreetsExtractionStep
 from georef_ar_etl import read_config, create_engine, constants, models
 
 TEST_FILES_DIR = 'tests/test_files'
@@ -154,7 +155,7 @@ class ETLTestCase(TestCase):
         return cls._tmp_localities
 
     @classmethod
-    def create_test_streets(cls):
+    def create_test_streets(cls, extract=False):
         # Cargar las calles de la provincia de prueba
         cls.copy_test_file('test_calles/test_calles.dbf')
         cls.copy_test_file('test_calles/test_calles.shp')
@@ -166,8 +167,13 @@ class ETLTestCase(TestCase):
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        cls._tmp_localities = loader.run('test_calles', cls._ctx)
-        return cls._tmp_localities
+        cls._tmp_streets = loader.run('test_calles', cls._ctx)
+
+        if extract:
+            step = StreetsExtractionStep()
+            step.run(cls._tmp_streets, cls._ctx)
+
+        return cls._tmp_streets
 
     @classmethod
     def copy_test_file(cls, filepath):
