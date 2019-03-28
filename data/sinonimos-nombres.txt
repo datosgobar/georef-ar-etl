@@ -1,0 +1,136 @@
+# Listado de sinónimos para Georef API
+# https://apis.datos.gob.ar/georef
+
+ciudad autonoma de buenos aires, caba, capital federal, c.a.b.a
+buenos aires, bsas, bs.as, ba, bs as
+santiago, stgo, sgo
+tierra del fuego,tierra del fuego antartida e islas del atlantico sur, tdf, tf, tierra del fgo
+misiones, mi, mnes
+san luis, sl
+san juan, sj
+entre rios, er, e rios
+santa cruz, sc, s cruz
+rio negro, rn, r negro
+chubut, ct
+cordoba, cb, cba
+mendoza, mz, mza
+la rioja, lr, la rja
+catamarca, ca
+la pampa, lp
+santiago del estero, se, sgo del estero, sgo del e
+corrientes, cr, ctes
+santa fe, sf
+tucuman, tu, tcman, tcm
+neuquen, nq, nqn
+salta, sa
+chaco, ch
+formosa, fo, fsa
+jujuy, jy
+santa, sta
+acceso, acc
+agente, agte
+agrimensor, agrim
+alferez, alfz
+almirante, almte
+arquitecto, arq
+autopista, aut, au
+avenida, av
+barrio, bo, b
+bombero, bom
+boulevard, bv
+brigadier, brig
+cabo, cbo
+cacique, cque
+callejon, cjon
+camino, cno
+capitan, cap
+cardenal, cnal
+circunvalación, circ
+ciudad, cdad
+colectora, colec
+comandante, cmte
+comisaría, comis
+comisario, crio
+comodoro, comod
+concejal, cjal
+contraalmirante, conte
+cordoba,cba
+coronel, cnl
+corrientes, ctes
+cortada, cort
+departamento, dep, dto, depto
+diagonal, diag
+diputado, dip
+director, dir
+docente, docte
+doctor, dr
+embajadora, emb
+embajador, emb
+empalme, emp
+enfermera, enf
+enfermero, enf
+escribana, escr
+escribano, escr
+estatal, etal
+familia, flia
+formosa, fsa
+gendarme, gend
+general, grl
+gobernador, gdor
+hermana, hna
+hermano, hno
+industrial, ind
+ingeniero, igr
+inspector, insp
+intendente, int
+kilometro, km
+libertador, ldor
+licenciado, lic
+maestra, mstra
+maestro, mstro
+manzana, manz
+mariscal, mcal
+mecanico, mec
+mendoza, mza., mza
+militar, mil
+ministro, mtro
+misionero, mro
+monseñor, mons
+nacional, nac
+navio, nav
+nuestra, ntra
+pasaje, pje
+pasillo, pas
+peatonal, peat
+picada, pcda
+pionero, pnero
+pioneros, pneros
+presbitero, pbro
+presidencia, pres
+presidente, pres
+primero, pro
+principal, ppal
+profesora, prof
+profesor, prof
+prolongacion, prol
+provincial, pcial
+provincia, pcia
+puerto, pt
+regimiento, rgto
+republica, rca, rep
+reverendo, rev
+salta, la linda
+sargento, sgt
+senadora, sdora
+senador, sdor
+soldado, sold
+subcomisario, scrio
+suboficial, subof
+tenientecoronel, tcnl
+tenientegeneral, tgrl
+teniente, tte
+trabajadores, trabs
+trabajador, trab
+vecinalistas, vcinas
+vecina, vec
+vicecomodoro, vcomod

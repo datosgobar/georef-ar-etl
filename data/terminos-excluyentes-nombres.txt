@@ -1,0 +1,5 @@
+# Listado de términos excluyentes para Georef API
+# https://apis.datos.gob.ar/georef
+
+salta, santa
+cba, caba
