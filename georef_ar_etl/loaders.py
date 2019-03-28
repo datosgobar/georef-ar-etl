@@ -79,10 +79,10 @@ class Ogr2ogrStep(Step):
 
 
 class CreateJSONFileStep(Step):
-    def __init__(self, table, filename):
+    def __init__(self, table, *filename_parts):
         super().__init__('create_json_file', reads_input=False)
         self._table = table
-        self._filename = filename
+        self._filename = os.path.join(*filename_parts)
 
     def _run_internal(self, data, ctx):
         contents = {}
@@ -103,15 +103,12 @@ class CreateJSONFileStep(Step):
             entities.append(entity.to_dict(cached_session))
 
         contents['datos'] = entities
-
-        utils.ensure_dir(constants.ETL_VERSION, ctx)
-        utils.ensure_dir(constants.LATEST_DIR, ctx)
+        dirname = os.path.dirname(self._filename)
+        if dirname:
+            utils.ensure_dir(dirname, ctx)
 
         ctx.report.info('Escribiendo archivo JSON...')
-        filepath = os.path.join(constants.ETL_VERSION, self._filename)
-        with ctx.fs.open(filepath, 'w') as f:
+        with ctx.fs.open(self._filename, 'w') as f:
             json.dump(contents, f, ensure_ascii=False)
 
-        ctx.report.info('Creando copia del archivo...')
-        filepath_latest = os.path.join(constants.LATEST_DIR, self._filename)
-        utils.copy_file(filepath, filepath_latest, ctx)
+        return self._filename

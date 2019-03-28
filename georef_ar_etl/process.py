@@ -61,7 +61,8 @@ class Process:
         initial = self._steps[start - 1]
         if initial.reads_input:
             raise ProcessException(
-                'El paso #{} requiere un valor de entrada.'.format(start))
+                'El paso #{} ({}) requiere un valor de entrada.'.format(
+                    start, initial.name))
 
         try:
             for i, step in enumerate(self._steps[start - 1:end]):

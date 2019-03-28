@@ -4,6 +4,7 @@ import csv
 from sqlalchemy.sql import sqltypes
 from sqlalchemy.dialects.postgresql import base as pgtypes
 from geoalchemy2 import types as geotypes
+import fs
 from tqdm import tqdm
 from .exceptions import ProcessException
 from .process import Step
@@ -85,6 +86,7 @@ class ValidateTableSizeStep(Step):
 
     def _run_internal(self, table, ctx):
         if ctx.mode == 'interactive':
+            ctx.report.info('Salteando chequeo de tamaño.')
             return table
 
         count = ctx.session.query(table).count()
@@ -113,6 +115,31 @@ class FunctionStep(Step):
 
 
 FirstResultStep = FunctionStep(lambda xs: xs[0])
+
+
+class CopyFileStep(Step):
+    def __init__(self, *dst_parts):
+        super().__init__('copy_file')
+        self._dst = os.path.join(*dst_parts)
+
+    def _run_internal(self, src, ctx):
+        dirname = os.path.dirname(self._dst)
+        if dirname:
+            ensure_dir(dirname, ctx)
+
+        if os.path.isabs(src):
+            src_fs = fs.osfs.OSFS('/')
+        else:
+            src_fs = ctx.fs
+
+        fs.copy.copy_file(
+            dst_path=self._dst,
+            dst_fs=ctx.fs,
+            src_path=src,
+            src_fs=src_fs
+        )
+
+        return self._dst
 
 
 def clean_string(s):

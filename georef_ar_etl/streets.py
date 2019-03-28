@@ -33,7 +33,10 @@ def create_process(config):
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=151000, tolerance=500),
-        loaders.CreateJSONFileStep(Street, constants.STREETS + '.json')
+        loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
+                                   constants.STREETS + '.json'),
+        utils.CopyFileStep(constants.LATEST_DIR,
+                           constants.STREETS + '.json')
     ])
 
 

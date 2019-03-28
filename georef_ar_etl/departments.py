@@ -28,7 +28,10 @@ def create_process(config):
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=529),
-        loaders.CreateJSONFileStep(Department, constants.DEPARTMENTS + '.json')
+        loaders.CreateJSONFileStep(Department, constants.ETL_VERSION,
+                                   constants.DEPARTMENTS + '.json'),
+        utils.CopyFileStep(constants.LATEST_DIR,
+                           constants.DEPARTMENTS + '.json')
     ])
 
 
