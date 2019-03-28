@@ -71,8 +71,11 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe la provincia con ID {}'.format(prov_id))
 
-        province_isct = geometry.get_intersection_percentage(
-            province.geometria, tmp_municipality.geom, ctx)
+        if ctx.mode == 'normal':
+            province_isct = geometry.get_intersection_percentage(
+                province.geometria, tmp_municipality.geom, ctx)
+        else:
+            province_isct = 0  # Saltear operaciones costosas en testing
 
         return Municipality(
             id=muni_id,

@@ -12,10 +12,6 @@ def get_intersection_centroid(geom_a, geom_b, ctx):
 
 
 def get_intersection_percentage(geom_a, geom_b, ctx):
-    if ctx.mode != 'normal':
-        # Saltear operaciones costosas en modo interactivo y testing
-        return 0
-
     area_a = ctx.session.scalar(geom_a.ST_Area())
     if area_a <= 0:
         raise ValueError('geom_a has area size 0.')
