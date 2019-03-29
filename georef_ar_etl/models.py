@@ -247,6 +247,20 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
         return base
 
 
+class StreetBlock(Base):
+    __tablename__ = constants.STREET_BLOCKS_ETL_TABLE
+
+    id = Column(String, primary_key=True)
+    calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
+                                         ondelete='cascade'),
+                      nullable=False)
+    inicio_derecha = Column(Integer, nullable=False)
+    fin_derecha = Column(Integer, nullable=False)
+    inicio_izquierda = Column(Integer, nullable=False)
+    fin_izquierda = Column(Integer, nullable=False)
+    geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
+
+
 class Intersection(Base):
     __tablename__ = constants.INTERSECTIONS_ETL_TABLE
 

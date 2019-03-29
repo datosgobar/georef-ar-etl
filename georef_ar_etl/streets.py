@@ -41,6 +41,26 @@ def create_process(config):
     ])
 
 
+def update_commune_data(row):
+    # De XX014XXXXXXXX pasar a XX002XXXXXXXX
+    prov_id_part = row.nomencla[:constants.PROVINCE_ID_LEN]
+    dept_id_part = row.nomencla[constants.PROVINCE_ID_LEN:
+                                constants.DEPARTMENT_ID_LEN]
+    id_rest = row.nomencla[constants.DEPARTMENT_ID_LEN:]
+
+    dept_id_int = int(dept_id_part)
+    if dept_id_int % constants.CABA_DIV_FACTOR:
+        # Alguno de los IDs no es divisible por el factor de división
+        raise ProcessException(
+            'El ID de comuna {} no es divisible por {}.'.format(
+                dept_id_part,
+                constants.CABA_DIV_FACTOR))
+
+    dept_new_id_int = dept_id_int // constants.CABA_DIV_FACTOR
+    row.nomencla = prov_id_part + str(dept_new_id_int).rjust(
+        len(dept_id_part), '0') + id_rest
+
+
 class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
         super().__init__('streets_extraction', Street,
@@ -48,31 +68,11 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='nomencla')
 
     def _patch_tmp_entities(self, tmp_streets, ctx):
-        def update_commune_data(row):
-            # De XX014XXXXXXXX pasar a XX002XXXXXXXX
-            prov_id_part = row.nomencla[:constants.PROVINCE_ID_LEN]
-            dept_id_part = row.nomencla[constants.PROVINCE_ID_LEN:
-                                        constants.DEPARTMENT_ID_LEN]
-            id_rest = row.nomencla[constants.DEPARTMENT_ID_LEN:]
-
-            dept_id_int = int(dept_id_part)
-            if dept_id_int % constants.CABA_DIV_FACTOR:
-                # Alguno de los IDs no es divisible por el factor de división
-                raise ProcessException(
-                    'El ID de comuna {} no es divisible por {}.'.format(
-                        dept_id_part,
-                        constants.CABA_DIV_FACTOR))
-
-            dept_new_id_int = dept_id_int // constants.CABA_DIV_FACTOR
-            row.nomencla = prov_id_part + str(dept_new_id_int).rjust(
-                len(dept_id_part), '0') + id_rest
-
         patch.apply_fn(tmp_streets, update_commune_data, ctx,
                        tmp_streets.nomencla.like('02%'))
 
         def update_ushuaia(row):
             row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
-            row.codloc = '94015' + row.codloc[constants.DEPARTMENT_ID_LEN:]
 
         # Actualizar calles de Ushuaia (agregado en ETL2)
         patch.apply_fn(tmp_streets, update_ushuaia, ctx,
@@ -80,7 +80,6 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         def update_rio_grande(row):
             row.nomencla = '94008' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
-            row.codloc = '94008' + row.codloc[constants.DEPARTMENT_ID_LEN:]
 
         # Actualizar calles de Río Grande (agregado en ETL2)
         patch.apply_fn(tmp_streets, update_rio_grande, ctx,

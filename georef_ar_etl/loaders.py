@@ -79,6 +79,14 @@ class Ogr2ogrStep(Step):
 
         return self._automap_table(ctx)
 
+    @property
+    def overwrite(self):
+        return self._overwrite
+
+    @overwrite.setter
+    def overwrite(self, val):
+        self._overwrite = val
+
 
 class CreateJSONFileStep(Step):
     def __init__(self, table, *filename_parts):
