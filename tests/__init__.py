@@ -85,7 +85,8 @@ class ETLTestCase(TestCase):
         cls.copy_test_file('test_provincias/test_provincias.prj')
 
         loader = Ogr2ogrStep(table_name='tmp_provincias',
-                             geom_type='MultiPolygon', encoding='utf-8',
+                             geom_type='MultiPolygon',
+                             env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
@@ -106,7 +107,8 @@ class ETLTestCase(TestCase):
         cls.copy_test_file('test_departamentos/test_departamentos.prj')
 
         loader = Ogr2ogrStep(table_name='tmp_departamentos',
-                             geom_type='MultiPolygon', encoding='utf-8',
+                             geom_type='MultiPolygon',
+                             env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
@@ -127,7 +129,8 @@ class ETLTestCase(TestCase):
         cls.copy_test_file('test_municipios/test_municipios.prj')
 
         loader = Ogr2ogrStep(table_name='tmp_municipios',
-                             geom_type='MultiPolygon', encoding='utf-8',
+                             geom_type='MultiPolygon',
+                             env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
@@ -148,7 +151,8 @@ class ETLTestCase(TestCase):
         cls.copy_test_file('test_localidades/test_localidades.prj')
 
         loader = Ogr2ogrStep(table_name='tmp_localidades',
-                             geom_type='MultiPoint', encoding='utf-8',
+                             geom_type='MultiPoint',
+                             env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
@@ -164,7 +168,8 @@ class ETLTestCase(TestCase):
         cls.copy_test_file('test_calles/test_calles.prj')
 
         loader = Ogr2ogrStep(table_name='tmp_calles',
-                             geom_type='MultiLineString', encoding='utf-8',
+                             geom_type='MultiLineString',
+                             env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 

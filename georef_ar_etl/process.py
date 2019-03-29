@@ -16,7 +16,6 @@ class Step:
     def name(self):
         return self._name
 
-    @property
     def reads_input(self):
         return self._reads_input
 
@@ -28,12 +27,20 @@ class CompositeStep(Step):
 
     def _run_internal(self, data, ctx):
         results = []
+        if isinstance(data, list):
+            step_inputs = data
+        else:
+            step_inputs = [data] * len(self._steps)
+
         for i, step in enumerate(self._steps):
             ctx.report.info('===> Sub-paso #{}: {}'.format(i + 1, step.name))
-            results.append(step.run(data, ctx))
+            results.append(step.run(step_inputs[i], ctx))
             ctx.report.info('Sub-paso finalizado.\n')
 
         return results
+
+    def __len__(self):
+        return len(self._steps)
 
     def reads_input(self):
         return any(step.reads_input() for step in self._steps)
@@ -59,7 +66,7 @@ class Process:
                 start, end))
 
         initial = self._steps[start - 1]
-        if initial.reads_input:
+        if initial.reads_input():
             raise ProcessException(
                 'El paso #{} ({}) requiere un valor de entrada.'.format(
                     start, initial.name))
@@ -89,7 +96,7 @@ class Process:
         self._print_title(ctx)
         for i, step in enumerate(self._steps):
             ctx.report.info('{} {}: {}'.format(
-                ' ' if step.reads_input else '>',
+                ' ' if step.reads_input() else '>',
                 i + 1,
                 step.name
             ))

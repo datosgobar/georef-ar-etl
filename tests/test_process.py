@@ -7,7 +7,7 @@ from . import ETLTestCase
 def get_mock_step(return_value=None, raises_exception=False, reads_input=True):
     step = mock.MagicMock(spec=Step)
     step.run.return_value = return_value
-    step.reads_input = reads_input
+    step.reads_input.return_value = reads_input
     if raises_exception:
         step.run.side_effect = ProcessException
 

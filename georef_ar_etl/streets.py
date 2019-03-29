@@ -11,7 +11,8 @@ def create_process(config):
                                    config.get('etl', 'streets_url')),
         transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
-                            geom_type='MultiLineString', encoding='latin1'),
+                            geom_type='MultiLineString',
+                            env={'SHAPE_ENCODING': 'latin1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
             'nomencla': 'varchar',

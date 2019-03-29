@@ -13,46 +13,41 @@ OGR2OGR_CMD = 'ogr2ogr'
 
 
 class Ogr2ogrStep(Step):
-    def __init__(self, table_name, geom_type, encoding, precision=True,
-                 metadata=None, db_config=None):
+    def __init__(self, table_name, geom_type, env=None, precision=True,
+                 overwrite=True, metadata=None, db_config=None):
         super().__init__('ogr2ogr')
         if not shutil.which(OGR2OGR_CMD):
             raise RuntimeError('ogr2ogr is not installed.')
 
         self._table_name = table_name
         self._geom_type = geom_type
-        self._encoding = encoding
+        self._env = env or {}
         self._precision = precision
+        self._overwrite = overwrite
         self._metadata = metadata or MetaData()
         self._db_config = db_config
 
-    def new_env(self, new_vars):
+    def _new_env(self):
         env = os.environ.copy()
-        for key, value in new_vars.items():
+        for key, value in self._env.items():
             env[key] = value
 
         return env
 
-    def automap_table(self, ctx):
+    def _automap_table(self, ctx):
         self._metadata.reflect(ctx.engine, only=[self._table_name])
         base = automap_base(metadata=self._metadata)
         base.prepare()
 
         return getattr(base.classes, self._table_name)
 
-    def _run_internal(self, dirname, ctx):
-        glob = ctx.fs.glob(os.path.join(dirname, '*.shp'))
-        if glob.count().files != 1:
-            raise ProcessException(
-                'Se detectó más de un archivo .shp en el directorio.')
-
-        shp = list(glob)[0]
-        shp_path = ctx.fs.getsyspath(shp.path)
+    def _run_internal(self, filename, ctx):
+        filepath = ctx.fs.getsyspath(filename)
         db_config = self._db_config or ctx.config['db']
 
-        ctx.report.info('Ejecutando ogr2ogr sobre %s.', shp_path)
+        ctx.report.info('Ejecutando ogr2ogr sobre %s.', filepath)
         args = [
-            OGR2OGR_CMD, '-overwrite', '-f', 'PostgreSQL',
+            OGR2OGR_CMD, '-f', 'PostgreSQL',
             ('PG:host={host} ' +
              'user={user} ' +
              'password={password} ' +
@@ -62,20 +57,27 @@ class Ogr2ogrStep(Step):
             '-lco', 'GEOMETRY_NAME=geom'
         ]
 
+        if os.path.splitext(filename)[1] == '.csv':
+            args.extend([
+                '-oo', 'KEEP_GEOM_COLUMNS=no',
+                '-oo', 'GEOM_POSSIBLE_NAMES=geom',
+            ])
+
+        if self._overwrite:
+            args.append('-overwrite')
+
         if not self._precision:
             args.extend(['-lco', 'PRECISION=NO'])
 
-        args.append(shp_path)
-        result = subprocess.run(args, env=self.new_env({
-            'SHAPE_ENCODING': self._encoding
-        }))
+        args.append(filepath)
+        result = subprocess.run(args, env=self._new_env())
 
         if result.returncode:
             raise ProcessException(
                 'El comando ogr2ogr retornó codigo {}.'.format(
                     result.returncode))
 
-        return self.automap_table(ctx)
+        return self._automap_table(ctx)
 
 
 class CreateJSONFileStep(Step):

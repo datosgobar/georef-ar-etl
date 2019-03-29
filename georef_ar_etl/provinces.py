@@ -10,7 +10,8 @@ def create_process(config):
                                    config.get('etl', 'provinces_url')),
         transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.PROVINCES_TMP_TABLE,
-                            geom_type='MultiPolygon', encoding='utf-8'),
+                            geom_type='MultiPolygon',
+                            env={'SHAPE_ENCODING': 'utf-8'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
             'fna': 'varchar',

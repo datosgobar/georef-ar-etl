@@ -5,7 +5,7 @@ from .exceptions import ProcessException
 from .context import Context, Report, RUN_MODES
 from . import read_config, get_logger, create_engine, constants
 from . import provinces, departments, municipalities, localities
-from . import streets, intersections
+from . import streets, intersections, street_blocks
 
 PROCESSES = [
     constants.PROVINCES,
@@ -13,7 +13,8 @@ PROCESSES = [
     constants.MUNICIPALITIES,
     constants.LOCALITIES,
     constants.STREETS,
-    constants.INTERSECTIONS
+    constants.INTERSECTIONS,
+    constants.STREET_BLOCKS
 ]
 
 MODULES = [
@@ -22,7 +23,8 @@ MODULES = [
     municipalities,
     localities,
     streets,
-    intersections
+    intersections,
+    street_blocks
 ]
 
 COMMANDS = [
