@@ -12,7 +12,8 @@ from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl.departments import DepartmentsExtractionStep
 from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
 from georef_ar_etl.streets import StreetsExtractionStep
-from georef_ar_etl import read_config, create_engine, constants, models
+from georef_ar_etl.utils import CopyFileStep
+from georef_ar_etl import read_config, create_engine, models
 
 TEST_FILES_DIR = 'tests/test_files'
 
@@ -177,10 +178,7 @@ class ETLTestCase(TestCase):
 
     @classmethod
     def copy_test_file(cls, filepath):
-        dirname = os.path.dirname(filepath)
-        if dirname:
-            cls._ctx.fs.makedirs(dirname, permissions=constants.DIR_PERMS,
-                                 recreate=True)
-
-        with open(os.path.join(TEST_FILES_DIR, filepath), 'rb') as f:
-            cls._ctx.fs.upload(filepath, f)
+        # Copiar archivo desde directorio tests/test_files/ (OSFS) al
+        # directorio del test actual (TempFS).
+        abspath = os.path.abspath(os.path.join(TEST_FILES_DIR, filepath))
+        CopyFileStep(filepath).run(abspath, cls._ctx)

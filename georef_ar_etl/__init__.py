@@ -40,4 +40,9 @@ def create_engine(db_config, echo=False, init_models=True):
 def read_config():
     config = configparser.ConfigParser()
     config.read(constants.CONFIG_PATH)
+    if not config.sections():
+        raise RuntimeError(
+            'No se pudo leer el archivo de configuración en: {}.'.format(
+                constants.CONFIG_PATH))
+
     return config
