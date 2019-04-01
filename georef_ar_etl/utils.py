@@ -1,6 +1,8 @@
 import os
 import sys
 import csv
+from sqlalchemy import MetaData
+from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.sql import sqltypes
 from sqlalchemy.dialects.postgresql import base as pgtypes
 from geoalchemy2 import types as geotypes
@@ -25,6 +27,9 @@ class CheckDependenciesStep(Step):
 
     def _run_internal(self, data, ctx):
         for dep in self._dependencies:
+            if isinstance(dep, str):
+                dep = automap_table(dep, ctx)
+
             if not ctx.session.query(dep).first():
                 raise ProcessException(
                     'La tabla "{}" está vacía.'.format(dep.__table__.name))
@@ -106,15 +111,20 @@ class ValidateTableSizeStep(Step):
 
 
 class FunctionStep(Step):
-    def __init__(self, fn):
-        super().__init__('apply_function')
+    def __init__(self, *args, fn=None, ctx_fn=None, name=None, **kwargs):
+        super().__init__(name or 'apply_function', *args, **kwargs)
+        if fn and ctx_fn:
+            raise RuntimeError('Only fn or ctx_fn must be defined')
+
         self._fn = fn
+        self._ctx_fn = ctx_fn
 
     def _run_internal(self, data, ctx):
-        return self._fn(data)
+        return self._fn(data) if self._fn else self._ctx_fn(data, ctx)
 
 
-FirstResultStep = FunctionStep(lambda xs: xs[0])
+FirstResultStep = FunctionStep(fn=lambda results: results[0],
+                               name='first_result')
 
 
 class CopyFileStep(Step):
@@ -140,6 +150,17 @@ class CopyFileStep(Step):
         )
 
         return self._dst
+
+
+def automap_table(table_name, ctx, metadata=None):
+    if not metadata:
+        metadata = MetaData()
+
+    metadata.reflect(ctx.engine, only=[table_name])
+    base = automap_base(metadata=metadata)
+    base.prepare()
+
+    return getattr(base.classes, table_name)
 
 
 def clean_string(s):

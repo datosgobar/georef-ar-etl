@@ -28,3 +28,16 @@ class TestCheckDependenciesStep(ETLTestCase):
         step = CheckDependenciesStep([t1])
         result = step.run(None, self._ctx)
         self.assertIsNone(result)
+
+    def test_nonempty_dep_str(self):
+        """El paso no debería fallar si todas las dependencias contienen
+        elementos, especificando los nombres de las tablas como str."""
+        table2 = self.create_table('table2', {
+            'id': sqltypes.INTEGER
+        }, pkey='id')
+
+        self._ctx.session.add(table2(id=1))
+
+        step = CheckDependenciesStep(['table2'])
+        result = step.run(None, self._ctx)
+        self.assertIsNone(result)

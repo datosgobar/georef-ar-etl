@@ -1,4 +1,5 @@
 from sqlalchemy.sql import select, func
+from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException, ProcessException
 from .process import Process, CompositeStep, Step
 from .models import Province, Department, Street
@@ -126,10 +127,10 @@ class StreetsExtractionStep(Step):
             tmp_blocks.nomencla,
             func.min(tmp_blocks.nombre).label('nombre'),
             func.min(tmp_blocks.tipo).label('tipo'),
-            func.min(tmp_blocks.desdei).label('desdei'),
-            func.min(tmp_blocks.desded).label('desded'),
-            func.max(tmp_blocks.hastai).label('hastai'),
-            func.max(tmp_blocks.hastad).label('hastad'),
+            func.min(tmp_blocks.desdei.cast(Integer)).label('desdei'),
+            func.min(tmp_blocks.desded.cast(Integer)).label('desded'),
+            func.max(tmp_blocks.hastai.cast(Integer)).label('hastai'),
+            func.max(tmp_blocks.hastad.cast(Integer)).label('hastad'),
             tmp_blocks.geom.ST_Union().label('geom')
         ]
 

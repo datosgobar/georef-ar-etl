@@ -9,12 +9,14 @@ class TestFunctionStep(ETLTestCase):
     def test_fn(self):
         """El paso debería ejecutar la función especificada."""
         fn = Mock()
-        step = FunctionStep(fn)
+        step = FunctionStep(fn=fn)
         step.run(None, self._ctx)
         fn.assert_called_once()
 
 
 class TestFirstResultStep(ETLTestCase):
+    _uses_db = False
+
     def test_result(self):
         """El paso debería retornar el primer elemento de una lista."""
         xs = ['foobar', 'quux']

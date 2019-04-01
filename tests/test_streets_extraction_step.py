@@ -21,6 +21,8 @@ class TestStreetsExtractionStep(ETLTestCase):
 
     def tearDown(self):
         self._ctx.session.commit()
+        # No es necesario borrar tmp_blocks ya que self.create_test_blocks()
+        # borra las cuadras temporales (overwrite=True)
         self._ctx.session.query(Street).delete()
         super().tearDown()
 
@@ -93,3 +95,34 @@ class TestStreetsExtractionStep(ETLTestCase):
 
         with self.assertRaises(ProcessException):
             step.run(self._tmp_blocks, self._ctx)
+
+    def test_street_numbers(self):
+        """La altura de una calle debería comenzar en la altura más baja de
+        todas sus cuadras, y terminar el la mas alta de todas sus cuadras."""
+        block_nums = [
+            ('7003500000000', '0', '100'),
+            ('7003500000000', '101', '200'),
+            ('7003500000001', '9', '200'),
+            ('7003500000001', '201', '1000')
+        ]
+
+        for i, block in enumerate(block_nums):
+            self._ctx.session.add(self._tmp_blocks(ogc_fid=9999 + i,
+                                                   nomencla=block[0],
+                                                   desdei=block[1],
+                                                   hastad=block[2],
+                                                   tipo='CALLE',
+                                                   nombre='test',
+                                                   geom=TEST_MULTILINESTRING))
+        self._ctx.session.commit()
+
+        step = StreetsExtractionStep()
+        streets = step.run(self._tmp_blocks, self._ctx)
+
+        street1 = self._ctx.session.query(streets).get('7003500000000')
+        street2 = self._ctx.session.query(streets).get('7003500000001')
+
+        self.assertEqual(street1.inicio_izquierda, 0)
+        self.assertEqual(street1.fin_derecha, 200)
+        self.assertEqual(street2.inicio_izquierda, 9)
+        self.assertEqual(street2.fin_derecha, 1000)

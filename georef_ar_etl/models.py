@@ -197,14 +197,18 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
         }
 
 
-class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
-    __tablename__ = constants.STREETS_ETL_TABLE
-    _id_len = constants.STREET_ID_LEN
-
+class DoorNumberedMixin:
     inicio_derecha = Column(Integer, nullable=False)
     fin_derecha = Column(Integer, nullable=False)
     inicio_izquierda = Column(Integer, nullable=False)
     fin_izquierda = Column(Integer, nullable=False)
+
+
+class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
+             DoorNumberedMixin):
+    __tablename__ = constants.STREETS_ETL_TABLE
+    _id_len = constants.STREET_ID_LEN
+
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
 
     def to_dict_simple(self, session):
@@ -247,17 +251,13 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
         return base
 
 
-class StreetBlock(Base):
+class StreetBlock(Base, DoorNumberedMixin):
     __tablename__ = constants.STREET_BLOCKS_ETL_TABLE
 
     id = Column(String, primary_key=True)
     calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                          ondelete='cascade'),
                       nullable=False)
-    inicio_derecha = Column(Integer, nullable=False)
-    fin_derecha = Column(Integer, nullable=False)
-    inicio_izquierda = Column(Integer, nullable=False)
-    fin_izquierda = Column(Integer, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
 
 

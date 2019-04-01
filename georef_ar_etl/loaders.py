@@ -5,7 +5,6 @@ import shutil
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy import MetaData
-from sqlalchemy.ext.automap import automap_base
 from . import constants, utils
 from .process import Step, ProcessException
 
@@ -33,13 +32,6 @@ class Ogr2ogrStep(Step):
             env[key] = value
 
         return env
-
-    def _automap_table(self, ctx):
-        self._metadata.reflect(ctx.engine, only=[self._table_name])
-        base = automap_base(metadata=self._metadata)
-        base.prepare()
-
-        return getattr(base.classes, self._table_name)
 
     def _run_internal(self, filename, ctx):
         filepath = ctx.fs.getsyspath(filename)
@@ -77,7 +69,7 @@ class Ogr2ogrStep(Step):
                 'El comando ogr2ogr retornó codigo {}.'.format(
                     result.returncode))
 
-        return self._automap_table(ctx)
+        return utils.automap_table(self._table_name, ctx, self._metadata)
 
     @property
     def overwrite(self):
