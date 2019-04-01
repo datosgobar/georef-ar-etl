@@ -16,7 +16,7 @@ def create_process(config):
                 'CQL_FILTER': 'nomencla like \'{}%\''.format(province_id)
             }
         ) for province_id in constants.PROVINCE_IDS
-    ])
+    ], name='download_cstep')
 
     ogr2ogr_cstep = CompositeStep([
         loaders.Ogr2ogrStep(table_name=constants.STREET_BLOCKS_TMP_TABLE,
@@ -24,14 +24,42 @@ def create_process(config):
     ] + [
         loaders.Ogr2ogrStep(table_name=constants.STREET_BLOCKS_TMP_TABLE,
                             geom_type='MultiLineString', overwrite=False)
-    ] * (len(download_cstep) - 1))
+    ] * (len(download_cstep) - 1), name='ogr2ogr_cstep')
 
     return Process(constants.STREETS, [
         utils.CheckDependenciesStep([Province, Department]),
         download_cstep,
         ogr2ogr_cstep,
         utils.FirstResultStep,
-        # utils.ValidateTableSchemaStep(),
+        utils.ValidateTableSchemaStep({
+            'ogc_fid': 'integer',
+            'fid': 'varchar',
+            'fnode_': 'varchar',
+            'tnode_': 'varchar',
+            'lpoly_': 'varchar',
+            'rpoly_': 'varchar',
+            'length': 'varchar',
+            'codigo10': 'varchar',
+            'nomencla': 'varchar',
+            'codigo20': 'varchar',
+            'ancho': 'varchar',
+            'anchomed': 'varchar',
+            'tipo': 'varchar',
+            'nombre': 'varchar',
+            'ladoi': 'varchar',
+            'ladod': 'varchar',
+            'desdei': 'varchar',
+            'desded': 'varchar',
+            'hastad': 'varchar',
+            'hastai': 'varchar',
+            'mzai': 'varchar',
+            'mzad': 'varchar',
+            'codloc20': 'varchar',
+            'nomencla10': 'varchar',
+            'nomenclai': 'varchar',
+            'nomenclad': 'varchar',
+            'geom': 'geometry'
+        }),
         StreetsExtractionStep(),
         utils.ValidateTableSizeStep(size=151000, tolerance=1000),
         loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
@@ -42,7 +70,8 @@ def create_process(config):
 
 
 def update_commune_data(row):
-    # De XX014XXXXXXXX pasar a XX002XXXXXXXX
+    # De XX014XXXXXXXX pasar a XX002XXXXXXXX (dividir por 7)
+    # Ver comentario en constants.py.
     prov_id_part = row.nomencla[:constants.PROVINCE_ID_LEN]
     dept_id_part = row.nomencla[constants.PROVINCE_ID_LEN:
                                 constants.DEPARTMENT_ID_LEN]
@@ -82,6 +111,8 @@ class StreetsExtractionStep(Step):
         # Actualizar calles de Río Grande (agregado en ETL2)
         patch.apply_fn(tmp_blocks, update_rio_grande, ctx,
                        tmp_blocks.nomencla.like('94007%'))
+
+        ctx.session.commit()
 
     def _distinct_streets_count(self, tmp_blocks, ctx):
         return ctx.session.query(tmp_blocks).\

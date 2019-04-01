@@ -21,8 +21,8 @@ class Step:
 
 
 class CompositeStep(Step):
-    def __init__(self, steps):
-        super().__init__('multistep')
+    def __init__(self, steps, name=None):
+        super().__init__(name or 'multistep')
         self._steps = steps
 
     def _run_internal(self, data, ctx):
