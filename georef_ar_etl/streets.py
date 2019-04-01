@@ -116,11 +116,11 @@ class StreetsExtractionStep(Step):
 
     def _distinct_streets_count(self, tmp_blocks, ctx):
         return ctx.session.query(tmp_blocks).\
-            filter(tmp_blocks.tipo != 'OTRO').\
+            filter(tmp_blocks.tipo != constants.STREET_TYPE_OTHER).\
             distinct(tmp_blocks.nomencla).\
             count()
 
-    def _streets_query(self, tmp_blocks, ctx):
+    def _streets_query(self, tmp_blocks):
         fields = [
             func.min(tmp_blocks.ogc_fid).label('ogc_fid'),
             tmp_blocks.nomencla,
@@ -135,7 +135,7 @@ class StreetsExtractionStep(Step):
 
         return select(fields).\
             group_by(tmp_blocks.nomencla).\
-            where(tmp_blocks.tipo != 'OTRO')
+            where(tmp_blocks.tipo != constants.STREET_TYPE_OTHER)
 
     def _run_internal(self, tmp_blocks, ctx):
         self._patch_tmp_blocks(tmp_blocks, ctx)
@@ -145,7 +145,7 @@ class StreetsExtractionStep(Step):
         cached_session = ctx.cached_session()
         entities = []
         errors = []
-        query = self._streets_query(tmp_blocks, ctx)
+        query = self._streets_query(tmp_blocks)
 
         ctx.report.info('Calculando cantidad de calles...')
         count = self._distinct_streets_count(tmp_blocks, ctx)
@@ -156,15 +156,14 @@ class StreetsExtractionStep(Step):
         for tmp_block in utils.pbar(ctx.engine.execute(query), ctx,
                                     total=count):
             try:
-                street = self._street_from_block(tmp_block, cached_session,
-                                                 ctx)
+                street = self._street_from_block(tmp_block, cached_session)
                 entities.append(street)
+
+                if len(entities) > bulk_size:
+                    ctx.session.add_all(entities)
+                    entities.clear()
             except ValidationException:
                 errors.append(tmp_block.nomencla)
-
-            if len(entities) > bulk_size:
-                ctx.session.add_all(entities)
-                entities.clear()
 
         ctx.session.add_all(entities)
 
@@ -173,7 +172,9 @@ class StreetsExtractionStep(Step):
         report_data['errors'] = errors
         report_data['streets_count'] = count
 
-    def _street_from_block(self, block, cached_session, ctx):
+        return Street
+
+    def _street_from_block(self, block, cached_session):
         street_id = block.nomencla
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]

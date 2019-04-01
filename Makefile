@@ -42,7 +42,7 @@ create_test_files:
 	$(ETL_COMMAND) -p departamentos --end 4
 	$(ETL_COMMAND) -p municipios --end 4
 	$(ETL_COMMAND) -p localidades --end 4
-	$(ETL_COMMAND) -p calles --end 4
+	$(ETL_COMMAND) -p calles --end 3
 
 	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_provincias \
@@ -77,9 +77,9 @@ create_test_files:
 		-overwrite
 
 	ogr2ogr -f "ESRI Shapefile" \
-		tests/test_files/test_calles \
+		tests/test_files/test_cuadras \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
-		-sql "select * from tmp_calles where nomencla like '$(TEST_PROVINCE)%'" \
-		-nln "test_calles" \
+		-sql "select * from tmp_cuadras where nomencla like '$(TEST_PROVINCE)%'" \
+		-nln "test_cuadras" \
 		-lco "ENCODING=utf-8" \
 		-overwrite

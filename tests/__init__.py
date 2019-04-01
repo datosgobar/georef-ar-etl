@@ -27,7 +27,7 @@ class ETLTestCase(TestCase):
         self._tmp_departments = None
         self._tmp_municipalities = None
         self._tmp_localities = None
-        self._tmp_streets = None
+        self._tmp_blocks = None
 
     @classmethod
     def setUpClass(cls):
@@ -160,26 +160,27 @@ class ETLTestCase(TestCase):
         return cls._tmp_localities
 
     @classmethod
-    def create_test_streets(cls, extract=False):
-        # Cargar las calles de la provincia de prueba
-        cls.copy_test_file('test_calles/test_calles.dbf')
-        cls.copy_test_file('test_calles/test_calles.shp')
-        cls.copy_test_file('test_calles/test_calles.shx')
-        cls.copy_test_file('test_calles/test_calles.prj')
+    def create_test_streets(cls):
+        blocks = cls.create_test_blocks()
+        step = StreetsExtractionStep()
+        step.run(blocks, cls._ctx)
 
-        loader = Ogr2ogrStep(table_name='tmp_calles',
+    @classmethod
+    def create_test_blocks(cls):
+        # Cargar las cuadras de la provincia de prueba
+        cls.copy_test_file('test_cuadras/test_cuadras.dbf')
+        cls.copy_test_file('test_cuadras/test_cuadras.shp')
+        cls.copy_test_file('test_cuadras/test_cuadras.shx')
+        cls.copy_test_file('test_cuadras/test_cuadras.prj')
+
+        loader = Ogr2ogrStep(table_name='tmp_cuadras',
                              geom_type='MultiLineString',
                              env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        cls._tmp_streets = loader.run('test_calles', cls._ctx)
-
-        if extract:
-            step = StreetsExtractionStep()
-            step.run(cls._tmp_streets, cls._ctx)
-
-        return cls._tmp_streets
+        cls._tmp_blocks = loader.run('test_cuadras', cls._ctx)
+        return cls._tmp_blocks
 
     @classmethod
     def copy_test_file(cls, filepath):

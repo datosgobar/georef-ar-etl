@@ -1,7 +1,6 @@
-import hashlib
 from .process import Process, CompositeStep
 from .models import Province, Department, Street, StreetBlock
-from .exceptions import ValidationException, ProcessException
+from .exceptions import ValidationException
 from .streets import update_commune_data
 from . import extractors, loaders, utils, constants, patch, transformers
 
