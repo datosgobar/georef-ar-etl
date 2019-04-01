@@ -1,39 +1,39 @@
+from sqlalchemy.sql import select, func
 from .exceptions import ValidationException, ProcessException
-from .process import Process, CompositeStep
+from .process import Process, CompositeStep, Step
 from .models import Province, Department, Street
-from . import extractors, transformers, loaders, utils, constants, patch
+from . import extractors, loaders, utils, constants, patch
 
 
 def create_process(config):
+    url_template = config.get('etl', 'street_blocks_url_template')
+
+    download_cstep = CompositeStep([
+        extractors.DownloadURLStep(
+            '{}_{}.csv'.format(constants.STREET_BLOCKS, province_id),
+            url_template.format(province_id),
+            params={
+                'CQL_FILTER': 'nomencla like \'{}%\''.format(province_id)
+            }
+        ) for province_id in constants.PROVINCE_IDS
+    ])
+
+    ogr2ogr_cstep = CompositeStep([
+        loaders.Ogr2ogrStep(table_name=constants.STREET_BLOCKS_TMP_TABLE,
+                            geom_type='MultiLineString')
+    ] + [
+        loaders.Ogr2ogrStep(table_name=constants.STREET_BLOCKS_TMP_TABLE,
+                            geom_type='MultiLineString', overwrite=False)
+    ] * (len(download_cstep) - 1))
+
     return Process(constants.STREETS, [
         utils.CheckDependenciesStep([Province, Department]),
-        extractors.DownloadURLStep(constants.STREETS + '.zip',
-                                   config.get('etl', 'streets_url')),
-        transformers.ExtractZipStep(),
-        loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
-                            geom_type='MultiLineString',
-                            env={'SHAPE_ENCODING': 'latin1'}),
-        utils.ValidateTableSchemaStep({
-            'ogc_fid': 'integer',
-            'nomencla': 'varchar',
-            'codigo': 'double',
-            'tipo': 'varchar',
-            'nombre': 'varchar',
-            'desdei': 'double',
-            'desded': 'double',
-            'hastai': 'double',
-            'hastad': 'double',
-            'codloc': 'varchar',
-            'codaglo': 'varchar',
-            'link': 'varchar',
-            'geom': 'geometry'
-        }),
-        CompositeStep([
-            StreetsExtractionStep(),
-            utils.DropTableStep()
-        ]),
+        download_cstep,
+        ogr2ogr_cstep,
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=151000, tolerance=500),
+        # utils.ValidateTableSchemaStep(),
+        StreetsExtractionStep(),
+        utils.ValidateTableSizeStep(size=151000, tolerance=1000),
         loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
                                    constants.STREETS + '.json'),
         utils.CopyFileStep(constants.LATEST_DIR,
@@ -61,41 +61,89 @@ def update_commune_data(row):
         len(dept_id_part), '0') + id_rest
 
 
-class StreetsExtractionStep(transformers.EntitiesExtractionStep):
+class StreetsExtractionStep(Step):
     def __init__(self):
-        super().__init__('streets_extraction', Street,
-                         entity_class_pkey='id',
-                         tmp_entity_class_pkey='nomencla')
+        super().__init__('streets_extraction')
 
-    def _patch_tmp_entities(self, tmp_streets, ctx):
-        patch.apply_fn(tmp_streets, update_commune_data, ctx,
-                       tmp_streets.nomencla.like('02%'))
+    def _patch_tmp_blocks(self, tmp_blocks, ctx):
+        patch.apply_fn(tmp_blocks, update_commune_data, ctx,
+                       tmp_blocks.nomencla.like('02%'))
 
         def update_ushuaia(row):
             row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
 
         # Actualizar calles de Ushuaia (agregado en ETL2)
-        patch.apply_fn(tmp_streets, update_ushuaia, ctx,
-                       tmp_streets.nomencla.like('94014%'))
+        patch.apply_fn(tmp_blocks, update_ushuaia, ctx,
+                       tmp_blocks.nomencla.like('94014%'))
 
         def update_rio_grande(row):
             row.nomencla = '94008' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
 
         # Actualizar calles de Río Grande (agregado en ETL2)
-        patch.apply_fn(tmp_streets, update_rio_grande, ctx,
-                       tmp_streets.nomencla.like('94007%'))
+        patch.apply_fn(tmp_blocks, update_rio_grande, ctx,
+                       tmp_blocks.nomencla.like('94007%'))
 
-    def _build_entities_query(self, tmp_entities, ctx):
-        return ctx.session.query(tmp_entities).filter(
-            tmp_entities.tipo != 'OTRO')
+    def _distinct_streets_count(self, tmp_blocks, ctx):
+        return ctx.session.query(tmp_blocks).\
+            filter(tmp_blocks.tipo != 'OTRO').\
+            distinct(tmp_blocks.nomencla).\
+            count()
 
-    def _street_valid_num(self, tmp_street):
-        start = min(tmp_street.desdei or 0, tmp_street.desded or 0)
-        end = max(tmp_street.hastai or 0, tmp_street.hastad or 0)
-        return end - start > 0
+    def _streets_query(self, tmp_blocks, ctx):
+        fields = [
+            func.min(tmp_blocks.ogc_fid).label('ogc_fid'),
+            tmp_blocks.nomencla,
+            func.min(tmp_blocks.nombre).label('nombre'),
+            func.min(tmp_blocks.tipo).label('tipo'),
+            func.min(tmp_blocks.desdei).label('desdei'),
+            func.min(tmp_blocks.desded).label('desded'),
+            func.max(tmp_blocks.hastai).label('hastai'),
+            func.max(tmp_blocks.hastad).label('hastad'),
+            tmp_blocks.geom.ST_Union().label('geom')
+        ]
 
-    def _process_entity(self, tmp_street, cached_session, ctx):
-        street_id = tmp_street.nomencla
+        return select(fields).\
+            group_by(tmp_blocks.nomencla).\
+            where(tmp_blocks.tipo != 'OTRO')
+
+    def _run_internal(self, tmp_blocks, ctx):
+        self._patch_tmp_blocks(tmp_blocks, ctx)
+        ctx.session.query(Street).delete()
+
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        cached_session = ctx.cached_session()
+        entities = []
+        errors = []
+        query = self._streets_query(tmp_blocks, ctx)
+
+        ctx.report.info('Calculando cantidad de calles...')
+        count = self._distinct_streets_count(tmp_blocks, ctx)
+        ctx.report.info('Calles: {}'.format(count))
+
+        ctx.report.info('Generando calles a partir de cuadras...')
+
+        for tmp_block in utils.pbar(ctx.engine.execute(query), ctx,
+                                    total=count):
+            try:
+                street = self._street_from_block(tmp_block, cached_session,
+                                                 ctx)
+                entities.append(street)
+            except ValidationException:
+                errors.append(tmp_block.nomencla)
+
+            if len(entities) > bulk_size:
+                ctx.session.add_all(entities)
+                entities.clear()
+
+        ctx.session.add_all(entities)
+
+        ctx.report.info('Errores: {}'.format(len(errors)))
+        report_data = ctx.report.get_data(self.name)
+        report_data['errors'] = errors
+        report_data['streets_count'] = count
+
+    def _street_from_block(self, block, cached_session, ctx):
+        street_id = block.nomencla
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
 
@@ -109,23 +157,16 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        if not self._street_valid_num(tmp_street):
-            report_data = ctx.report.get_data(self.name)
-            invalid_num_streets_ids = report_data.setdefault(
-                'invalid_num_streets_ids', [])
-
-            invalid_num_streets_ids.append(street_id)
-
         return Street(
             id=street_id,
-            nombre=utils.clean_string(tmp_street.nombre),
-            categoria=utils.clean_string(tmp_street.tipo),
+            nombre=utils.clean_string(block.nombre),
+            categoria=utils.clean_string(block.tipo),
             fuente=constants.STREETS_SOURCE,
-            inicio_derecha=tmp_street.desded or 0,
-            fin_derecha=tmp_street.hastad or 0,
-            inicio_izquierda=tmp_street.desdei or 0,
-            fin_izquierda=tmp_street.hastai or 0,
-            geometria=tmp_street.geom,
+            inicio_derecha=block.desded or 0,
+            fin_derecha=block.hastad or 0,
+            inicio_izquierda=block.desdei or 0,
+            fin_izquierda=block.hastai or 0,
+            geometria=block.geom,
             provincia_id=province.id,
             departamento_id=department.id
         )
