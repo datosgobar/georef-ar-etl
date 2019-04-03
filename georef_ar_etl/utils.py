@@ -164,8 +164,11 @@ def automap_table(table_name, ctx, metadata=None):
 
 
 def clean_string(s):
+    # Si hay más de una línea, tomar la primera
     s = s.splitlines()[0]
-    return s.strip()
+    # Normalizar espacios
+    s = ' '.join(s.split())
+    return s
 
 
 def pbar(iterator, ctx, total=None):
