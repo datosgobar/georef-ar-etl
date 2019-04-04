@@ -1,13 +1,20 @@
 # pylint: disable=no-self-argument
 import json
 from sqlalchemy import Column, String, Float, Integer, ForeignKey
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, relationship
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from geoalchemy2 import Geometry
 from .exceptions import ValidationException
 from . import constants
 
 Base = declarative_base()
+
+
+def get_relationship(table, cascade='all, delete', passive_deletes=True,
+                     **kwargs):
+    return relationship(table, cascade=cascade,
+                        passive_deletes=passive_deletes,
+                        **kwargs)
 
 
 class EntityMixin:
@@ -70,6 +77,11 @@ class Province(Base, EntityMixin):
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
 
+    departamentos = get_relationship('Department')
+    municipios = get_relationship('Municipality')
+    localidades = get_relationship('Locality')
+    calles = get_relationship('Street')
+
     def to_dict(self, session):
         return {
             'id': self.id,
@@ -95,6 +107,9 @@ class Department(Base, EntityMixin, InProvinceMixin):
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+
+    localidades = get_relationship('Locality')
+    calles = get_relationship('Street')
 
     def to_dict(self, session):
         return {
@@ -124,6 +139,8 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+
+    localidades = get_relationship('Locality')
 
     def to_dict(self, session):
         return {
@@ -167,6 +184,8 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
         return category
 
     def municipio_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
         if not self.municipio_id:
             return None
 
@@ -210,6 +229,12 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     _id_len = constants.STREET_ID_LEN
 
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
+
+    intersecciones_a = get_relationship('Intersection',
+                                        foreign_keys='Intersection.calle_a_id')
+    intersecciones_b = get_relationship('Intersection',
+                                        foreign_keys='Intersection.calle_b_id')
+    cuadras = get_relationship('StreetBlock')
 
     def to_dict_simple(self, session):
         return {
