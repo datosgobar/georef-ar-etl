@@ -35,7 +35,6 @@ class EntityMixin:
 
 
 class InProvinceMixin:
-    # TODO: testear si funciona bien el on cascade delete
     @declared_attr
     def provincia_id(cls):
         return Column(
