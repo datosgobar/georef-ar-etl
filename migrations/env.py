@@ -31,15 +31,23 @@ config.set_main_option('sqlalchemy.url', db_url)
 def include_object(obj, name, type_, reflected, compare_to):
     # NO incluir en migraciones:
     # - La tabla especial 'spatial_ref_sys' generada por la extensión PostGIS
+    # - Tablas tmp_
     # - Índices
-    return name != 'spatial_ref_sys' and type_ != 'index'
+    return name != 'spatial_ref_sys' and \
+        not name.startswith('tmp') and \
+        type_ != 'index'
 
 
 def process_revision_directives(context, revision, directives):
+    # No generar migraciones vacías
     if config.cmd_opts.autogenerate:
         script = directives[0]
         if script.upgrade_ops.is_empty():
             directives[:] = []
+
+###################################
+#              Fin                #
+###################################
 
 
 # other values from the config, defined by the needs of env.py,
