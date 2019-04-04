@@ -77,9 +77,13 @@ class Process:
                                                           step.name))
                 previous_result = step.run(previous_result, ctx)
                 ctx.report.info('Paso finalizado.\n')
-        finally:
-            ctx.report.info('Commit...')
-            ctx.session.commit()
+        except Exception as e:
+            ctx.report.error('Realizando Rollback...')
+            ctx.session.rollback()
+            raise e
+
+        ctx.report.info('Commit...')
+        ctx.session.commit()
 
         ctx.report.info('Ejecución de proceso finalizada.\n')
         return previous_result

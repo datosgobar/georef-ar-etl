@@ -5,6 +5,7 @@ import shutil
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy import MetaData
+import geojson
 from . import constants, utils
 from .process import Step, ProcessException
 
@@ -112,5 +113,37 @@ class CreateJSONFileStep(Step):
         ctx.report.info('Escribiendo archivo JSON...')
         with ctx.fs.open(self._filename, 'w') as f:
             json.dump(contents, f, ensure_ascii=False)
+
+        return self._filename
+
+
+class CreateGeoJSONFileStep(Step):
+    def __init__(self, table, *filename_parts):
+        super().__init__('create_geojson_file', reads_input=False)
+        self._table = table
+        self._filename = os.path.join(*filename_parts)
+
+    def _run_internal(self, data, ctx):
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        query = ctx.session.query(self._table).yield_per(bulk_size)
+        count = query.count()
+        features = []
+        cached_session = ctx.cached_session()
+
+        ctx.report.info('Transformando entidades a GeoJSON...')
+        for entity in utils.pbar(query, ctx, total=count):
+            entity_dict = entity.to_dict(cached_session)
+            del entity_dict['geometria']
+
+            centroid = entity_dict.pop('centroide')
+            point = geojson.Point((centroid['lon'], centroid['lat']))
+
+            feature = geojson.Feature(geometry=point, properties=entity_dict)
+            features.append(feature)
+
+        ctx.report.info('Escribiendo archivo GeoJSON...')
+        with ctx.fs.open(self._filename, 'w') as f:
+            geojson.dump(geojson.FeatureCollection(features), f,
+                         ensure_ascii=False)
 
         return self._filename

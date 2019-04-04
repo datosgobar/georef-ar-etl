@@ -27,10 +27,18 @@ def create_process(config):
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=24),
-        loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
-                                   constants.PROVINCES + '.json'),
-        utils.CopyFileStep(constants.LATEST_DIR,
-                           constants.PROVINCES + '.json')
+        CompositeStep([
+            loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
+                                       constants.PROVINCES + '.json'),
+            loaders.CreateGeoJSONFileStep(Province, constants.ETL_VERSION,
+                                          constants.PROVINCES + '.geojson')
+        ]),
+        CompositeStep([
+            utils.CopyFileStep(constants.LATEST_DIR,
+                               constants.PROVINCES + '.json'),
+            utils.CopyFileStep(constants.LATEST_DIR,
+                               constants.PROVINCES + '.geojson')
+        ])
     ])
 
 

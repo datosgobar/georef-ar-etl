@@ -89,10 +89,12 @@ class Province(Base, EntityMixin):
             'nombre_completo': self.nombre_completo,
             'fuente': self.fuente,
             'categoria': self.categoria,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
             'iso_id': self.iso_id,
             'iso_nombre': self.iso_nombre,
-            'lat': self.lat,
-            'lon': self.lon,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
@@ -123,8 +125,10 @@ class Department(Base, EntityMixin, InProvinceMixin):
             },
             'fuente': self.fuente,
             'categoria': self.categoria,
-            'lat': self.lat,
-            'lon': self.lon,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
@@ -154,8 +158,10 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
             },
             'fuente': self.fuente,
             'categoria': self.categoria,
-            'lat': self.lat,
-            'lon': self.lon,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
@@ -209,8 +215,10 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
                 'nombre': self.municipio_nombre(session)
             },
             'categoria': self.categoria,
-            'lat': self.lat,
-            'lon': self.lon,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
