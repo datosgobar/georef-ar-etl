@@ -82,8 +82,10 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                        cod_depto='014')
 
     def _build_entities_query(self, tmp_entities, ctx):
-        return ctx.session.query(tmp_entities).filter(
-            tmp_entities.tipo_bahra.in_(constants.BAHRA_TYPES.keys()))
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        return ctx.session.query(tmp_entities).\
+            filter(tmp_entities.tipo_bahra.in_(constants.BAHRA_TYPES.keys())).\
+            yield_per(bulk_size)
 
     def _process_entity(self, tmp_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_locality.geom,

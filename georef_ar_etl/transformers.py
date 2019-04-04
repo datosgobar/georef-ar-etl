@@ -62,19 +62,14 @@ class EntitiesExtractionStep(Step):
         self._entity_class_pkey = entity_class_pkey
         self._tmp_entity_class_pkey = tmp_entity_class_pkey
 
-    def _update_entity(self, new_entity, prev_entity):
-        for attribute, val in vars(new_entity).items():
-            if not attribute.startswith('_'):
-                setattr(prev_entity, attribute, val)
-
     def _run_internal(self, tmp_entities, ctx):
+        ctx.report.info('Comenzando extracción...')
         self._patch_tmp_entities(tmp_entities, ctx)
 
         entities = []
         bulk_size = ctx.config.getint('etl', 'bulk_size')
-        query = self._build_entities_query(tmp_entities, ctx).yield_per(
-            bulk_size)
-        count = query.count()
+        query = self._build_entities_query(tmp_entities, ctx)
+        count = self._entities_query_count(tmp_entities, ctx)
         cached_session = ctx.cached_session()
         deleted = []
         updated = set()
@@ -101,7 +96,7 @@ class EntitiesExtractionStep(Step):
                 continue
 
             if prev_entity:
-                self._update_entity(new_entity, prev_entity)
+                utils.update_entity(new_entity, prev_entity)
                 updated.add(entity_id)
             else:
                 added.add(entity_id)
@@ -140,7 +135,11 @@ class EntitiesExtractionStep(Step):
         return self._entity_class
 
     def _build_entities_query(self, tmp_entities, ctx):
-        return ctx.session.query(tmp_entities)
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        return ctx.session.query(tmp_entities).yield_per(bulk_size)
+
+    def _entities_query_count(self, tmp_entities, ctx):
+        return self._build_entities_query(tmp_entities, ctx).count()
 
     def _process_entity(self, entity, cached_session, ctx):
         raise NotImplementedError()

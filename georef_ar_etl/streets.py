@@ -1,9 +1,9 @@
 from sqlalchemy.sql import select, func
 from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException, ProcessException
-from .process import Process, CompositeStep, Step
+from .process import Process, CompositeStep
 from .models import Province, Department, Street
-from . import extractors, loaders, utils, constants, patch
+from . import extractors, loaders, utils, constants, patch, transformers
 
 
 def create_process(config):
@@ -91,11 +91,13 @@ def update_commune_data(row):
         len(dept_id_part), '0') + id_rest
 
 
-class StreetsExtractionStep(Step):
+class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
-        super().__init__('streets_extraction')
+        super().__init__('streets_extraction', Street,
+                         entity_class_pkey='id',
+                         tmp_entity_class_pkey='nomencla')
 
-    def _patch_tmp_blocks(self, tmp_blocks, ctx):
+    def _patch_tmp_entities(self, tmp_blocks, ctx):
         patch.apply_fn(tmp_blocks, update_commune_data, ctx,
                        tmp_blocks.nomencla.like('02%'))
 
@@ -115,13 +117,13 @@ class StreetsExtractionStep(Step):
 
         ctx.session.commit()
 
-    def _distinct_streets_count(self, tmp_blocks, ctx):
+    def _entities_query_count(self, tmp_blocks, ctx):
         return ctx.session.query(tmp_blocks).\
             filter(tmp_blocks.tipo != constants.STREET_TYPE_OTHER).\
             distinct(tmp_blocks.nomencla).\
             count()
 
-    def _streets_query(self, tmp_blocks):
+    def _build_entities_query(self, tmp_blocks, ctx):
         fields = [
             func.min(tmp_blocks.ogc_fid).label('ogc_fid'),
             tmp_blocks.nomencla,
@@ -134,48 +136,13 @@ class StreetsExtractionStep(Step):
             tmp_blocks.geom.ST_Union().label('geom')
         ]
 
-        return select(fields).\
+        statement = select(fields).\
             group_by(tmp_blocks.nomencla).\
             where(tmp_blocks.tipo != constants.STREET_TYPE_OTHER)
 
-    def _run_internal(self, tmp_blocks, ctx):
-        self._patch_tmp_blocks(tmp_blocks, ctx)
-        ctx.session.query(Street).delete()
+        return ctx.engine.execute(statement)
 
-        bulk_size = ctx.config.getint('etl', 'bulk_size')
-        cached_session = ctx.cached_session()
-        entities = []
-        errors = []
-        query = self._streets_query(tmp_blocks)
-
-        ctx.report.info('Calculando cantidad de calles...')
-        count = self._distinct_streets_count(tmp_blocks, ctx)
-        ctx.report.info('Calles: {}'.format(count))
-
-        ctx.report.info('Generando calles a partir de cuadras...')
-
-        for tmp_block in utils.pbar(ctx.engine.execute(query), ctx,
-                                    total=count):
-            try:
-                street = self._street_from_block(tmp_block, cached_session)
-                entities.append(street)
-
-                if len(entities) > bulk_size:
-                    ctx.session.add_all(entities)
-                    entities.clear()
-            except ValidationException:
-                errors.append(tmp_block.nomencla)
-
-        ctx.session.add_all(entities)
-
-        ctx.report.info('Errores: {}'.format(len(errors)))
-        report_data = ctx.report.get_data(self.name)
-        report_data['errors'] = errors
-        report_data['streets_count'] = count
-
-        return Street
-
-    def _street_from_block(self, block, cached_session):
+    def _process_entity(self, block, cached_session, ctx):
         street_id = block.nomencla
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]

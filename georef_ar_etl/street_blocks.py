@@ -1,4 +1,4 @@
-from .process import Process, Step
+from .process import Process, Step, CompositeStep
 from .models import Street, StreetBlock
 from . import utils, constants
 
@@ -13,7 +13,12 @@ def create_process(_config):
         utils.FunctionStep(ctx_fn=fetch_tmp_blocks_table,
                            name='fetch_tmp_blocks_table',
                            reads_input=False),
-        StreetBlocksExtractionStep()
+        CompositeStep([
+            StreetBlocksExtractionStep(),
+            utils.DropTableStep()
+        ]),
+        utils.FirstResultStep,
+        utils.ValidateTableSizeStep(size=1141000, tolerance=1000)
     ])
 
 

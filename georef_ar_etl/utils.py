@@ -163,6 +163,12 @@ def automap_table(table_name, ctx, metadata=None):
     return getattr(base.classes, table_name)
 
 
+def update_entity(new_entity, prev_entity):
+    for attribute, val in vars(new_entity).items():
+        if not attribute.startswith('_'):
+            setattr(prev_entity, attribute, val)
+
+
 def clean_string(s):
     # Si hay más de una línea, tomar la primera
     s = s.splitlines()[0]
