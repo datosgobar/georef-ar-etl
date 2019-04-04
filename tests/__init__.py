@@ -164,6 +164,7 @@ class ETLTestCase(TestCase):
         blocks = cls.create_test_blocks()
         step = StreetsExtractionStep()
         step.run(blocks, cls._ctx)
+        return blocks
 
     @classmethod
     def create_test_blocks(cls):

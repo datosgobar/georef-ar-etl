@@ -51,6 +51,7 @@ class StreetBlocksExtractionStep(Step):
         ctx.session.add_all(entities)
 
         ctx.report.info('Cuadras procesadas.')
+        return StreetBlock
 
     def _process_block(self, tmp_block, street):
         ogc_fid = str(tmp_block.ogc_fid).rjust(5, '0')

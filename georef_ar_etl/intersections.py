@@ -29,7 +29,6 @@ class IntersectionsCreationStep(Step):
         for i, province in enumerate(provinces):
             self._insert_province_intersections(province, i + 1, total + 1,
                                                 ctx)
-            break
         self._insert_province_intersections(None, total + 1, total + 1, ctx)
 
         return Intersection
