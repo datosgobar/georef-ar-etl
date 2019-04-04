@@ -230,6 +230,18 @@ class DoorNumberedMixin:
     inicio_izquierda = Column(Integer, nullable=False)
     fin_izquierda = Column(Integer, nullable=False)
 
+    def door_numbers_dict(self):
+        return {
+            'inicio': {
+                'derecha': self.inicio_derecha,
+                'izquierda': self.inicio_izquierda
+            },
+            'fin': {
+                'derecha': self.fin_derecha,
+                'izquierda': self.fin_izquierda
+            }
+        }
+
 
 class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
              DoorNumberedMixin):
@@ -268,16 +280,7 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
             self.departamento_nombre(session),
             self.provincia_nombre(session)
         )
-        base['altura'] = {
-            'inicio': {
-                'derecha': self.inicio_derecha,
-                'izquierda': self.inicio_izquierda
-            },
-            'fin': {
-                'derecha': self.fin_derecha,
-                'izquierda': self.fin_izquierda
-            }
-        }
+        base['altura'] = self.door_numbers_dict()
         base['geometria'] = json.loads(session.scalar(
             self.geometria.ST_AsGeoJSON()))
 
@@ -299,16 +302,7 @@ class StreetBlock(Base, DoorNumberedMixin):
         return {
             'id': self.id,
             'calle': street.to_dict_simple(session),
-            'altura': {
-                'inicio': {
-                    'derecha': self.inicio_derecha,
-                    'izquierda': self.inicio_izquierda
-                },
-                'fin': {
-                    'derecha': self.fin_derecha,
-                    'izquierda': self.fin_izquierda
-                }
-            },
+            'altura': self.door_numbers_dict(),
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
