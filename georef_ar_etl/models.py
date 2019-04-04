@@ -285,6 +285,26 @@ class StreetBlock(Base, DoorNumberedMixin):
                       nullable=False)
     geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
 
+    def to_dict(self, session):
+        street = session.query(Street).get(self.calle_id)
+
+        return {
+            'id': self.id,
+            'calle': street.to_dict_simple(session),
+            'altura': {
+                'inicio': {
+                    'derecha': self.inicio_derecha,
+                    'izquierda': self.inicio_izquierda
+                },
+                'fin': {
+                    'derecha': self.fin_derecha,
+                    'izquierda': self.fin_izquierda
+                }
+            },
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
+
 
 class Intersection(Base):
     __tablename__ = constants.INTERSECTIONS_ETL_TABLE

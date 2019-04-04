@@ -1,6 +1,6 @@
 from .process import Process, Step, CompositeStep
 from .models import Street, StreetBlock
-from . import utils, constants
+from . import utils, constants, loaders
 
 
 def create_process(_config):
@@ -18,7 +18,11 @@ def create_process(_config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=1141000, tolerance=1000)
+        utils.ValidateTableSizeStep(size=1141000, tolerance=1000),
+        loaders.CreateJSONFileStep(StreetBlock, constants.ETL_VERSION,
+                                   constants.STREET_BLOCKS + '.json'),
+        utils.CopyFileStep(constants.LATEST_DIR,
+                           constants.STREET_BLOCKS + '.json')
     ])
 
 
