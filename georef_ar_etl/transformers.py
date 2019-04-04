@@ -62,6 +62,11 @@ class EntitiesExtractionStep(Step):
         self._entity_class_pkey = entity_class_pkey
         self._tmp_entity_class_pkey = tmp_entity_class_pkey
 
+    def _update_entity(self, new_entity, prev_entity):
+        for attribute, val in vars(new_entity).items():
+            if not attribute.startswith('_'):
+                setattr(prev_entity, attribute, val)
+
     def _run_internal(self, tmp_entities, ctx):
         self._patch_tmp_entities(tmp_entities, ctx)
 
@@ -83,27 +88,24 @@ class EntitiesExtractionStep(Step):
         ctx.report.info('Insertando entidades procesadas...')
 
         for tmp_entity in utils.pbar(query, ctx, total=count):
+            entity_id = getattr(tmp_entity, self._tmp_entity_class_pkey)
+            prev_entity = ctx.session.query(self._entity_class).get(entity_id)
+
             try:
                 new_entity = self._process_entity(tmp_entity, cached_session,
                                                   ctx)
             except ValidationException as e:
                 errors.append(
-                    (getattr(tmp_entity, self._tmp_entity_class_pkey), str(e))
+                    (entity_id, str(e))
                 )
                 continue
 
-            new_entity_id = getattr(new_entity, self._entity_class_pkey)
-            found = ctx.session.query(self._entity_class).\
-                filter(getattr(self._entity_class, self._entity_class_pkey) ==
-                       new_entity_id).\
-                delete()
-
-            if found:
-                updated.add(new_entity_id)
+            if prev_entity:
+                self._update_entity(new_entity, prev_entity)
+                updated.add(entity_id)
             else:
-                added.add(new_entity_id)
-
-            entities.append(new_entity)
+                added.add(entity_id)
+                entities.append(new_entity)
 
             if len(entities) > bulk_size:
                 ctx.session.add_all(entities)
