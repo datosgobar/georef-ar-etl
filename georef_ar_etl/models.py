@@ -214,7 +214,7 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
                 'id': self.municipio_id,
                 'nombre': self.municipio_nombre(session)
             },
-            'categoria': self.categoria,
+            'categoria': constants.BAHRA_TYPES[self.categoria],
             'centroide': {
                 'lon': self.lon,
                 'lat': self.lat
