@@ -2,14 +2,54 @@ from .exceptions import ProcessException
 
 
 class Step:
+    """Representa una acción a ejecutar dentro de un contexto dado.
+    Step es una clase abstracta.
+
+    Attributes:
+        _name (str): Nombre del paso.
+        _reads_input (bool): Falso si el paso no requiere de un valor de
+            entrada para ser ejecutado.
+
+    """
+
     def __init__(self, name, reads_input=True):
+        """Inicializa un objeto de tipo 'Step'.
+
+        Args:
+            name (str): Ver atributo '_name'.
+            reads_input (bool): Ver atributo '_reads_input'.
+
+        """
         self._name = name
         self._reads_input = reads_input
 
     def run(self, data, ctx):
+        """Ejecuta el paso en un contexto.
+
+        Args:
+            data (object): Valor de entrada.
+            ctx (Context): Contexto de ejecución.
+
+        Returns:
+            object: Resultado de la ejecución.
+
+        """
+        # Delegar la ejecución real a _run_internal()
+        # Si se desea agregar comportamiento común a todos los Steps,
+        # se puede agregar en este método (run()).
         return self._run_internal(data, ctx)
 
     def _run_internal(self, data, ctx):
+        """Ejecuta el paso en un contexto (método abstracto).
+
+        Args:
+            data (object): Valor de entrada.
+            ctx (Context): Contexto de ejecución.
+
+        Returns:
+            object: Resultado de la ejecución.
+
+        """
         raise NotImplementedError()
 
     @property
@@ -21,11 +61,40 @@ class Step:
 
 
 class CompositeStep(Step):
+    """Representa un conjunto de pasos a ser ejecutados de forma secuencial,
+    utilizando un valor de entrada en común. Notar que CompositeStep es un Step
+    en sí mismo.
+
+    Attributes:
+        _steps (list): Lista de pasos internos.
+
+    """
+
     def __init__(self, steps, name=None):
+        """Inicializa un objeto de tipo 'CompositeStep'.
+
+        Args:
+            steps (list): Ver atributo '_steps'.
+            name (str): Ver atributo '_name'.
+
+        """
         super().__init__(name or 'composite_step')
         self._steps = steps
 
     def _run_internal(self, data, ctx):
+        """Ejecuta el paso compuesto dentro de un contexto dado.
+        Si el valor de entrada es una lista, se ejecuta el subpaso i con el
+        valor número i de la lista. Si el valor de entrada no es una lista, se
+        ejecuta cada subpaso con ese mismo valor.
+
+        Args:
+            data (object): Valor de entrada.
+            ctx (Context): Contexto de ejecución.
+
+        Returns:
+            list: Lista con resultados de cada paso.
+
+        """
         results = []
         if isinstance(data, list):
             step_inputs = data
@@ -43,15 +112,46 @@ class CompositeStep(Step):
         return len(self._steps)
 
     def reads_input(self):
+        # El paso requiere un valor de entrada si cualquiera de los subpasos
+        # lo requiere
         return any(step.reads_input() for step in self._steps)
 
 
 class Process:
+    """Representa un proceso (secuencia de pasos) a ser ejecutado en un
+    contexto.
+
+    Attributes:
+        _name (str): Nombre del proceso.
+        _steps (list): Lista de pasos a ejecutar.
+
+    """
+
     def __init__(self, name, steps):
+        """Inicializa un objeto de tipo 'Process'.
+
+        Args:
+            _name (str): Ver atributo '_name'.
+            _steps (str): Ver atributo '_steps'.
+
+        """
         self._name = name
         self._steps = steps
 
     def run(self, ctx, start=None, end=None):
+        """Ejecuta el proceso dentro de un contexto dado.
+
+        Args:
+            ctx (Context): Contexto de ejecución.
+            start (int): Índice (desde 1) de paso a utilizar como inicial
+                (opcional).
+            end (int): Índice (desde 1) de paso a utilizar como final
+                (inclusivo) (opcional).
+
+        Returns:
+            object: Resultado de la ejecución (último paso).
+
+        """
         self._print_title(ctx)
         previous_result = None
         start = start or 1
@@ -72,6 +172,8 @@ class Process:
                     start, initial.name))
 
         try:
+            # Ejecutar cada paso tomando la salida del paso anterior y
+            # utilizándola como entrada para el paso siguiente
             for i, step in enumerate(self._steps[start - 1:end]):
                 ctx.report.info('==> Paso #{}: {}'.format(i + start,
                                                           step.name))
@@ -97,6 +199,12 @@ class Process:
         return self._steps
 
     def print_info(self, ctx):
+        """Agrega información del proceso a un reporte en un contexto.
+
+        Args:
+            ctx (Context): Contexto de ejecución.
+
+        """
         self._print_title(ctx)
         for i, step in enumerate(self._steps):
             ctx.report.info('{} {}: {}'.format(
@@ -108,6 +216,13 @@ class Process:
         ctx.report.info('\n')
 
     def _print_title(self, ctx, separator_width=60):
+        """Agrega un separador de texto a un reporte en un contexto.
+
+        Args:
+            ctx (Context): Contexto de ejecución.
+            separator_width (int): Ancho del separador en caracteres.
+
+        """
         ctx.report.info("=" * separator_width)
         ctx.report.info("|" + " " * (separator_width - 2) + "|")
 

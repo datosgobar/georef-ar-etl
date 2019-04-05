@@ -1,6 +1,12 @@
 class ValidationException(Exception):
-    pass
+    """Representa un error ocurrido durante la creación de una nueva entidad.
+
+    """
 
 
 class ProcessException(Exception):
-    pass
+    """Representa un error genérico ocurrido durante la ejecución de un
+    proceso. Si se lanza esta excepción, se cancela la ejecución del proceso
+    actual y se pasa al siguiente (si existe).
+
+    """
