@@ -14,7 +14,7 @@ def get_mock_step(return_value=None, raises_exception=False, reads_input=True):
     return step
 
 
-class TestCheckDependenciesStep(ETLTestCase):
+class TestProcess(ETLTestCase):
     _uses_db = False
 
     def test_process(self):

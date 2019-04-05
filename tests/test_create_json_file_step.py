@@ -5,7 +5,7 @@ from georef_ar_etl.loaders import CreateJSONFileStep
 from . import ETLTestCase
 
 
-class TestCopyFileStep(ETLTestCase):
+class TestCreateJSONFileStep(ETLTestCase):
     def setUp(self):
         super().setUp()
         self.create_test_provinces(extract=True)
