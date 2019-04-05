@@ -63,10 +63,18 @@ def create_process(config):
         }),
         StreetsExtractionStep(),
         utils.ValidateTableSizeStep(size=151000, tolerance=1000),
-        loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
-                                   constants.STREETS + '.json'),
-        utils.CopyFileStep(constants.LATEST_DIR,
-                           constants.STREETS + '.json')
+        CompositeStep([
+            loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
+                                       constants.STREETS + '.json'),
+            loaders.CreateCSVFileStep(Street, constants.ETL_VERSION,
+                                      constants.STREETS + '.csv'),
+        ]),
+        CompositeStep([
+            utils.CopyFileStep(constants.LATEST_DIR,
+                               constants.STREETS + '.json'),
+            utils.CopyFileStep(constants.LATEST_DIR,
+                               constants.STREETS + '.csv')
+        ])
     ])
 
 

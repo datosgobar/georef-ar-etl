@@ -31,13 +31,17 @@ def create_process(config):
             loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
                                        constants.PROVINCES + '.json'),
             loaders.CreateGeoJSONFileStep(Province, constants.ETL_VERSION,
-                                          constants.PROVINCES + '.geojson')
+                                          constants.PROVINCES + '.geojson'),
+            loaders.CreateCSVFileStep(Province, constants.ETL_VERSION,
+                                      constants.PROVINCES + '.csv')
         ]),
         CompositeStep([
             utils.CopyFileStep(constants.LATEST_DIR,
                                constants.PROVINCES + '.json'),
             utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.PROVINCES + '.geojson')
+                               constants.PROVINCES + '.geojson'),
+            utils.CopyFileStep(constants.LATEST_DIR,
+                               constants.PROVINCES + '.csv')
         ])
     ])
 

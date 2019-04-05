@@ -274,6 +274,8 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     def to_dict(self, session):
         base = self.to_dict_simple(session)
 
+        # TODO: Dejar de escribir este campo, ya que puede ser generado
+        # con los otros datos (adaptar georef-ar-api)
         base['nomenclatura'] = '{}, {}, {}'.format(
             self.nombre,
             self.departamento_nombre(session),

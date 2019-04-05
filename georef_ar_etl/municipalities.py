@@ -30,17 +30,23 @@ def create_process(config):
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=1800, tolerance=100),
         CompositeStep([
-            loaders.CreateJSONFileStep(Municipality, constants.ETL_VERSION,
-                                       constants.MUNICIPALITIES + '.json'),
+            loaders.CreateJSONFileStep(
+                Municipality, constants.ETL_VERSION,
+                constants.MUNICIPALITIES + '.json'),
             loaders.CreateGeoJSONFileStep(
                 Municipality, constants.ETL_VERSION,
-                constants.MUNICIPALITIES + '.geojson')
+                constants.MUNICIPALITIES + '.geojson'),
+            loaders.CreateCSVFileStep(
+                Municipality, constants.ETL_VERSION,
+                constants.MUNICIPALITIES + '.csv')
         ]),
         CompositeStep([
             utils.CopyFileStep(constants.LATEST_DIR,
                                constants.MUNICIPALITIES + '.json'),
             utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.MUNICIPALITIES + '.geojson')
+                               constants.MUNICIPALITIES + '.geojson'),
+            utils.CopyFileStep(constants.LATEST_DIR,
+                               constants.MUNICIPALITIES + '.csv')
         ])
     ])
 

@@ -22,7 +22,7 @@ class Step:
 
 class CompositeStep(Step):
     def __init__(self, steps, name=None):
-        super().__init__(name or 'multistep')
+        super().__init__(name or 'composite_step')
         self._steps = steps
 
     def _run_internal(self, data, ctx):
@@ -77,10 +77,10 @@ class Process:
                                                           step.name))
                 previous_result = step.run(previous_result, ctx)
                 ctx.report.info('Paso finalizado.\n')
-        except Exception as e:
+        except Exception:
             ctx.report.error('Realizando Rollback...')
             ctx.session.rollback()
-            raise e
+            raise
 
         ctx.report.info('Commit...')
         ctx.session.commit()

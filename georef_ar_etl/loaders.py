@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 import shutil
+import csv
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy import MetaData
@@ -145,5 +146,68 @@ class CreateGeoJSONFileStep(Step):
         with ctx.fs.open(self._filename, 'w') as f:
             geojson.dump(geojson.FeatureCollection(features), f,
                          ensure_ascii=False)
+
+        return self._filename
+
+
+def flatten_dict(d, max_depth=3, sep='_'):
+    """Aplana un diccionario recursivamente. Modifica el diccionario original.
+    Lanza un RuntimeError si no se pudo aplanar el diccionario
+    con el número especificado de profundidad.
+
+    Args:
+        d (dict): Diccionario a aplanar.
+        max_depth (int): Profundidad máxima a alcanzar.
+
+    Raises:
+        RuntimeError: cuando se alcanza la profundidad máxima. Se agrega esta
+            medida de seguridad en caso de tener un diccionario demasiado
+            profundo, o un diccionario con referencias cíclicas.
+
+    """
+    if max_depth <= 0:
+        raise RuntimeError("Maximum depth reached")
+
+    for key in list(d.keys()):
+        v = d[key]
+        if isinstance(v, dict):
+            flatten_dict(v, max_depth - 1, sep)
+
+            for subkey, subval in v.items():
+                flat_key = sep.join([key, subkey])
+                d[flat_key] = subval
+
+            del d[key]
+
+
+class CreateCSVFileStep(Step):
+    def __init__(self, table, *filename_parts):
+        super().__init__('create_csv_file', reads_input=False)
+        self._table = table
+        self._filename = os.path.join(*filename_parts)
+
+    def _run_internal(self, data, ctx):
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        query = ctx.session.query(self._table).yield_per(bulk_size)
+        count = query.count()
+        cached_session = ctx.cached_session()
+
+        first = ctx.session.query(self._table).first().to_dict(ctx.session)
+        del first['geometria']
+        flatten_dict(first)
+        fields = sorted(first.keys())
+
+        ctx.report.info('Transformando entidades a CSV...')
+        with ctx.fs.open(self._filename, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fields,
+                                    quoting=csv.QUOTE_NONNUMERIC)
+            writer.writeheader()
+
+            for entity in utils.pbar(query, ctx, total=count):
+                entity_dict = entity.to_dict(cached_session)
+                del entity_dict['geometria']
+                flatten_dict(entity_dict)
+
+                writer.writerow(entity_dict)
 
         return self._filename
