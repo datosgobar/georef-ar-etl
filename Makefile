@@ -4,6 +4,11 @@ ALEMBIC_COMMAND = alembic --config config/alembic.ini
 ETL_COMMAND = python -m georef_ar_etl
 TEST_FILES ?= *.py
 
+# Ejecución del ETL
+
+run:
+	$(ETL_COMMAND)
+
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
 # datos para SQLAlchemy.
 
@@ -15,6 +20,9 @@ migrate:
 
 history:
 	PYTHONPATH=$$(pwd) $(ALEMBIC_COMMAND) history
+
+
+# Recetas para uso de desarrollo del ETL:
 
 # Testing/Linting
 
@@ -32,10 +40,12 @@ coverage:
 	coverage run --source=georef_ar_etl --omit=georef_ar_etl/__main__.py -m unittest
 	coverage report
 
-
-# Recetas para uso de desarrollo del ETL.
-
-# Crear archivos de prueba utilizando una sola provincia como dato
+# Crear archivos de prueba utilizando una sola provincia como dato.
+# Para lograr esto, se ejecuta cada proceso del ETL hasta el punto donde se
+# cargó la tabla tmp_X, directamente de los datos descargados. Desde esa tabla,
+# se genera un archivo Shapefile y se lo guarda en tests/test_files/.
+# Se debería re-ejecutar la receta cada vez que cambia el esquema de datos utilizado
+# por IGN/INDEC/etc. en sus archivos, y adaptar los tests correspondientes.
 TEST_PROVINCE = 70
 create_test_files:
 	$(ETL_COMMAND) -p provincias --end 3
