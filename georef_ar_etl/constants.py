@@ -32,6 +32,8 @@ LOCALITIES = 'localidades'
 STREETS = 'calles'
 INTERSECTIONS = 'intersecciones'
 STREET_BLOCKS = 'cuadras'
+SYNONYMS = 'sinonimos'
+EXCLUDING_TERMS = 'terminos_excluyentes'
 
 TMP_TABLE_NAME = 'tmp_{}'
 ETL_TABLE_NAME = 'georef_{}'

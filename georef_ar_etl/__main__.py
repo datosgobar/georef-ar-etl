@@ -6,6 +6,7 @@ from .context import Context, Report, RUN_MODES
 from . import read_config, get_logger, create_engine, constants
 from . import provinces, departments, municipalities, localities
 from . import streets, intersections, street_blocks
+from . import synonyms, excluding_terms
 
 PROCESSES = [
     constants.PROVINCES,
@@ -14,7 +15,9 @@ PROCESSES = [
     constants.LOCALITIES,
     constants.STREETS,
     constants.INTERSECTIONS,
-    constants.STREET_BLOCKS
+    constants.STREET_BLOCKS,
+    constants.SYNONYMS,
+    constants.EXCLUDING_TERMS
 ]
 
 MODULES = [
@@ -24,7 +27,9 @@ MODULES = [
     localities,
     streets,
     intersections,
-    street_blocks
+    street_blocks,
+    synonyms,
+    excluding_terms
 ]
 
 COMMANDS = [

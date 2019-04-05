@@ -109,7 +109,7 @@ class CreateJSONFileStep(Step):
         contents['datos'] = entities
         dirname = os.path.dirname(self._filename)
         if dirname:
-            utils.ensure_dir(dirname, ctx)
+            utils.ensure_dir(dirname, ctx.fs)
 
         ctx.report.info('Escribiendo archivo JSON...')
         with ctx.fs.open(self._filename, 'w') as f:
@@ -141,6 +141,10 @@ class CreateGeoJSONFileStep(Step):
 
             feature = geojson.Feature(geometry=point, properties=entity_dict)
             features.append(feature)
+
+        dirname = os.path.dirname(self._filename)
+        if dirname:
+            utils.ensure_dir(dirname, ctx.fs)
 
         ctx.report.info('Escribiendo archivo GeoJSON...')
         with ctx.fs.open(self._filename, 'w') as f:
@@ -196,6 +200,10 @@ class CreateCSVFileStep(Step):
         del first['geometria']
         flatten_dict(first)
         fields = sorted(first.keys())
+
+        dirname = os.path.dirname(self._filename)
+        if dirname:
+            utils.ensure_dir(dirname, ctx.fs)
 
         ctx.report.info('Transformando entidades a CSV...')
         with ctx.fs.open(self._filename, 'w', newline='') as f:

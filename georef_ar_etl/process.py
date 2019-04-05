@@ -111,7 +111,7 @@ class Process:
         ctx.report.info("=" * separator_width)
         ctx.report.info("|" + " " * (separator_width - 2) + "|")
 
-        ctx.report.info("|" + self._name.title().center(
+        ctx.report.info("|" + self._name.title().replace('_', ' ').center(
             separator_width - 2) + "|")
 
         ctx.report.info("|" + " " * (separator_width - 2) + "|")

@@ -133,18 +133,28 @@ class CopyFileStep(Step):
         self._dst = os.path.join(*dst_parts)
 
     def _run_internal(self, src, ctx):
+        if os.path.isabs(self._dst):
+            dst_fs = fs.osfs.OSFS('/')
+        else:
+            dst_fs = ctx.fs
+
         dirname = os.path.dirname(self._dst)
         if dirname:
-            ensure_dir(dirname, ctx)
+            ensure_dir(dirname, dst_fs)
 
         if os.path.isabs(src):
             src_fs = fs.osfs.OSFS('/')
         else:
             src_fs = ctx.fs
 
+        ctx.report.info('Copiando desde:')
+        ctx.report.info('-> {}'.format(src))
+        ctx.report.info('A:')
+        ctx.report.info('-> {}'.format(self._dst))
+
         fs.copy.copy_file(
             dst_path=self._dst,
-            dst_fs=ctx.fs,
+            dst_fs=dst_fs,
             src_path=src,
             src_fs=src_fs
         )
@@ -185,8 +195,8 @@ def pbar(iterator, ctx, total=None):
     yield from tqdm(iterator, file=sys.stderr, total=total)
 
 
-def ensure_dir(path, ctx):
-    ctx.fs.makedirs(path, permissions=constants.DIR_PERMS, recreate=True)
+def ensure_dir(path, filesystem):
+    filesystem.makedirs(path, permissions=constants.DIR_PERMS, recreate=True)
 
 
 def copy_file(src, dst, ctx):
