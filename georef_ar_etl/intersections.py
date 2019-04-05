@@ -4,15 +4,16 @@ from .models import Province, Department, Street, Intersection
 from . import constants, geometry, utils, loaders
 
 
-def create_process(_config):
+def create_process(config):
+    output_path = config.get('etl', 'output_dest_path')
+
     return Process(constants.INTERSECTIONS, [
         utils.CheckDependenciesStep([Province, Department, Street]),
         IntersectionsCreationStep(),
         utils.ValidateTableSizeStep(size=624000, tolerance=1000),
         loaders.CreateJSONFileStep(Intersection, constants.ETL_VERSION,
                                    constants.INTERSECTIONS + '.json'),
-        utils.CopyFileStep(constants.LATEST_DIR,
-                           constants.INTERSECTIONS + '.json')
+        utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.json')
     ])
 
 

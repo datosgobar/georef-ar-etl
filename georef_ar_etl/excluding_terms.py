@@ -13,6 +13,6 @@ def create_process(config):
         utils.FunctionStep(fn=get_excluding_terms_file_path,
                            name='get_excluding_terms_file_path',
                            reads_input=False),
-        utils.CopyFileStep(config.get('etl', 'excluding_terms_dest_path'),
+        utils.CopyFileStep(config.get('etl', 'output_dest_path'),
                            filename)
     ])

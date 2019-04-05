@@ -6,6 +6,8 @@ from . import patch
 
 
 def create_process(config):
+    output_path = config.get('etl', 'output_dest_path')
+
     return Process(constants.DEPARTMENTS, [
         utils.CheckDependenciesStep([Province]),
         extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
@@ -38,12 +40,10 @@ def create_process(config):
                                       constants.DEPARTMENTS + '.csv')
         ]),
         CompositeStep([
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.DEPARTMENTS + '.json'),
-            utils.CopyFileStep(constants.LATEST_DIR,
+            utils.CopyFileStep(output_path, constants.DEPARTMENTS + '.json'),
+            utils.CopyFileStep(output_path,
                                constants.DEPARTMENTS + '.geojson'),
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.DEPARTMENTS + '.csv')
+            utils.CopyFileStep(output_path, constants.DEPARTMENTS + '.csv')
         ])
     ])
 

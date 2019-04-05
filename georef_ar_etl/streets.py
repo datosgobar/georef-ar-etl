@@ -8,6 +8,7 @@ from . import extractors, loaders, utils, constants, patch, transformers
 
 def create_process(config):
     url_template = config.get('etl', 'street_blocks_url_template')
+    output_path = config.get('etl', 'output_dest_path')
 
     download_cstep = CompositeStep([
         extractors.DownloadURLStep(
@@ -70,10 +71,8 @@ def create_process(config):
                                       constants.STREETS + '.csv'),
         ]),
         CompositeStep([
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.STREETS + '.json'),
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.STREETS + '.csv')
+            utils.CopyFileStep(output_path, constants.STREETS + '.json'),
+            utils.CopyFileStep(output_path, constants.STREETS + '.csv')
         ])
     ])
 

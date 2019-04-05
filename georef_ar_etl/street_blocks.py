@@ -3,7 +3,9 @@ from .models import Street, StreetBlock
 from . import utils, constants, loaders
 
 
-def create_process(_config):
+def create_process(config):
+    output_path = config.get('etl', 'output_dest_path')
+
     def fetch_tmp_blocks_table(_, ctx):
         return utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
 
@@ -21,8 +23,7 @@ def create_process(_config):
         utils.ValidateTableSizeStep(size=1141000, tolerance=1000),
         loaders.CreateJSONFileStep(StreetBlock, constants.ETL_VERSION,
                                    constants.STREET_BLOCKS + '.json'),
-        utils.CopyFileStep(constants.LATEST_DIR,
-                           constants.STREET_BLOCKS + '.json')
+        utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.json')
     ])
 
 

@@ -5,6 +5,8 @@ from . import extractors, transformers, loaders, geometry, utils, constants
 
 
 def create_process(config):
+    output_path = config.get('etl', 'output_dest_path')
+
     return Process(constants.PROVINCES, [
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
                                    config.get('etl', 'provinces_url')),
@@ -36,12 +38,9 @@ def create_process(config):
                                       constants.PROVINCES + '.csv')
         ]),
         CompositeStep([
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.PROVINCES + '.json'),
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.PROVINCES + '.geojson'),
-            utils.CopyFileStep(constants.LATEST_DIR,
-                               constants.PROVINCES + '.csv')
+            utils.CopyFileStep(output_path, constants.PROVINCES + '.json'),
+            utils.CopyFileStep(output_path, constants.PROVINCES + '.geojson'),
+            utils.CopyFileStep(output_path, constants.PROVINCES + '.csv')
         ])
     ])
 

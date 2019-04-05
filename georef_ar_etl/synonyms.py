@@ -12,5 +12,5 @@ def create_process(config):
     return Process(constants.SYNONYMS, [
         utils.FunctionStep(fn=get_synonyms_file_path,
                            name='get_synonyms_file_path', reads_input=False),
-        utils.CopyFileStep(config.get('etl', 'synonyms_dest_path'), filename)
+        utils.CopyFileStep(config.get('etl', 'output_dest_path'), filename)
     ])
