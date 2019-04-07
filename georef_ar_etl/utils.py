@@ -102,7 +102,7 @@ class ValidateTableSizeStep(Step):
                 'La tabla contiene {} elementos, pero debe contar con {} '
                 '(margen de error: {}).'.format(count, self._size,
                                                 self._tolerance))
-        elif diff > 0:
+        if diff > 0:
             ctx.report.info(
                 'La cantidad de elementos es {} (esperado: {})'.format(
                     count, self._size))
