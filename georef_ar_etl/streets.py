@@ -5,6 +5,16 @@ from .process import Process, CompositeStep, StepSequence
 from .models import Province, Department, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 
+INVALID_BLOCKS_CENSUS_LOCALITIES = [
+    '62042450',
+    '74056100',
+    '74056150',
+    '14098230',
+    '14098170',
+    '58042010',
+    '06778020'
+]
+
 
 def create_process(config):
     url_template = config.get('etl', 'street_blocks_url_template')
@@ -176,8 +186,46 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         return ctx.engine.execute(statement)
 
+    def _copy_tmp_streets(self, tmp_blocks, tmp_streets, ctx):
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        ctx.report.info(
+            'Copiando calles de localidades con cuadras inválidas...')
+
+        blocks = []
+        for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:
+            ctx.report.info('Localidad Censal ID {}'.format(
+                census_locality_id))
+
+            query = ctx.session.query(tmp_streets).\
+                filter_by(codloc=census_locality_id).\
+                yield_per(bulk_size)
+
+            for tmp_street in query:
+                blocks.append(tmp_blocks(
+                    geom=tmp_street.geom,
+                    codloc20=tmp_street.codloc,
+                    nomencla=tmp_street.nomencla,
+                    nombre=tmp_street.nombre,
+                    tipo=tmp_street.tipo,
+                    desded=int(tmp_street.desded),
+                    desdei=int(tmp_street.desdei),
+                    hastad=int(tmp_street.hastad),
+                    hastai=int(tmp_street.hastai)
+                ))
+
+        ctx.session.add_all(blocks)
+        ctx.session.commit()
+        ctx.report.info('Terminado.\n')
+
     def _run_internal(self, data, ctx):
-        tmp_blocks, _ = data
+        tmp_blocks, tmp_streets = data
+
+        if tmp_streets:
+            for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:
+                patch.delete(tmp_blocks, ctx, codloc20=census_locality_id)
+
+            self._copy_tmp_streets(tmp_blocks, tmp_streets, ctx)
+
         return super()._run_internal(tmp_blocks, ctx)
 
     def _process_entity(self, block, cached_session, ctx):
