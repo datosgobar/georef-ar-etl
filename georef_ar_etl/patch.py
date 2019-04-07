@@ -31,6 +31,7 @@ def apply_fn(table, fn, ctx, *expressions, **conditions):
     else:
         for expr in expressions:
             ctx.report.info('  > %s', expr)
+            ctx.report.info('    Parámetros: {}'.format(expr.compile().params))
 
         rows = ctx.session.query(table).filter(*expressions).all()
 
