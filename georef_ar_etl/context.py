@@ -133,7 +133,7 @@ class CachedSession:
         return self._queries[query_class]
 
 
-class Report:
+class Report:  # pylint: disable=attribute-defined-outside-init
     """Representa un reporte (texto y datos) sobre la ejecución de un proceso.
     El reporte contiene logs, con fechas, de los eventos sucedidos durante la
     ejecución del proceso, así también como datos recolectados a la vez.
@@ -143,6 +143,7 @@ class Report:
         _logger_stream (io.StringIO): Contenidos del logger en forma de str.
         _errors (int): Cantidad de errores registrados.
         _warnings (int): Cantidad de advertencias registradas.
+        _indent (int): Nivel de indentación actual para registros del logger.
         _filename_base (str): Nombre base para el archivo de reporte de texto y
             el archivo de datos.
         _data (dict): Datos varios de la ejecución del proceso.
@@ -178,50 +179,84 @@ class Report:
 
         return self._data[creator]
 
-    def info(self, *args, **kwargs):
+    def increase_indent(self):
+        """Aumenta el nivel de indentación.
+
+        """
+        self._indent += 1
+
+    def decrease_indent(self):
+        """Reduce el nivel de indentación.
+
+        """
+        if not self._indent:
+            raise RuntimeError('Indent is already 0')
+        self._indent -= 1
+
+    def reset_indent(self):
+        """Resetea el nivel de indentación.
+
+        """
+        self._indent = 0
+
+    def _indent_message(self, args):
+        """Indenta un mensaje a incluir en el reporte/logger.
+
+        Args:
+            args (list): Argumentos recibidos en info, warn, etc.
+
+        """
+        return ('| ' * self._indent + args[0],) + args[1:]
+
+    def info(self, *args):
         """Agrega un registro 'info' al logger del reporte.
 
         Args:
-            *args, **kwargs: Valores del registro.
+            *args: Valores del registro.
 
         """
-        self._logger.info(*args, **kwargs)
+        args = self._indent_message(args)
+        self._logger.info(*args)
 
-    def warn(self, *args, **kwargs):
+    def warn(self, *args):
         """Agrega un registro 'warning' al logger del reporte.
 
         Args:
-            *args, **kwargs: Valores del registro.
+            *args: Valores del registro.
 
         """
         self._warnings += 1
-        self._logger.warning(*args, **kwargs)
+        args = self._indent_message(args)
+        self._logger.warning(*args)
 
-    def error(self, *args, **kwargs):
+    def error(self, *args):
         """Agrega un registro 'error' al logger del reporte.
 
         Args:
-            *args, **kwargs: Valores del registro.
+            *args: Valores del registro.
 
         """
         self._errors += 1
-        self._logger.error(*args, **kwargs)
+        args = self._indent_message(args)
+        self._logger.error(*args)
 
-    def exception(self, *args, **kwargs):
+    def exception(self, *args):
         """Agrega un registro 'error' al logger del reporte, a partir de una
         excepción generada.
 
         Args:
-            *args, **kwargs: Valores del registro.
+            *args: Valores del registro.
 
         """
         self._errors += 1
-        self._logger.exception(*args, **kwargs)
+        args = self._indent_message(args)
+        self._logger.exception(*args)
 
     def reset(self):
         """Reestablece el estado interno del reporte."""
         self._errors = 0
         self._warnings = 0
+        self._indent = 0
         self._filename_base = time.strftime('georef-etl-%Y.%m.%d-%H.%M.%S.{}')
         self._data = {}
 

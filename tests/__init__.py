@@ -163,7 +163,7 @@ class ETLTestCase(TestCase):
     def create_test_streets(cls):
         blocks = cls.create_test_blocks()
         step = StreetsExtractionStep()
-        step.run(blocks, cls._ctx)
+        step.run((blocks, None), cls._ctx)
         return blocks
 
     @classmethod

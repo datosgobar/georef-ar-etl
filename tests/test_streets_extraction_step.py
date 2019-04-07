@@ -30,7 +30,7 @@ class TestStreetsExtractionStep(ETLTestCase):
         """Las calles deberían ser generadas a partir de los datos de cuadras
         de cada provincia, e insertadas en la tabla georef_calles."""
         step = StreetsExtractionStep()
-        streets = step.run(self._tmp_blocks, self._ctx)
+        streets = step.run((self._tmp_blocks, None), self._ctx)
 
         self.assertEqual(self._ctx.session.query(streets).count(),
                          SAN_JUAN_STREETS_COUNT)
@@ -47,7 +47,7 @@ class TestStreetsExtractionStep(ETLTestCase):
             update({'nombre': '  LAPRIDA   \n\nLAPRIDA\n'})
 
         step = StreetsExtractionStep()
-        streets = step.run(self._tmp_blocks, self._ctx)
+        streets = step.run((self._tmp_blocks, None), self._ctx)
         name = self._ctx.session.query(streets).\
             filter_by(id=street_id).\
             one().nombre
@@ -62,7 +62,7 @@ class TestStreetsExtractionStep(ETLTestCase):
             update({'nomencla': new_id})
 
         step = StreetsExtractionStep()
-        streets = step.run(self._tmp_blocks, self._ctx)
+        streets = step.run((self._tmp_blocks, None), self._ctx)
         query = self._ctx.session.query(streets).filter_by(id=new_id)
         self.assertEqual(query.count(), 0)
 
@@ -78,7 +78,7 @@ class TestStreetsExtractionStep(ETLTestCase):
             update({'nomencla': new_id})
 
         step = StreetsExtractionStep()
-        streets = step.run(self._tmp_blocks, self._ctx)
+        streets = step.run((self._tmp_blocks, None), self._ctx)
         query = self._ctx.session.query(streets).filter_by(id=new_id)
         self.assertEqual(query.count(), 0)
 
@@ -94,7 +94,7 @@ class TestStreetsExtractionStep(ETLTestCase):
         step = StreetsExtractionStep()
 
         with self.assertRaises(ProcessException):
-            step.run(self._tmp_blocks, self._ctx)
+            step.run((self._tmp_blocks, None), self._ctx)
 
     def test_street_numbers(self):
         """La altura de una calle debería comenzar en la altura más baja de
@@ -117,7 +117,7 @@ class TestStreetsExtractionStep(ETLTestCase):
         self._ctx.session.commit()
 
         step = StreetsExtractionStep()
-        streets = step.run(self._tmp_blocks, self._ctx)
+        streets = step.run((self._tmp_blocks, None), self._ctx)
 
         street1 = self._ctx.session.query(streets).get('7003500000000')
         street2 = self._ctx.session.query(streets).get('7003500000001')

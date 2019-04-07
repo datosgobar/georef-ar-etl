@@ -47,8 +47,7 @@ class Ogr2ogrStep(Step):
              'password={password} ' +
              'dbname={database}').format(**db_config),
             '-nln', self._table_name,
-            '-nlt', self._geom_type,
-            '-lco', 'GEOMETRY_NAME=geom'
+            '-nlt', self._geom_type
         ]
 
         if os.path.splitext(filename)[1] == '.csv':
@@ -58,7 +57,10 @@ class Ogr2ogrStep(Step):
             ])
 
         if self._overwrite:
-            args.append('-overwrite')
+            args.extend([
+                '-overwrite',
+                '-lco', 'GEOMETRY_NAME=geom'
+            ])
 
         if not self._precision:
             args.extend(['-lco', 'PRECISION=NO'])

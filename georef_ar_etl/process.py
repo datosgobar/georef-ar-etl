@@ -61,9 +61,9 @@ class Step:
 
 
 class CompositeStep(Step):
-    """Representa un conjunto de pasos a ser ejecutados de forma secuencial,
-    utilizando un valor de entrada en común. Notar que CompositeStep es un Step
-    en sí mismo.
+    """Representa un conjunto de pasos a ser ejecutados utilizando un mismo
+    valor de entrada en común. Los pason son ejecutados en el orden en el que
+    fueron especificados. Notar que CompositeStep es un Step en sí mismo.
 
     Attributes:
         _steps (list): Lista de pasos internos.
@@ -101,11 +101,16 @@ class CompositeStep(Step):
         else:
             step_inputs = [data] * len(self._steps)
 
+        ctx.report.increase_indent()
+
         for i, step in enumerate(self._steps):
             ctx.report.info('===> Sub-paso #{}: {}'.format(i + 1, step.name))
             results.append(step.run(step_inputs[i], ctx))
-            ctx.report.info('Sub-paso finalizado.\n')
+            ctx.report.info('Sub-paso finalizado. [{}]\n'.format(step.name))
 
+        ctx.report.decrease_indent()
+
+        # Juntar todos los resultados en una lista y devolverlos
         return results
 
     def __len__(self):
@@ -115,6 +120,25 @@ class CompositeStep(Step):
         # El paso requiere un valor de entrada si cualquiera de los subpasos
         # lo requiere
         return any(step.reads_input() for step in self._steps)
+
+
+class StepSequence(Step):
+    def __init__(self, steps, name=None):
+        super().__init__(name or 'step_sequence',
+                         reads_input=steps[0].reads_input())
+        self._steps = steps
+
+    def _run_internal(self, data, ctx):
+        ctx.report.increase_indent()
+
+        for i, step in enumerate(self._steps):
+            ctx.report.info('===> Sub-paso #{}: {}'.format(i + 1, step.name))
+            data = step.run(data, ctx)
+            ctx.report.info('Sub-paso finalizado. [{}]\n'.format(step.name))
+
+        ctx.report.decrease_indent()
+
+        return data
 
 
 class Process:
@@ -178,8 +202,9 @@ class Process:
                 ctx.report.info('==> Paso #{}: {}'.format(i + start,
                                                           step.name))
                 previous_result = step.run(previous_result, ctx)
-                ctx.report.info('Paso finalizado.\n')
+                ctx.report.info('Paso finalizado. [{}]\n'.format(step.name))
         except Exception:
+            ctx.report.reset_indent()
             ctx.report.error('Realizando Rollback...')
             ctx.session.rollback()
             raise

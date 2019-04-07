@@ -1,7 +1,7 @@
 from sqlalchemy.sql import select, func
 from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException, ProcessException
-from .process import Process, CompositeStep
+from .process import Process, CompositeStep, StepSequence
 from .models import Province, Department, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 
@@ -30,38 +30,65 @@ def create_process(config):
 
     return Process(constants.STREETS, [
         utils.CheckDependenciesStep([Province, Department]),
-        download_cstep,
-        ogr2ogr_cstep,
-        utils.FirstResultStep,
-        utils.ValidateTableSchemaStep({
-            'ogc_fid': 'integer',
-            'fid': 'varchar',
-            'fnode_': 'varchar',
-            'tnode_': 'varchar',
-            'lpoly_': 'varchar',
-            'rpoly_': 'varchar',
-            'length': 'varchar',
-            'codigo10': 'varchar',
-            'nomencla': 'varchar',
-            'codigo20': 'varchar',
-            'ancho': 'varchar',
-            'anchomed': 'varchar',
-            'tipo': 'varchar',
-            'nombre': 'varchar',
-            'ladoi': 'varchar',
-            'ladod': 'varchar',
-            'desdei': 'varchar',
-            'desded': 'varchar',
-            'hastad': 'varchar',
-            'hastai': 'varchar',
-            'mzai': 'varchar',
-            'mzad': 'varchar',
-            'codloc20': 'varchar',
-            'nomencla10': 'varchar',
-            'nomenclai': 'varchar',
-            'nomenclad': 'varchar',
-            'geom': 'geometry'
-        }),
+        CompositeStep([
+            StepSequence([
+                download_cstep,
+                ogr2ogr_cstep,
+                utils.FirstResultStep,
+                utils.ValidateTableSchemaStep({
+                    'ogc_fid': 'integer',
+                    'fid': 'varchar',
+                    'fnode_': 'varchar',
+                    'tnode_': 'varchar',
+                    'lpoly_': 'varchar',
+                    'rpoly_': 'varchar',
+                    'length': 'varchar',
+                    'codigo10': 'varchar',
+                    'nomencla': 'varchar',
+                    'codigo20': 'varchar',
+                    'ancho': 'varchar',
+                    'anchomed': 'varchar',
+                    'tipo': 'varchar',
+                    'nombre': 'varchar',
+                    'ladoi': 'varchar',
+                    'ladod': 'varchar',
+                    'desdei': 'varchar',
+                    'desded': 'varchar',
+                    'hastad': 'varchar',
+                    'hastai': 'varchar',
+                    'mzai': 'varchar',
+                    'mzad': 'varchar',
+                    'codloc20': 'varchar',
+                    'nomencla10': 'varchar',
+                    'nomenclai': 'varchar',
+                    'nomenclad': 'varchar',
+                    'geom': 'geometry'
+                })
+            ], name='load_tmp_street_blocks'),
+            StepSequence([
+                extractors.DownloadURLStep(constants.STREETS + '.zip',
+                                           config.get('etl', 'streets_url')),
+                transformers.ExtractZipStep(),
+                loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                                    geom_type='MultiLineString',
+                                    env={'SHAPE_ENCODING': 'latin1'}),
+                utils.ValidateTableSchemaStep({
+                    'ogc_fid': 'integer',
+                    'nomencla': 'varchar',
+                    'codigo': 'double',
+                    'tipo': 'varchar',
+                    'nombre': 'varchar',
+                    'desdei': 'double',
+                    'desded': 'double',
+                    'hastai': 'double',
+                    'hastad': 'double',
+                    'codloc': 'varchar',
+                    'codaglo': 'varchar',
+                    'link': 'varchar',
+                    'geom': 'geometry'
+                })
+            ], name='load_tmp_streets')
+        ]),
         StreetsExtractionStep(),
         utils.ValidateTableSizeStep(size=151000, tolerance=1000),
         CompositeStep([
@@ -148,6 +175,10 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             where(tmp_blocks.tipo != constants.STREET_TYPE_OTHER)
 
         return ctx.engine.execute(statement)
+
+    def _run_internal(self, data, ctx):
+        tmp_blocks, _ = data
+        return super()._run_internal(tmp_blocks, ctx)
 
     def _process_entity(self, block, cached_session, ctx):
         street_id = block.nomencla
