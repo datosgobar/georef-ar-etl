@@ -12,6 +12,7 @@ TEST_FILES ?= *.py
 update:
 	git checkout $(GIT_BRANCH)
 	git pull origin $(GIT_BRANCH)
+	make migrate
 	$(ETL_PIP) install -r requirements.txt -r requirements-dev.txt
 
 run:
