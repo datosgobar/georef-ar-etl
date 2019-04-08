@@ -11,6 +11,8 @@ from . import constants, utils
 from .process import Step, ProcessException
 
 OGR2OGR_CMD = 'ogr2ogr'
+SOURCE_EPSG = 'EPSG:4326'
+OUTPUT_EPSG = SOURCE_EPSG
 
 
 class Ogr2ogrStep(Step):
@@ -47,7 +49,9 @@ class Ogr2ogrStep(Step):
              'password={password} ' +
              'dbname={database}').format(**db_config),
             '-nln', self._table_name,
-            '-nlt', self._geom_type
+            '-nlt', self._geom_type,
+            '-s_srs', SOURCE_EPSG,
+            '-t_srs', OUTPUT_EPSG
         ]
 
         if os.path.splitext(filename)[1] == '.csv':
