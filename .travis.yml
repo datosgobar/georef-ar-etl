@@ -1,0 +1,19 @@
+dist: xenial
+language: python
+python:
+  - 3.7
+services:
+  - postgresql
+before_install:
+  - sudo apt-get install -y libpq-dev postgis
+install:
+  - pip install -r requirements.txt -r requirements-dev.txt
+before_script:
+  - cp config/georef.example.cfg config/georef.cfg
+  - psql -c "create database georef_ar_etl_test with encoding = 'utf-8';" -U postgres
+  - psql -c "create user georef_test superuser login password = 'testing'" -U postgres
+script:
+  - make code_checks
+  - make coverage
+after_success:
+- coveralls
