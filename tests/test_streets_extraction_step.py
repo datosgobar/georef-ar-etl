@@ -1,6 +1,8 @@
+from georef_ar_etl import constants
 from georef_ar_etl.models import Street
 from georef_ar_etl.exceptions import ProcessException
-from georef_ar_etl.streets import StreetsExtractionStep
+from georef_ar_etl.streets import StreetsExtractionStep,\
+    INVALID_BLOCKS_CENSUS_LOCALITIES
 from . import ETLTestCase
 
 SAN_JUAN_STREETS_COUNT = 754
@@ -126,3 +128,25 @@ class TestStreetsExtractionStep(ETLTestCase):
         self.assertEqual(street1.fin_derecha, 200)
         self.assertEqual(street2.inicio_izquierda, 9)
         self.assertEqual(street2.fin_derecha, 1000)
+
+    def test_invalid_blocks_census_localities(self):
+        """Algunas localidades censales contienen cuadras inválidas: deberían
+        ser eliminadas en el proceso de extracción y reemplazadas con calles de
+        la misma localidad censal. Este test solo comprueba que sean
+        eliminadas."""
+        census_locality_id = INVALID_BLOCKS_CENSUS_LOCALITIES[-1]
+        ogc_fid = 99999
+        street_id = census_locality_id + '00001'
+        self.assertTrue(len(street_id), constants.STREET_ID_LEN)
+
+        self._ctx.session.add(self._tmp_blocks(ogc_fid=ogc_fid,
+                                               nomencla=street_id,
+                                               tipo='CALLE',
+                                               nombre='test',
+                                               geom=TEST_MULTILINESTRING))
+
+        self.assertTrue(self._ctx.session.query(self._tmp_blocks).get(ogc_fid))
+
+        step = StreetsExtractionStep()
+        streets = step.run((self._tmp_blocks, None), self._ctx)
+        self.assertFalse(self._ctx.session.query(streets).get(street_id))
