@@ -1,7 +1,8 @@
 # Makefile para georef-ar-etl
 
+ETL_PYTHON = python
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
-ETL_COMMAND = python -m georef_ar_etl
+ETL_COMMAND = $(ETL_PYTHON) -m georef_ar_etl
 TEST_FILES ?= *.py
 
 # Ejecución del ETL
