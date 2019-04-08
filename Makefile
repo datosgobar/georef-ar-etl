@@ -1,11 +1,18 @@
 # Makefile para georef-ar-etl
 
 ETL_PYTHON = python
+ETL_PIP = pip3
+GIT_BRANCH = master
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
 ETL_COMMAND = $(ETL_PYTHON) -m georef_ar_etl
 TEST_FILES ?= *.py
 
 # Ejecución del ETL
+
+update:
+	git checkout $(GIT_BRANCH)
+	git pull origin $(GIT_BRANCH)
+	$(ETL_PIP) install -r requirements.txt -r requirements-dev.txt
 
 run:
 	$(ETL_COMMAND)
