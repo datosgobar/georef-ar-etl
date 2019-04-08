@@ -11,6 +11,7 @@ install:
 before_script:
   - cp config/georef.example.cfg config/georef.cfg
   - psql -c "create database georef_ar_etl_test with encoding = 'utf-8';" -U postgres
+  - psql -c "create extension postgis;" -d georef_ar_etl_test -U postgres
   - psql -c "create user georef_test superuser login password 'testing'" -U postgres
 script:
   - make code_checks
