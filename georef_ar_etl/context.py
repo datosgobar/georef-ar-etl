@@ -8,11 +8,11 @@ from sqlalchemy.orm import sessionmaker
 from . import constants
 
 RUN_MODES = ['normal', 'interactive', 'testing']
-SMTP_TIMEOUT = 10
+SMTP_TIMEOUT = 20
 
 
 def send_email(host, user, password, subject, message, recipients,
-               attachments=None, timeout=SMTP_TIMEOUT):
+               attachments=None, ssl=True, port=0, timeout=SMTP_TIMEOUT):
     """Envía un mail a un listado de destinatarios.
 
     Args:
@@ -25,11 +25,18 @@ def send_email(host, user, password, subject, message, recipients,
         attachments (dict): Diccionario de contenidos <str, str> a adjuntar en
             el mail. Las claves representan los nombres de los contenidos y los
             valores representan los contenidos en sí.
+        ssl (bool): Verdadero si la conexión inicial debería utilizar SSL/TLS.
+        port (int): Puerto a utilizar (0 para utilizar el default).
         timeout (int): Tiempo máximo a esperar en segundos para establecer la
             conexión al servidor SMTP.
 
     """
-    with smtplib.SMTP_SSL(host, timeout=timeout) as smtp:
+    client_class = smtplib.SMTP_SSL if ssl else smtplib.SMTP
+    with client_class(host, timeout=timeout, port=port) as smtp:
+        if not ssl:
+            smtp.starttls()
+            smtp.ehlo()
+
         smtp.login(user, password)
 
         msg = MIMEMultipart()
@@ -279,7 +286,8 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         with open(os.path.join(dirname, filename_json), 'w') as f:
             json.dump(self._data, f, ensure_ascii=False, indent=4)
 
-    def email(self, host, user, password, recipients, environment):
+    def email(self, host, user, password, recipients, environment, ssl=True,
+              port=0):
         """Envía el contenido (texto) del reporte por mail.
 
         Args:
@@ -289,6 +297,9 @@ class Report:  # pylint: disable=attribute-defined-outside-init
             recipients (list): Lista de direcciones de mail a donde envíar el
                 mensaje.
             environment (str): Entorno de ejecución (prod/stg/dev).
+            ssl (bool): Verdadero si la conexión inicial debería utilizar
+                SSL/TLS.
+            port (int): Puerto a utilizar (0 para utilizar el default).
 
         """
         if not self._logger_stream:
@@ -303,7 +314,7 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         report_txt = self._logger_stream.getvalue()
         send_email(host, user, password, subject, msg, recipients, {
             self._filename_base.format('txt'): report_txt
-        })
+        }, ssl=ssl, port=port)
 
     @property
     def logger(self):

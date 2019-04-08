@@ -91,7 +91,9 @@ def etl(enabled_processes, start, end, ctx):
             user=ctx.config['mailer']['user'],
             password=ctx.config['mailer']['password'],
             recipients=recipients,
-            environment=ctx.config['etl']['environment']
+            environment=ctx.config['etl']['environment'],
+            ssl=ctx.config.getboolean('mailer', 'ssl'),
+            port=ctx.config.getint('mailer', 'port')
         )
 
         ctx.report.info('Mail enviado.')
