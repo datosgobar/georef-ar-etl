@@ -7,6 +7,8 @@ from geoalchemy2 import Geometry
 from .exceptions import ValidationException
 from . import constants
 
+SRID = 4326
+
 Base = declarative_base()
 
 
@@ -74,7 +76,7 @@ class Province(Base, EntityMixin):
     iso_nombre = Column(String, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
 
     departamentos = get_relationship('Department')
     municipios = get_relationship('Municipality')
@@ -107,7 +109,7 @@ class Department(Base, EntityMixin, InProvinceMixin):
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
 
     localidades = get_relationship('Locality')
     calles = get_relationship('Street')
@@ -141,7 +143,7 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    geometria = Column(Geometry('MULTIPOLYGON'), nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
 
     localidades = get_relationship('Locality')
 
@@ -178,7 +180,7 @@ class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     )
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    geometria = Column(Geometry('MULTIPOINT'), nullable=False)
+    geometria = Column(Geometry('MULTIPOINT', srid=SRID), nullable=False)
 
     @validates('categoria')
     def validate_category(self, _key, category):
@@ -247,7 +249,7 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     __tablename__ = constants.STREETS_ETL_TABLE
     _id_len = constants.STREET_ID_LEN
 
-    geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
+    geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     intersecciones_a = get_relationship('Intersection',
                                         foreign_keys='Intersection.calle_a_id')
@@ -295,7 +297,7 @@ class StreetBlock(Base, DoorNumberedMixin):
     calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                          ondelete='cascade'),
                       nullable=False)
-    geometria = Column(Geometry('MULTILINESTRING'), nullable=False)
+    geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     def to_dict(self, session):
         street = session.query(Street).get(self.calle_id)
@@ -319,7 +321,7 @@ class Intersection(Base):
     calle_b_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                            ondelete='cascade'),
                         nullable=False)
-    geometria = Column(Geometry('POINT'), nullable=False)
+    geometria = Column(Geometry('POINT', srid=SRID), nullable=False)
 
     def to_dict(self, session):
         street_a = session.query(Street).get(self.calle_a_id)

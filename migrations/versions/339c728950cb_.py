@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 58a7ec81cb23
+Revision ID: 339c728950cb
 Revises: 
-Create Date: 2019-04-04 12:11:01.883465
+Create Date: 2019-04-08 09:30:44.981425
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import geoalchemy2
 
 
 # revision identifiers, used by Alembic.
-revision = '58a7ec81cb23'
+revision = '339c728950cb'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,7 +29,7 @@ def upgrade():
     sa.Column('iso_nombre', sa.String(), nullable=False),
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON', srid=4326), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('georef_departamentos',
@@ -41,7 +41,7 @@ def upgrade():
     sa.Column('provincia_interseccion', sa.Float(), nullable=False),
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON', srid=4326), nullable=False),
     sa.Column('provincia_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['provincia_id'], ['georef_provincias.id'], ondelete='cascade'),
     sa.PrimaryKeyConstraint('id')
@@ -55,7 +55,7 @@ def upgrade():
     sa.Column('provincia_interseccion', sa.Float(), nullable=False),
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOLYGON', srid=4326), nullable=False),
     sa.Column('provincia_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['provincia_id'], ['georef_provincias.id'], ondelete='cascade'),
     sa.PrimaryKeyConstraint('id')
@@ -69,7 +69,7 @@ def upgrade():
     sa.Column('fin_derecha', sa.Integer(), nullable=False),
     sa.Column('inicio_izquierda', sa.Integer(), nullable=False),
     sa.Column('fin_izquierda', sa.Integer(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTILINESTRING'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTILINESTRING', srid=4326), nullable=False),
     sa.Column('provincia_id', sa.String(), nullable=False),
     sa.Column('departamento_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['departamento_id'], ['georef_departamentos.id'], ondelete='cascade'),
@@ -84,7 +84,7 @@ def upgrade():
     sa.Column('municipio_id', sa.String(), nullable=True),
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOINT'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTIPOINT', srid=4326), nullable=False),
     sa.Column('provincia_id', sa.String(), nullable=False),
     sa.Column('departamento_id', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['departamento_id'], ['georef_departamentos.id'], ondelete='cascade'),
@@ -99,7 +99,7 @@ def upgrade():
     sa.Column('fin_izquierda', sa.Integer(), nullable=False),
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('calle_id', sa.String(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTILINESTRING'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='MULTILINESTRING', srid=4326), nullable=False),
     sa.ForeignKeyConstraint(['calle_id'], ['georef_calles.id'], ondelete='cascade'),
     sa.PrimaryKeyConstraint('id')
     )
@@ -107,7 +107,7 @@ def upgrade():
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('calle_a_id', sa.String(), nullable=False),
     sa.Column('calle_b_id', sa.String(), nullable=False),
-    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='POINT'), nullable=False),
+    sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='POINT', srid=4326), nullable=False),
     sa.ForeignKeyConstraint(['calle_a_id'], ['georef_calles.id'], ondelete='cascade'),
     sa.ForeignKeyConstraint(['calle_b_id'], ['georef_calles.id'], ondelete='cascade'),
     sa.PrimaryKeyConstraint('id')
