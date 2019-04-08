@@ -10,7 +10,7 @@ def create_process(config):
     return Process(constants.INTERSECTIONS, [
         utils.CheckDependenciesStep([Province, Department, Street]),
         IntersectionsCreationStep(),
-        utils.ValidateTableSizeStep(size=624000, tolerance=1000),
+        utils.ValidateTableSizeStep(size=625000, tolerance=1000),
         loaders.CreateJSONFileStep(Intersection, constants.ETL_VERSION,
                                    constants.INTERSECTIONS + '.json'),
         utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.json')

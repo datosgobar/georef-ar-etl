@@ -20,7 +20,7 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=1141000, tolerance=1000),
+        utils.ValidateTableSizeStep(size=1116000, tolerance=1000),
         loaders.CreateJSONFileStep(StreetBlock, constants.ETL_VERSION,
                                    constants.STREET_BLOCKS + '.json'),
         utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.json')
