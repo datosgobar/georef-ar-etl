@@ -19,6 +19,7 @@ before_script:
   - psql -c "create extension postgis;" -d georef_ar_etl_test -U postgres
   - psql -c "grant all privileges on all tables in schema public to georef_test" -d georef_ar_etl_test -U postgres
 script:
+  - make migrate
   - make code_checks
   - make coverage
 after_success:
