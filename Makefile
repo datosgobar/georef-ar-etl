@@ -18,6 +18,9 @@ update:
 run:
 	$(ETL_COMMAND)
 
+info:
+	$(ETL_COMMAND) -c info
+
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
 # datos para SQLAlchemy.
 

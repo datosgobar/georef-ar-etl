@@ -15,11 +15,12 @@ install:
 before_script:
   - cp config/georef.example.cfg config/georef.cfg
   - psql -c "create database georef_ar_etl_test with encoding = 'utf-8';" -U postgres
-  - psql -c "create user georef_test login password 'testing'" -U postgres
+  - psql -c "create user georef login password 'testing'" -U postgres
   - psql -c "create extension postgis;" -d georef_ar_etl_test -U postgres
-  - psql -c "grant all privileges on all tables in schema public to georef_test" -d georef_ar_etl_test -U postgres
+  - psql -c "grant all privileges on all tables in schema public to georef" -d georef_ar_etl_test -U postgres
 script:
   - make migrate
+  - make info
   - make code_checks
   - make coverage
 after_success:
