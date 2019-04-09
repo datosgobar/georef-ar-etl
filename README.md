@@ -7,7 +7,7 @@
 Segunda iteración del ETL del Servicio de Normalización de Datos Geográficos de Argentina. La primera iteración puede encontrarse bajo la rama [`etl-legacy`](https://github.com/datosgobar/georef-ar-etl/tree/etl-legacy).
 
 ## Documentación
-Para consultar la documentación del ETL, acceder a [https://datosgobar.github.io/georef-ar-api/georef-api-data/](https://datosgobar.github.io/georef-ar-api/georef-api-data/).
+Para consultar la documentación del ETL, acceder a [https://datosgobar.github.io/georef-ar-api/etl/](https://datosgobar.github.io/georef-ar-api/etl/).
 
 ## Soporte
 En caso de que encuentres algún bug, tengas problemas con la instalación, o tengas comentarios de alguna parte de Georef ETL, podés mandarnos un mail a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar) o [crear un issue](https://github.com/datosgobar/georef-ar-etl/issues/new?title=Encontre-un-bug-en-georef-ar-etl).
