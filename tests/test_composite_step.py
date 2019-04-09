@@ -21,3 +21,14 @@ class TestCompositeStep(ETLTestCase):
 
         self.assertTrue(step_a.reads_input())
         self.assertFalse(step_b.reads_input())
+
+    def test_composite_test_output(self):
+        """La salida de un CompositeStep debería ser una lista con la salida de
+        cada subpaso."""
+        step_a = CompositeStep([
+            get_mock_step(reads_input=False, return_value=1),
+            get_mock_step(reads_input=False, return_value=2),
+            get_mock_step(reads_input=False, return_value=3)
+        ])
+
+        self.assertListEqual(step_a.run(None, self._ctx), [1, 2, 3])

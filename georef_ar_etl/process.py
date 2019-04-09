@@ -123,12 +123,38 @@ class CompositeStep(Step):
 
 
 class StepSequence(Step):
+    """Representa una lista de pasos a ser ejecutados en orden, con la salida
+    de cada uno utilizado como entrada del siguiente. Notar que StepSequence es
+    un Step en sí mismo.
+
+    Attributes:
+        _steps (list): Lista de pasos a ejecutar.
+
+    """
+
     def __init__(self, steps, name=None):
+        """Inicializa un objeto de tipo 'StepSequence'.
+
+        Args:
+            steps (list): Ver atributo '_steps'.
+            name (str): Ver atributo '_name'.
+
+        """
         super().__init__(name or 'step_sequence',
                          reads_input=steps[0].reads_input())
         self._steps = steps
 
     def _run_internal(self, data, ctx):
+        """Ejecuta el StepSequence dentro de un contexto dado.
+
+        Args:
+            data (object): Valor de entrada.
+            ctx (Context): Contexto de ejecución.
+
+        Returns:
+            object: Resultado del último paso de '_steps'.
+
+        """
         ctx.report.increase_indent()
 
         for i, step in enumerate(self._steps):
