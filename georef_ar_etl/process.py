@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from .exceptions import ProcessException
 
 
-class Step:
+class Step(ABC):
     """Representa una acción a ejecutar dentro de un contexto dado.
     Step es una clase abstracta.
 
@@ -39,6 +40,7 @@ class Step:
         # se puede agregar en este método (run()).
         return self._run_internal(data, ctx)
 
+    @abstractmethod
     def _run_internal(self, data, ctx):
         """Ejecuta el paso en un contexto (método abstracto).
 

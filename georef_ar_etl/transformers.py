@@ -1,4 +1,5 @@
 import os
+from abc import abstractmethod
 from zipfile import ZipFile, BadZipFile
 import tarfile
 from .exceptions import ValidationException, ProcessException
@@ -145,6 +146,7 @@ class EntitiesExtractionStep(Step):
     def _entities_query_count(self, tmp_entities, ctx):
         return self._build_entities_query(tmp_entities, ctx).count()
 
+    @abstractmethod
     def _process_entity(self, entity, cached_session, ctx):
         raise NotImplementedError()
 
