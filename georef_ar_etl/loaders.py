@@ -1,6 +1,5 @@
 import os
 import subprocess
-import json
 import shutil
 import csv
 from datetime import datetime
@@ -9,6 +8,7 @@ from sqlalchemy import MetaData
 import geojson
 from . import constants, utils
 from .process import Step, ProcessException
+from .json_stream_writer import JSONStreamWriter, JSONArrayPlaceholder
 
 OGR2OGR_CMD = 'ogr2ogr'
 SOURCE_EPSG = 'EPSG:4326'
@@ -96,30 +96,29 @@ class CreateJSONFileStep(Step):
 
     def _run_internal(self, data, ctx):
         contents = {}
-        entities = []
         now = datetime.now(timezone.utc)
         bulk_size = ctx.config.getint('etl', 'bulk_size')
 
         contents['fecha_creacion'] = str(now)
         contents['timestamp'] = int(now.timestamp())
         contents['version'] = constants.ETL_VERSION
+        contents['datos'] = JSONArrayPlaceholder()
 
         query = ctx.session.query(self._table).yield_per(bulk_size)
         count = query.count()
         cached_session = ctx.cached_session()
 
-        ctx.report.info('Transformando entidades a JSON...')
-        for entity in utils.pbar(query, ctx, total=count):
-            entities.append(entity.to_dict(cached_session))
-
-        contents['datos'] = entities
         dirname = os.path.dirname(self._filename)
         if dirname:
             utils.ensure_dir(dirname, ctx.fs)
 
-        ctx.report.info('Escribiendo archivo JSON...')
+        ctx.report.info('Transformando entidades a JSON...')
+
         with ctx.fs.open(self._filename, 'w') as f:
-            json.dump(contents, f, ensure_ascii=False)
+            with JSONStreamWriter(f, template=contents,
+                                  ensure_ascii=False) as w:
+                for entity in utils.pbar(query, ctx, total=count):
+                    w.append(entity.to_dict(cached_session))
 
         return self._filename
 
@@ -134,28 +133,28 @@ class CreateGeoJSONFileStep(Step):
         bulk_size = ctx.config.getint('etl', 'bulk_size')
         query = ctx.session.query(self._table).yield_per(bulk_size)
         count = query.count()
-        features = []
         cached_session = ctx.cached_session()
-
-        ctx.report.info('Transformando entidades a GeoJSON...')
-        for entity in utils.pbar(query, ctx, total=count):
-            entity_dict = entity.to_dict(cached_session)
-            del entity_dict['geometria']
-
-            centroid = entity_dict.pop('centroide')
-            point = geojson.Point((centroid['lon'], centroid['lat']))
-
-            feature = geojson.Feature(geometry=point, properties=entity_dict)
-            features.append(feature)
 
         dirname = os.path.dirname(self._filename)
         if dirname:
             utils.ensure_dir(dirname, ctx.fs)
 
-        ctx.report.info('Escribiendo archivo GeoJSON...')
+        collection = geojson.FeatureCollection(JSONArrayPlaceholder())
+        ctx.report.info('Transformando entidades a GeoJSON...')
+
         with ctx.fs.open(self._filename, 'w') as f:
-            geojson.dump(geojson.FeatureCollection(features), f,
-                         ensure_ascii=False)
+            with JSONStreamWriter(f, template=collection,
+                                  ensure_ascii=False) as w:
+                for entity in utils.pbar(query, ctx, total=count):
+                    entity_dict = entity.to_dict(cached_session)
+                    del entity_dict['geometria']
+
+                    centroid = entity_dict.pop('centroide')
+                    point = geojson.Point((centroid['lon'], centroid['lat']))
+
+                    feature = geojson.Feature(geometry=point,
+                                              properties=entity_dict)
+                    w.append(feature)
 
         return self._filename
 
