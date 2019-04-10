@@ -51,6 +51,10 @@ class StreetBlocksExtractionStep(Step):
 
             if len(entities) > bulk_size:
                 ctx.session.add_all(entities)
+                # Escribir entidades a la base de datos para evitar mantenerlas
+                # en el objeto Session (sin terminar la transacción).
+                ctx.session.flush()
+                ctx.session.expunge_all()
                 entities.clear()
 
         ctx.session.add_all(entities)
