@@ -76,6 +76,18 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
         patch.apply_fn(tmp_departments, update_commune_data, ctx,
                        tmp_departments.in1.like('02%'))
 
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # del depto. ID 54119, lanza un error "Points of LinearRing do not form
+        # a closed linestring". Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(dept):
+            dept.geom = ctx.session.scalar(
+                'select ST_MakeValid(geom) from {} where in1=:in1'.format(
+                    tmp_departments.__table__.name
+                ), {'in1': dept.in1}
+            )
+
+        patch.apply_fn(tmp_departments, make_valid_geom, ctx, in1='54119')
+
         # Antártida Argentina duplicada
         patch.delete(tmp_departments, ctx, ogc_fid=530, in1='94028')
 
