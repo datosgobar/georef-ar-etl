@@ -119,7 +119,7 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
             categoria=utils.clean_string(tmp_department.gna),
             lon=lon, lat=lat,
             provincia_interseccion=province_isct,
-            provincia_id=province.id,
+            provincia_id=prov_id,
             fuente=utils.clean_string(tmp_department.sag),
             geometria=tmp_department.geom
         )

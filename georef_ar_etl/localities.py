@@ -41,7 +41,7 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=4100, tolerance=100),
+        utils.ValidateTableSizeStep(size=4101, tolerance=100),
         CompositeStep([
             loaders.CreateJSONFileStep(Locality, constants.ETL_VERSION,
                                        constants.LOCALITIES + '.json'),
@@ -65,9 +65,6 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='cod_bahra')
 
     def _patch_tmp_entities(self, tmp_localities, ctx):
-        # Agregado en ETL2
-        patch.delete(tmp_localities, ctx, cod_bahra='02000010000')
-
         # Borrar entidades sin ID
         patch.delete(tmp_localities, ctx, cod_bahra=None)
 
@@ -110,8 +107,10 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe la provincia con ID {}'.format(prov_id))
 
+        # El departamento '02000' tiene un significado especial; ver comentario
+        # en constants.py.
         department = cached_session.query(Department).get(dept_id)
-        if not department:
+        if not department and dept_id != constants.CABA_VIRTUAL_DEPARTMENT_ID:
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
@@ -123,8 +122,8 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             nombre=utils.clean_string(tmp_locality.nombre_bah),
             categoria=utils.clean_string(tmp_locality.tipo_bahra),
             lon=lon, lat=lat,
-            provincia_id=province.id,
-            departamento_id=department.id,
+            provincia_id=prov_id,
+            departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
             fuente=utils.clean_string(tmp_locality.fuente_ubi),
             geometria=tmp_locality.geom

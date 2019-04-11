@@ -253,6 +253,6 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             inicio_izquierda=block.desdei or 0,
             fin_izquierda=block.hastai or 0,
             geometria=block.geom,
-            provincia_id=province.id,
-            departamento_id=department.id
+            provincia_id=prov_id,
+            departamento_id=dept_id
         )

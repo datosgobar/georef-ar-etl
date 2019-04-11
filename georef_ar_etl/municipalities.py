@@ -104,7 +104,7 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
             categoria=utils.clean_string(tmp_municipality.gna),
             lon=lon, lat=lat,
             provincia_interseccion=province_isct,
-            provincia_id=province.id,
+            provincia_id=prov_id,
             fuente=utils.clean_string(tmp_municipality.sag),
             geometria=tmp_municipality.geom
         )

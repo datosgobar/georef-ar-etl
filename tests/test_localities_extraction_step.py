@@ -1,9 +1,11 @@
-from georef_ar_etl.models import Locality
+from georef_ar_etl.models import Locality, Province
 from georef_ar_etl.exceptions import ValidationException
 from georef_ar_etl.localities import LocalitiesExtractionStep
 from . import ETLTestCase
+from .test_geometry import TEST_MULTIPOLYGON
 
 SAN_JUAN_LOCALITIES_COUNT = 99
+TEST_MULTIPOINT = 'SRID=4326;MULTIPOINT((10 40))'
 
 
 class TestLocalitiesExtractionStep(ETLTestCase):
@@ -140,6 +142,39 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
                          SAN_JUAN_LOCALITIES_COUNT - 1)
+
+    def test_caba_virtual_department(self):
+        """Una localidad debería poder pertenecer al departamento '02000',
+        aunque el mismo no exista en la base de datos (ver comentario en
+        constants.py)."""
+        prov = Province(
+            id='02',
+            nombre='test',
+            nombre_completo='test',
+            lat=0, lon=0,
+            iso_id='test',
+            iso_nombre='test',
+            categoria='test',
+            fuente='test',
+            geometria=TEST_MULTIPOLYGON
+        )
+        self._ctx.session.add(prov)
+
+        new_locality = self._tmp_localities(
+            cod_bahra='02000010000',
+            nombre_bah='test',
+            tipo_bahra='LS',
+            fuente_ubi='test',
+            geom=TEST_MULTIPOINT
+        )
+        self._ctx.session.add(new_locality)
+        self._ctx.session.commit()
+
+        step = LocalitiesExtractionStep()
+        localities = step.run(self._tmp_localities, self._ctx)
+
+        loc = self._ctx.session.query(localities).get('02000010000')
+        self.assertTrue(loc.departamento_id is None)
 
     def test_municipality(self):
         """Si una localidad está geográficamente contenida por un municipio, se

@@ -51,6 +51,30 @@ class InProvinceMixin:
         return session.query(Province).get(self.provincia_id).nombre
 
 
+class InNullableDepartmentMixin:
+    @declared_attr
+    def departamento_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.DEPARTMENTS_ETL_TABLE + '.id',
+                       ondelete='cascade')
+        )
+
+    @validates('departamento_id')
+    def validate_department_id(self, _key, value):
+        # Si se epecificó el departamento 02000, almacenar NULL (ver comentario
+        # en constants.py).
+        return value if value != constants.CABA_VIRTUAL_DEPARTMENT_ID else None
+
+    def departamento_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
+        if not self.departamento_id:
+            return None
+
+        return session.query(Department).get(self.departamento_id).nombre
+
+
 class InDepartmentMixin:
     @declared_attr
     def departamento_id(cls):
@@ -168,7 +192,7 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
         }
 
 
-class Locality(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
+class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin):
     __tablename__ = constants.LOCALITIES_ETL_TABLE
     _id_len = constants.LOCALITY_ID_LEN
 
