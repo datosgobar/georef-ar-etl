@@ -65,7 +65,6 @@ class IntersectionsCreationStep(Step):
 
         bulk_size = ctx.config.getint('etl', 'bulk_size')
 
-        intersections = []
         count = 0
         query = self._build_intersection_query(province, bulk_size, ctx)
 
@@ -81,17 +80,7 @@ class IntersectionsCreationStep(Step):
                 )
             )
 
-            intersections.append(intersection)
+            utils.add_maybe_flush(intersection, ctx, bulk_size)
+            count += 1
 
-            if len(intersections) > bulk_size:
-                ctx.session.add_all(intersections)
-                # Escribir entidades a la base de datos para evitar mantenerlas
-                # en el objeto Session (sin terminar la transacción).
-                ctx.session.flush()
-                ctx.session.expunge_all()
-                count += len(intersections)
-                intersections.clear()
-
-        ctx.session.add_all(intersections)
-        count += len(intersections)
         ctx.report.info('Intersecciones creadas, cantidad: %s.\n', count)

@@ -187,8 +187,17 @@ def clean_string(s):
     return s
 
 
+def add_maybe_flush(obj, ctx, bulk_size=None):
+    bulk_size = bulk_size or ctx.config.getint('etl', 'bulk_size')
+
+    ctx.session.add(obj)
+    if len(ctx.session.new) >= bulk_size:
+        ctx.session.flush()
+        ctx.session.expunge_all()
+
+
 def pbar(iterator, ctx, total=None):
-    if ctx.mode != 'interactive':
+    if ctx.mode == 'testing':
         yield from iterator
         return
 

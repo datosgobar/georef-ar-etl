@@ -104,11 +104,11 @@ class EntitiesExtractionStep(Step):
                 entities.append(new_entity)
 
             if len(entities) > bulk_size:
+                # Insertar todas las entidades en la Session. La próxima vez
+                # que se utilice query(), se llamará antes a flush() (por la
+                # configuración autoflush=True). Por lo tanto, no es necesario
+                # llamar a flush()+expunge_all() manualmente.
                 ctx.session.add_all(entities)
-                # Escribir entidades a la base de datos para evitar mantenerlas
-                # en el objeto Session (sin terminar la transacción).
-                ctx.session.flush()
-                ctx.session.expunge_all()
                 entities.clear()
 
         ctx.session.add_all(entities)

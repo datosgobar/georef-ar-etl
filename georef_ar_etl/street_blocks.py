@@ -40,24 +40,13 @@ class StreetBlocksExtractionStep(Step):
             join(Street, tmp_blocks.nomencla == Street.id).\
             yield_per(bulk_size)
         count = query.count()
-        entities = []
 
         ctx.report.info('{} cuadras a procesar.'.format(count))
         ctx.report.info('Procesando cuadras...')
 
         for tmp_block, street in utils.pbar(query, ctx, total=count):
             block = self._process_block(tmp_block, street)
-            entities.append(block)
-
-            if len(entities) > bulk_size:
-                ctx.session.add_all(entities)
-                # Escribir entidades a la base de datos para evitar mantenerlas
-                # en el objeto Session (sin terminar la transacción).
-                ctx.session.flush()
-                ctx.session.expunge_all()
-                entities.clear()
-
-        ctx.session.add_all(entities)
+            utils.add_maybe_flush(block, ctx, bulk_size)
 
         ctx.report.info('Cuadras procesadas.')
         return StreetBlock
