@@ -6,6 +6,12 @@ class Step(ABC):
     """Representa una acción a ejecutar dentro de un contexto dado.
     Step es una clase abstracta.
 
+    La estructura del ETL Georef se basa en series de Step, que son ejecutados
+    en distintas configuraciones, siempre bajo un mismo contexto (Context). Los
+    datos generados por cada Step son utilizados por los siguientes para formar
+    un 'pipeline' de datos, donde el resultado final es una serie de archivos
+    listos para ser indexados por Georef API.
+
     Attributes:
         _name (str): Nombre del paso.
         _reads_input (bool): Falso si el paso no requiere de un valor de
@@ -191,7 +197,10 @@ class Process:
         self._steps = steps
 
     def run(self, ctx, start=None, end=None):
-        """Ejecuta el proceso dentro de un contexto dado.
+        """Ejecuta el proceso dentro de un contexto dado. Para lograr esto, se
+        ejecuta cada paso de la lista '_steps', tomando la salida de cada paso
+        como entrada del siguiente. Al finalizar la ejecución del proceso, se
+        realiza un commit() del objeto Session.
 
         Args:
             ctx (Context): Contexto de ejecución.
