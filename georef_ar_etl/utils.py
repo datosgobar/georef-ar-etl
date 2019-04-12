@@ -90,14 +90,10 @@ class ValidateTableSizeStep(Step):
         self._tolerance = tolerance
 
     def _run_internal(self, table, ctx):
-        if ctx.mode == 'interactive':
-            ctx.report.info('Salteando chequeo de tamaño.')
-            return table
-
         count = ctx.session.query(table).count()
         diff = abs(self._size - count)
 
-        if diff > self._tolerance:
+        if diff > self._tolerance and ctx.mode != 'interactive':
             raise ProcessException(
                 'La tabla contiene {} elementos, pero debe contar con {} '
                 '(margen de error: {}).'.format(count, self._size,
