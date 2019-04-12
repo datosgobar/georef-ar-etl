@@ -208,10 +208,6 @@ def ensure_dir(path, filesystem):
     filesystem.makedirs(path, permissions=constants.DIR_PERMS, recreate=True)
 
 
-def copy_file(src, dst, ctx):
-    ctx.fs.copy(src, dst, overwrite=True)
-
-
 def load_data_csv(filename):
     with open(os.path.join(constants.DATA_DIR, filename), newline='') as f:
         reader = csv.DictReader(f)
