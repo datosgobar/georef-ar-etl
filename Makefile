@@ -2,9 +2,12 @@
 
 ETL_PYTHON ?= python
 ETL_PIP ?= pip3
-GIT_BRANCH ?= master
-ALEMBIC_COMMAND = alembic --config config/alembic.ini
+ETL_ALEMBIC ?= alembic
+
+ALEMBIC_COMMAND = $(ETL_ALEMBIC) --config config/alembic.ini
 ETL_COMMAND = $(ETL_PYTHON) -m georef_ar_etl
+GIT_BRANCH ?= master
+
 TEST_FILES ?= *.py
 
 # Ejecución del ETL
