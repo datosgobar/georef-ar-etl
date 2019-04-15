@@ -1,8 +1,8 @@
 # Makefile para georef-ar-etl
 
-ETL_PYTHON = python
-ETL_PIP = pip3
-GIT_BRANCH = master
+ETL_PYTHON ?= python
+ETL_PIP ?= pip3
+GIT_BRANCH ?= master
 ALEMBIC_COMMAND = alembic --config config/alembic.ini
 ETL_COMMAND = $(ETL_PYTHON) -m georef_ar_etl
 TEST_FILES ?= *.py
