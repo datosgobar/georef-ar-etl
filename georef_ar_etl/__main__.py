@@ -62,6 +62,9 @@ def parse_args():
 
 
 def etl(enabled_processes, start, end, ctx):
+    ctx.report.info('Georef ETL')
+    ctx.report.info('Versión: {}'.format(constants.ETL_VERSION) + '\n')
+
     processes = [module.create_process(ctx.config) for module in MODULES]
 
     for process in processes:

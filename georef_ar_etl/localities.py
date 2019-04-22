@@ -48,12 +48,15 @@ def create_process(config):
             loaders.CreateGeoJSONFileStep(Locality, constants.ETL_VERSION,
                                           constants.LOCALITIES + '.geojson'),
             loaders.CreateCSVFileStep(Locality, constants.ETL_VERSION,
-                                      constants.LOCALITIES + '.csv')
+                                      constants.LOCALITIES + '.csv'),
+            loaders.CreateNDJSONFileStep(Locality, constants.ETL_VERSION,
+                                         constants.LOCALITIES + '.ndjson')
         ]),
         CompositeStep([
             utils.CopyFileStep(output_path, constants.LOCALITIES + '.json'),
             utils.CopyFileStep(output_path, constants.LOCALITIES + '.geojson'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.csv')
+            utils.CopyFileStep(output_path, constants.LOCALITIES + '.csv'),
+            utils.CopyFileStep(output_path, constants.LOCALITIES + '.ndjson')
         ])
     ])
 

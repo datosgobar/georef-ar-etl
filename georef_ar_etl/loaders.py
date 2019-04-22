@@ -1,7 +1,9 @@
 import os
+import json
 import subprocess
 import shutil
 import csv
+from abc import abstractmethod
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy import MetaData
@@ -13,6 +15,7 @@ from .json_stream_writer import JSONStreamWriter, JSONArrayPlaceholder
 OGR2OGR_CMD = 'ogr2ogr'
 SOURCE_EPSG = 'EPSG:4326'
 OUTPUT_EPSG = SOURCE_EPSG
+NDJSON_LINE_SEPARATOR = '\n'
 
 
 class Ogr2ogrStep(Step):
@@ -88,22 +91,18 @@ class Ogr2ogrStep(Step):
         self._overwrite = val
 
 
-class CreateJSONFileStep(Step):
-    def __init__(self, table, *filename_parts):
-        super().__init__('create_json_file', reads_input=False)
+class CreateOutputFileStep(Step):
+    def __init__(self, name, table, *filename_parts):
+        super().__init__(name, reads_input=False)
         self._table = table
         self._filename = os.path.join(*filename_parts)
 
+    @abstractmethod
+    def _write_file(self, query, count, cached_session, ctx):
+        pass
+
     def _run_internal(self, data, ctx):
-        contents = {}
-        now = datetime.now(timezone.utc)
         bulk_size = ctx.config.getint('etl', 'bulk_size')
-
-        contents['fecha_creacion'] = str(now)
-        contents['timestamp'] = int(now.timestamp())
-        contents['version'] = constants.ETL_VERSION
-        contents['datos'] = JSONArrayPlaceholder()
-
         query = ctx.session.query(self._table).yield_per(bulk_size)
         count = query.count()
         cached_session = ctx.cached_session()
@@ -111,40 +110,76 @@ class CreateJSONFileStep(Step):
         dirname = os.path.dirname(self._filename)
         if dirname:
             utils.ensure_dir(dirname, ctx.fs)
+
+        self._write_file(query, count, cached_session, ctx)
+        return self._filename
+
+
+class CreateJSONFileStep(CreateOutputFileStep):
+    def __init__(self, table, *filename_parts):
+        super().__init__('create_json_file', table, *filename_parts)
+
+    def _write_file(self, query, count, cached_session, ctx):
+        entity_name = os.path.basename(os.path.splitext(self._filename)[0])
+
+        contents = {
+            'cantidad': count,
+            'total': count,
+            'inicio': 0,
+            entity_name: JSONArrayPlaceholder()
+        }
 
         ctx.report.info('Transformando entidades a JSON...')
 
         with ctx.fs.open(self._filename, 'w') as f:
-            with JSONStreamWriter(f, template=contents,
-                                  ensure_ascii=False) as w:
+            stream_writer = JSONStreamWriter(f, template=contents,
+                                             ensure_ascii=False,
+                                             separators=(',', ':'))
+
+            with stream_writer:
                 for entity in utils.pbar(query, ctx, total=count):
-                    w.append(entity.to_dict(cached_session))
-
-        return self._filename
+                    stream_writer.append(entity.to_dict(cached_session))
 
 
-class CreateGeoJSONFileStep(Step):
+class CreateNDJSONFileStep(CreateOutputFileStep):
     def __init__(self, table, *filename_parts):
-        super().__init__('create_geojson_file', reads_input=False)
-        self._table = table
-        self._filename = os.path.join(*filename_parts)
+        super().__init__('create_ndjson_file', table, *filename_parts)
 
-    def _run_internal(self, data, ctx):
-        bulk_size = ctx.config.getint('etl', 'bulk_size')
-        query = ctx.session.query(self._table).yield_per(bulk_size)
-        count = query.count()
-        cached_session = ctx.cached_session()
+    def _write_json_line(self, obj, f):
+        json.dump(obj, f, ensure_ascii=False, separators=(',', ':'))
+        f.write(NDJSON_LINE_SEPARATOR)
 
-        dirname = os.path.dirname(self._filename)
-        if dirname:
-            utils.ensure_dir(dirname, ctx.fs)
+    def _write_file(self, query, count, cached_session, ctx):
+        now = datetime.now(timezone.utc)
+        metadata = {
+            'fecha_creacion': str(now),
+            'timestamp': int(now.timestamp()),
+            'version': constants.ETL_VERSION,
+            'cantidad': count
+        }
 
+        ctx.report.info('Transformando entidades a NDJSON...')
+
+        with ctx.fs.open(self._filename, 'w') as f:
+            self._write_json_line(metadata, f)
+
+            for entity in utils.pbar(query, ctx, total=count):
+                self._write_json_line(entity.to_dict(cached_session), f)
+
+
+class CreateGeoJSONFileStep(CreateOutputFileStep):
+    def __init__(self, table, *filename_parts):
+        super().__init__('create_geojson_file', table, *filename_parts)
+
+    def _write_file(self, query, count, cached_session, ctx):
         collection = geojson.FeatureCollection(JSONArrayPlaceholder())
         ctx.report.info('Transformando entidades a GeoJSON...')
 
         with ctx.fs.open(self._filename, 'w') as f:
-            with JSONStreamWriter(f, template=collection,
-                                  ensure_ascii=False) as w:
+            stream_writer = JSONStreamWriter(f, template=collection,
+                                             ensure_ascii=False)
+
+            with stream_writer as w:
                 for entity in utils.pbar(query, ctx, total=count):
                     entity_dict = entity.to_dict(cached_session)
                     del entity_dict['geometria']
@@ -155,8 +190,6 @@ class CreateGeoJSONFileStep(Step):
                     feature = geojson.Feature(geometry=point,
                                               properties=entity_dict)
                     w.append(feature)
-
-        return self._filename
 
 
 def flatten_dict(d, max_depth=3, sep='_'):
@@ -189,18 +222,11 @@ def flatten_dict(d, max_depth=3, sep='_'):
             del d[key]
 
 
-class CreateCSVFileStep(Step):
+class CreateCSVFileStep(CreateOutputFileStep):
     def __init__(self, table, *filename_parts):
-        super().__init__('create_csv_file', reads_input=False)
-        self._table = table
-        self._filename = os.path.join(*filename_parts)
+        super().__init__('create_csv_file', table, *filename_parts)
 
-    def _run_internal(self, data, ctx):
-        bulk_size = ctx.config.getint('etl', 'bulk_size')
-        query = ctx.session.query(self._table).yield_per(bulk_size)
-        count = query.count()
-        cached_session = ctx.cached_session()
-
+    def _write_file(self, query, count, cached_session, ctx):
         first = ctx.session.query(self._table).first().to_dict(ctx.session)
         del first['geometria']
         flatten_dict(first)
@@ -222,5 +248,3 @@ class CreateCSVFileStep(Step):
                 flatten_dict(entity_dict)
 
                 writer.writerow(entity_dict)
-
-        return self._filename

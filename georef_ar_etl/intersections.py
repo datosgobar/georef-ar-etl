@@ -11,9 +11,9 @@ def create_process(config):
         utils.CheckDependenciesStep([Province, Department, Street]),
         IntersectionsCreationStep(),
         utils.ValidateTableSizeStep(size=625000, tolerance=1000),
-        loaders.CreateJSONFileStep(Intersection, constants.ETL_VERSION,
-                                   constants.INTERSECTIONS + '.json'),
-        utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.json')
+        loaders.CreateNDJSONFileStep(Intersection, constants.ETL_VERSION,
+                                     constants.INTERSECTIONS + '.ndjson'),
+        utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.ndjson')
     ])
 
 

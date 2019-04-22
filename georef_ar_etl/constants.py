@@ -1,4 +1,4 @@
-ETL_VERSION = '9.0.0'
+ETL_VERSION = '10.0.0'
 DATA_DIR = 'data'
 CONFIG_PATH = 'config/georef.cfg'
 DIR_PERMS = 0o700

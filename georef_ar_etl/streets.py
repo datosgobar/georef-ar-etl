@@ -106,10 +106,13 @@ def create_process(config):
                                        constants.STREETS + '.json'),
             loaders.CreateCSVFileStep(Street, constants.ETL_VERSION,
                                       constants.STREETS + '.csv'),
+            loaders.CreateNDJSONFileStep(Street, constants.ETL_VERSION,
+                                         constants.STREETS + '.ndjson')
         ]),
         CompositeStep([
             utils.CopyFileStep(output_path, constants.STREETS + '.json'),
-            utils.CopyFileStep(output_path, constants.STREETS + '.csv')
+            utils.CopyFileStep(output_path, constants.STREETS + '.csv'),
+            utils.CopyFileStep(output_path, constants.STREETS + '.ndjson')
         ])
     ])
 

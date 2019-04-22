@@ -21,9 +21,9 @@ def create_process(config):
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=1116000, tolerance=1000),
-        loaders.CreateJSONFileStep(StreetBlock, constants.ETL_VERSION,
-                                   constants.STREET_BLOCKS + '.json'),
-        utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.json')
+        loaders.CreateNDJSONFileStep(StreetBlock, constants.ETL_VERSION,
+                                     constants.STREET_BLOCKS + '.ndjson'),
+        utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson')
     ])
 
 
