@@ -65,9 +65,6 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='cod_bahra')
 
     def _patch_tmp_entities(self, tmp_localities, ctx):
-        # Borrar entidades sin ID
-        patch.delete(tmp_localities, ctx, cod_bahra=None)
-
         # Borrar 'EL FICAL'
         patch.delete(tmp_localities, ctx, cod_bahra='70056060001',
                      nombre_bah='EL FICAL')

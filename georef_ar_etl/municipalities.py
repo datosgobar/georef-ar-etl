@@ -73,12 +73,6 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
                            in1='550343')
         patch.update_field(tmp_municipalities, 'in1', '820277', ctx,
                            in1='800277')
-        patch.update_field(tmp_municipalities, 'in1', '585070', ctx,
-                           in1='545070')
-        patch.update_field(tmp_municipalities, 'in1', '589999', ctx,
-                           in1='549999')
-        patch.update_field(tmp_municipalities, 'in1', '629999', ctx,
-                           in1='829999')
 
     def _process_entity(self, tmp_municipality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_municipality.geom,
