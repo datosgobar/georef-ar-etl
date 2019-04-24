@@ -31,6 +31,13 @@ console:
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
 # datos para SQLAlchemy.
 
+# Para generar una nueva migración (solo desarrolladores):
+# 1) Modificar models.py con los datos deseados.
+# 2) Borrar todas las tablas del proyecto.
+# 3) Ejecutar make migrate.
+# 4) Ejecutar make makemigrations.
+# 5) Editar la migración creada para agregarle título.
+
 makemigrations:
 	PYTHONPATH=$$(pwd) $(ALEMBIC_COMMAND) revision --autogenerate
 
