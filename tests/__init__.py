@@ -11,6 +11,7 @@ from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl.departments import DepartmentsExtractionStep
 from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
+from georef_ar_etl.census_localities import CensusLocalitiesExtractionStep
 from georef_ar_etl.streets import StreetsExtractionStep
 from georef_ar_etl.utils import CopyFileStep
 from georef_ar_etl import read_config, create_engine, models
@@ -27,6 +28,7 @@ class ETLTestCase(TestCase):
         self._tmp_departments = None
         self._tmp_municipalities = None
         self._tmp_localities = None
+        self._tmp_census_localities = None
         self._tmp_blocks = None
 
     @classmethod
@@ -158,6 +160,33 @@ class ETLTestCase(TestCase):
 
         cls._tmp_localities = loader.run('test_localidades', cls._ctx)
         return cls._tmp_localities
+
+    @classmethod
+    def create_test_census_localities(cls, extract=False):
+        # Cargar las localidades censales de la provincia de prueba
+        cls.copy_test_file(
+            'test_localidades_censales/test_localidades_censales.dbf')
+        cls.copy_test_file(
+            'test_localidades_censales/test_localidades_censales.shp')
+        cls.copy_test_file(
+            'test_localidades_censales/test_localidades_censales.shx')
+        cls.copy_test_file(
+            'test_localidades_censales/test_localidades_censales.prj')
+
+        loader = Ogr2ogrStep(table_name='tmp_localidades_censales',
+                             geom_type='Point',
+                             env={'SHAPE_ENCODING': 'utf-8'},
+                             metadata=cls._metadata,
+                             db_config=cls._ctx.config['test_db'])
+
+        cls._tmp_census_localities = loader.run('test_localidades_censales',
+                                                cls._ctx)
+
+        if extract:
+            step = CensusLocalitiesExtractionStep()
+            step.run(cls._tmp_census_localities, cls._ctx)
+
+        return cls._tmp_census_localities
 
     @classmethod
     def create_test_streets(cls):
