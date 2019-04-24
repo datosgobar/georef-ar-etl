@@ -41,7 +41,7 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=4101, tolerance=100),
+        utils.ValidateTableSizeStep(size=4142, tolerance=50),
         CompositeStep([
             loaders.CreateJSONFileStep(Locality, constants.ETL_VERSION,
                                        constants.LOCALITIES + '.json'),
@@ -92,7 +92,7 @@ class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def _build_entities_query(self, tmp_entities, ctx):
         bulk_size = ctx.config.getint('etl', 'bulk_size')
         return ctx.session.query(tmp_entities).\
-            filter(tmp_entities.tipo_bahra.in_(constants.BAHRA_TYPES.keys())).\
+            filter(tmp_entities.tipo_bahra.in_(constants.LOCALITY_TYPES)).\
             yield_per(bulk_size)
 
     def _process_entity(self, tmp_locality, cached_session, ctx):

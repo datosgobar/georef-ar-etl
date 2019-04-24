@@ -1,12 +1,30 @@
+from enum import Enum
+
 ETL_VERSION = '11.0.0'
 DATA_DIR = 'data'
 CONFIG_PATH = 'config/georef.cfg'
 DIR_PERMS = 0o700
 
-BAHRA_TYPES = {
-    'E': 'Entidad (E)',
-    'LC': 'Componente de localidad compuesta (LC)',
-    'LS': 'Localidad simple (LS)'
+
+class BAHRAType(Enum):
+    E = 'Entidad (E)'
+    LC = 'Componente de localidad compuesta (LC)'
+    LS = 'Localidad simple (LS)'
+    ST = 'Sitio edificado (ST)'
+    LSE = 'Localidad simple con entidad (LSE)'
+    LCE = 'Componente de localidad compuesta con entidad (LCE)'
+
+
+# Subconjunto de tipos BAHRA seleccionados para crear el dataset de localidades
+LOCALITY_TYPES = {
+    member.name: member.value
+    for member in [
+        BAHRAType.E,
+        BAHRAType.LC,
+        BAHRAType.LS,
+        BAHRAType.LCE,
+        BAHRAType.LSE
+    ]
 }
 
 STREET_TYPE_OTHER = 'OTRO'

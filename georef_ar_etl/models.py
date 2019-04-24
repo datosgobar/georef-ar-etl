@@ -208,9 +208,10 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin):
 
     @validates('categoria')
     def validate_category(self, _key, category):
-        if category not in constants.BAHRA_TYPES.keys():
+        if category not in constants.LOCALITY_TYPES:
             raise ValidationException(
-                'El valor "{}" no es un tipo BAHRA.'.format(category))
+                'El valor "{}" no es un tipo de localidad válido.'.format(
+                    category))
 
         return category
 
@@ -239,7 +240,7 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin):
                 'id': self.municipio_id,
                 'nombre': self.municipio_nombre(session)
             },
-            'categoria': constants.BAHRA_TYPES[self.categoria],
+            'categoria': constants.LOCALITY_TYPES[self.categoria],
             'centroide': {
                 'lon': self.lon,
                 'lat': self.lat

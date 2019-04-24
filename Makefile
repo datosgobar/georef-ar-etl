@@ -24,6 +24,10 @@ run:
 info:
 	$(ETL_COMMAND) -c info
 
+console:
+	$(ETL_COMMAND) -c console
+
+
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
 # datos para SQLAlchemy.
 
