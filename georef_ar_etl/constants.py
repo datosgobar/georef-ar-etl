@@ -15,9 +15,16 @@ class BAHRAType(Enum):
     LCE = 'Componente de localidad compuesta con entidad (LCE)'
 
 
+# Todos los tipos BAHRA
+BAHRA_TYPES = {
+    member.name: member.value
+    for member in list(BAHRAType)
+}
+
+
 # Subconjunto de tipos BAHRA seleccionados para crear el dataset de localidades
 LOCALITY_TYPES = {
-    member.name: member.value
+    member.name
     for member in [
         BAHRAType.E,
         BAHRAType.LC,
@@ -27,6 +34,13 @@ LOCALITY_TYPES = {
     ]
 }
 
+# Las localidades censales son LC o LC, en todos los casos (campo tiploc)
+CENSUS_LOCALITY_TYPES = {
+    '1': BAHRAType.LS.name,
+    '2': BAHRAType.LC.name
+}
+
+# Valores posible para campo func_loc
 CENSUS_LOCALITY_ADMIN_FUNCTIONS = {
     '1': 'CAPITAL_PAIS',
     '2': 'CAPITAL_PROVINCIA',

@@ -97,13 +97,15 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                                                     tmp_census_locality.geom,
                                                     ctx)
 
-        category = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[
+        category = constants.CENSUS_LOCALITY_TYPES[tmp_census_locality.tiploc]
+        function = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[
             tmp_census_locality.func_loc]
 
         return CensusLocality(
             id=loc_id,
             nombre=utils.clean_string(tmp_census_locality.localidad),
             categoria=category,
+            funcion=function,
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,

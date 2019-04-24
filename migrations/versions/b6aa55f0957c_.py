@@ -1,8 +1,8 @@
-"""Add census localities
+"""Create census localities
 
-Revision ID: 17eb8a4ca11c
+Revision ID: b6aa55f0957c
 Revises: 45abb24d82b8
-Create Date: 2019-04-24 13:13:43.768860
+Create Date: 2019-04-24 14:36:40.487882
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import geoalchemy2
 
 
 # revision identifiers, used by Alembic.
-revision = '17eb8a4ca11c'
+revision = 'b6aa55f0957c'
 down_revision = '45abb24d82b8'
 branch_labels = None
 depends_on = None
@@ -23,9 +23,10 @@ def upgrade():
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('nombre', sa.String(), nullable=False),
     sa.Column('fuente', sa.String(), nullable=False),
-    sa.Column('categoria', sa.String(), nullable=True),
+    sa.Column('categoria', sa.String(), nullable=False),
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
+    sa.Column('funcion', sa.String(), nullable=True),
     sa.Column('geometria', geoalchemy2.types.Geometry(geometry_type='POINT', srid=4326), nullable=False),
     sa.Column('provincia_id', sa.String(), nullable=False),
     sa.Column('departamento_id', sa.String(), nullable=True),

@@ -25,6 +25,7 @@ class EntityMixin:
     id = Column(String, primary_key=True)
     nombre = Column(String, nullable=False)
     fuente = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
 
     @validates('id')
     def validate_id(self, _key, value):
@@ -120,7 +121,6 @@ class Province(Base, EntityMixin):
     __tablename__ = constants.PROVINCES_ETL_TABLE
     _id_len = constants.PROVINCE_ID_LEN
 
-    categoria = Column(String, nullable=False)
     nombre_completo = Column(String, nullable=False)
     iso_id = Column(String, nullable=False)
     iso_nombre = Column(String, nullable=False)
@@ -155,7 +155,6 @@ class Department(Base, EntityMixin, InProvinceMixin):
     __tablename__ = constants.DEPARTMENTS_ETL_TABLE
     _id_len = constants.DEPARTMENT_ID_LEN
 
-    categoria = Column(String, nullable=False)
     nombre_completo = Column(String, nullable=False)
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
@@ -190,7 +189,6 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     __tablename__ = constants.MUNICIPALITIES_ETL_TABLE
     _id_len = constants.MUNICIPALITY_ID_LEN
 
-    categoria = Column(String, nullable=False)
     nombre_completo = Column(String, nullable=False)
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
@@ -225,7 +223,6 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
     __tablename__ = constants.LOCALITIES_ETL_TABLE
     _id_len = constants.LOCALITY_ID_LEN
 
-    categoria = Column(String, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOINT', srid=SRID), nullable=False)
@@ -256,7 +253,7 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
                 'id': self.municipio_id,
                 'nombre': self.municipio_nombre(session)
             },
-            'categoria': constants.LOCALITY_TYPES[self.categoria],
+            'categoria': constants.BAHRA_TYPES[self.categoria],
             'centroide': {
                 'lon': self.lon,
                 'lat': self.lat
@@ -271,18 +268,27 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
     __tablename__ = constants.CENSUS_LOCALITIES_ETL_TABLE
     _id_len = constants.CENSUS_LOCALITY_ID_LEN
 
-    categoria = Column(String, nullable=True)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
+    funcion = Column(String, nullable=True)
     geometria = Column(Geometry('POINT', srid=SRID), nullable=False)
 
     @validates('categoria')
     def validate_category(self, _key, category):
-        if category not in constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS.values():
+        if category not in constants.CENSUS_LOCALITY_TYPES.values():
             raise ValidationException(
-                'Función de localidad censal inválida: {}'.format(category))
+                'El valor "{}" no es un tipo de loc. censal válido.'.format(
+                    category))
 
         return category
+
+    @validates('funcion')
+    def validate_administrative_function(self, _key, function):
+        if function not in constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS.values():
+            raise ValidationException(
+                'Función de localidad censal inválida: {}'.format(function))
+
+        return function
 
     def to_dict(self, session):
         return {
@@ -301,7 +307,8 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
                 'id': self.municipio_id,
                 'nombre': self.municipio_nombre(session)
             },
-            'categoria': self.categoria,
+            'categoria': constants.BAHRA_TYPES[self.categoria],
+            'funcion': self.funcion,
             'centroide': {
                 'lon': self.lon,
                 'lat': self.lat
@@ -335,7 +342,6 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     __tablename__ = constants.STREETS_ETL_TABLE
     _id_len = constants.STREET_ID_LEN
 
-    categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     intersecciones_a = get_relationship('Intersection',
