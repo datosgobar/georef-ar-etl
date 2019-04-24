@@ -15,6 +15,7 @@ class TestOgr2ogrStep(ETLTestCase):
 
         # Archivo generado con georef-ar-api
         self.copy_test_file('test_shp/localidades.shp')
+        self.copy_test_file('test_shp/localidades.prj')
         self.copy_test_file('test_shp/localidades.shx')
         self.copy_test_file('test_shp/localidades.dbf')
 
