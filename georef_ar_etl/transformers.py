@@ -8,8 +8,9 @@ from . import utils
 
 
 class ExtractZipStep(Step):
-    def __init__(self):
+    def __init__(self, internal_path=''):
         super().__init__('extract_zip')
+        self._internal_path = internal_path
 
     def _run_internal(self, filename, ctx):
         dirname = filename.split('.')[0]
@@ -28,7 +29,7 @@ class ExtractZipStep(Step):
             raise ProcessException(
                 'No se pudo extraer el archivo .zip: {}'.format(e))
 
-        return dirname
+        return os.path.join(dirname, self._internal_path)
 
 
 class ExtractTarStep(Step):
@@ -129,7 +130,9 @@ class EntitiesExtractionStep(Step):
         ctx.report.info('Entidades nuevas: %s', len(added))
         ctx.report.info('Entidades actualizadas: %s', len(updated))
         ctx.report.info('Entidades eliminadas: %s', len(deleted))
-        ctx.report.info('Errores: %s\n', len(errors))
+
+        if errors:
+            ctx.report.warn('Errores: %s\n', len(errors))
 
         report_data = ctx.report.get_data(self.name)
         report_data['new_entities_ids'] = list(added)

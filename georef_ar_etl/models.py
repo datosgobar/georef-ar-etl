@@ -25,7 +25,6 @@ class EntityMixin:
     id = Column(String, primary_key=True)
     nombre = Column(String, nullable=False)
     fuente = Column(String, nullable=False)
-    categoria = Column(String, nullable=False)
 
     @validates('id')
     def validate_id(self, _key, value):
@@ -34,6 +33,13 @@ class EntityMixin:
                 'La longitud del ID debe ser {}.'.format(self._id_len))
 
         return value
+
+    @validates('nombre')
+    def validate_name(self, _key, name):
+        if not name:
+            raise ValidationException('El nombre no puede ser vacío.')
+
+        return name
 
 
 class InProvinceMixin:
@@ -91,10 +97,30 @@ class InDepartmentMixin:
         return session.query(Department).get(self.departamento_id).nombre
 
 
+class InNullableMunicipalityMixin:
+    @declared_attr
+    def municipio_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.MUNICIPALITIES_ETL_TABLE + '.id',
+                       ondelete='cascade'),
+            nullable=True
+        )
+
+    def municipio_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
+        if not self.municipio_id:
+            return None
+
+        return session.query(Municipality).get(self.municipio_id).nombre
+
+
 class Province(Base, EntityMixin):
     __tablename__ = constants.PROVINCES_ETL_TABLE
     _id_len = constants.PROVINCE_ID_LEN
 
+    categoria = Column(String, nullable=False)
     nombre_completo = Column(String, nullable=False)
     iso_id = Column(String, nullable=False)
     iso_nombre = Column(String, nullable=False)
@@ -129,6 +155,7 @@ class Department(Base, EntityMixin, InProvinceMixin):
     __tablename__ = constants.DEPARTMENTS_ETL_TABLE
     _id_len = constants.DEPARTMENT_ID_LEN
 
+    categoria = Column(String, nullable=False)
     nombre_completo = Column(String, nullable=False)
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
@@ -163,6 +190,7 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     __tablename__ = constants.MUNICIPALITIES_ETL_TABLE
     _id_len = constants.MUNICIPALITY_ID_LEN
 
+    categoria = Column(String, nullable=False)
     nombre_completo = Column(String, nullable=False)
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
@@ -192,16 +220,12 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
         }
 
 
-class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin):
+class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
+               InNullableMunicipalityMixin):
     __tablename__ = constants.LOCALITIES_ETL_TABLE
     _id_len = constants.LOCALITY_ID_LEN
 
-    municipio_id = Column(
-        String,
-        ForeignKey(constants.MUNICIPALITIES_ETL_TABLE + '.id',
-                   ondelete='cascade'),
-        nullable=True
-    )
+    categoria = Column(String, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOINT', srid=SRID), nullable=False)
@@ -214,14 +238,6 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin):
                     category))
 
         return category
-
-    def municipio_nombre(self, session):
-        # Nombre de método en castellano para mantener consistencia con los
-        # demás campos de los modelos
-        if not self.municipio_id:
-            return None
-
-        return session.query(Municipality).get(self.municipio_id).nombre
 
     def to_dict(self, session):
         return {
@@ -241,6 +257,51 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin):
                 'nombre': self.municipio_nombre(session)
             },
             'categoria': constants.LOCALITY_TYPES[self.categoria],
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
+
+
+class CensusLocality(Base, EntityMixin, InProvinceMixin,
+                     InNullableDepartmentMixin, InNullableMunicipalityMixin):
+    __tablename__ = constants.CENSUS_LOCALITIES_ETL_TABLE
+    _id_len = constants.CENSUS_LOCALITY_ID_LEN
+
+    categoria = Column(String, nullable=True)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    geometria = Column(Geometry('POINT', srid=SRID), nullable=False)
+
+    @validates('categoria')
+    def validate_category(self, _key, category):
+        if category not in constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS.values():
+            raise ValidationException(
+                'Función de localidad censal inválida: {}'.format(category))
+
+        return category
+
+    def to_dict(self, session):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session)
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+            'municipio': {
+                'id': self.municipio_id,
+                'nombre': self.municipio_nombre(session)
+            },
+            'categoria': self.categoria,
             'centroide': {
                 'lon': self.lon,
                 'lat': self.lat
@@ -274,6 +335,7 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     __tablename__ = constants.STREETS_ETL_TABLE
     _id_len = constants.STREET_ID_LEN
 
+    categoria = Column(String, nullable=False)
     geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     intersecciones_a = get_relationship('Intersection',

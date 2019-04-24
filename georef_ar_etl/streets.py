@@ -32,10 +32,12 @@ def create_process(config):
 
     ogr2ogr_cstep = CompositeStep([
         loaders.Ogr2ogrStep(table_name=constants.STREET_BLOCKS_TMP_TABLE,
-                            geom_type='MultiLineString')
+                            geom_type='MultiLineString',
+                            source_epsg='EPSG:4326')
     ] + [
         loaders.Ogr2ogrStep(table_name=constants.STREET_BLOCKS_TMP_TABLE,
-                            geom_type='MultiLineString', overwrite=False)
+                            geom_type='MultiLineString', overwrite=False,
+                            source_epsg='EPSG:4326')
     ] * (len(download_cstep) - 1), name='ogr2ogr_cstep')
 
     return Process(constants.STREETS, [

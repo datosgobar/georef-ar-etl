@@ -15,6 +15,7 @@ from . import constants
 _SQL_TYPES = {
     'varchar': sqltypes.VARCHAR,
     'integer': sqltypes.INTEGER,
+    'numeric': sqltypes.NUMERIC,
     'double': pgtypes.DOUBLE_PRECISION,
     'geometry': geotypes.Geometry
 }
@@ -72,7 +73,7 @@ class ValidateTableSchemaStep(Step):
             if not isinstance(col_info.type, col_class):
                 raise ProcessException(
                     'La columna "{}" debería ser de tipo {}.'.format(
-                        name, self._schema[name]))
+                        name, col_info.type))
 
         for name in self._schema:
             if name not in table.__table__.columns:

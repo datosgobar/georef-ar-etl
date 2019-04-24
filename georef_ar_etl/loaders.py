@@ -13,14 +13,14 @@ from .process import Step, ProcessException
 from .json_stream_writer import JSONStreamWriter, JSONArrayPlaceholder
 
 OGR2OGR_CMD = 'ogr2ogr'
-SOURCE_EPSG = 'EPSG:4326'
-OUTPUT_EPSG = SOURCE_EPSG
+OUTPUT_EPSG = 'EPSG:4326'
 NDJSON_LINE_SEPARATOR = '\n'
 
 
 class Ogr2ogrStep(Step):
     def __init__(self, table_name, geom_type, env=None, precision=True,
-                 overwrite=True, metadata=None, db_config=None):
+                 overwrite=True, metadata=None, db_config=None,
+                 source_epsg=None):
         super().__init__('ogr2ogr')
         if not shutil.which(OGR2OGR_CMD):
             raise RuntimeError('ogr2ogr is not installed.')
@@ -32,6 +32,7 @@ class Ogr2ogrStep(Step):
         self._overwrite = overwrite
         self._metadata = metadata or MetaData()
         self._db_config = db_config
+        self._source_epsg = source_epsg
 
     def _new_env(self):
         env = os.environ.copy()
@@ -53,9 +54,13 @@ class Ogr2ogrStep(Step):
              'dbname={database}').format(**db_config),
             '-nln', self._table_name,
             '-nlt', self._geom_type,
-            '-s_srs', SOURCE_EPSG,
             '-t_srs', OUTPUT_EPSG
         ]
+
+        if self._source_epsg:
+            args.extend([
+                '-s_srs', self._source_epsg
+            ])
 
         if os.path.splitext(filename)[1] == '.csv':
             args.extend([

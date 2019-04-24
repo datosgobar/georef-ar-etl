@@ -16,7 +16,7 @@ config = context.config
 fileConfig(config.config_file_name)
 
 ###################################
-#    Agegado por georef-ar-etl    #
+#    Agregado por georef-ar-etl   #
 ###################################
 
 from georef_ar_etl import models, read_config
