@@ -8,6 +8,9 @@ from . import patch
 def create_process(config):
     output_path = config.get('etl', 'output_dest_path')
 
+    # Utilizar kebab-case en lugar de snake_case para nombres de archivos
+    file_basename = constants.CENSUS_LOCALITIES.replace('_', '-')
+
     return Process(constants.CENSUS_LOCALITIES, [
         utils.CheckDependenciesStep([Province, Department, Municipality]),
         extractors.DownloadURLStep(constants.CENSUS_LOCALITIES + '.zip',
@@ -47,32 +50,21 @@ def create_process(config):
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=3526, tolerance=50),
         CompositeStep([
-            loaders.CreateJSONFileStep(
-                CensusLocality,
-                constants.ETL_VERSION,
-                constants.CENSUS_LOCALITIES + '.json'),
-            loaders.CreateGeoJSONFileStep(
-                CensusLocality,
-                constants.ETL_VERSION,
-                constants.CENSUS_LOCALITIES + '.geojson'),
-            loaders.CreateCSVFileStep(
-                CensusLocality,
-                constants.ETL_VERSION,
-                constants.CENSUS_LOCALITIES + '.csv'),
-            loaders.CreateNDJSONFileStep(
-                CensusLocality,
-                constants.ETL_VERSION,
-                constants.CENSUS_LOCALITIES + '.ndjson')
+            loaders.CreateJSONFileStep(CensusLocality, constants.ETL_VERSION,
+                                       file_basename + '.json'),
+            loaders.CreateGeoJSONFileStep(CensusLocality,
+                                          constants.ETL_VERSION,
+                                          file_basename + '.geojson'),
+            loaders.CreateCSVFileStep(CensusLocality, constants.ETL_VERSION,
+                                      file_basename + '.csv'),
+            loaders.CreateNDJSONFileStep(CensusLocality, constants.ETL_VERSION,
+                                         file_basename + '.ndjson')
         ]),
         CompositeStep([
-            utils.CopyFileStep(output_path,
-                               constants.CENSUS_LOCALITIES + '.json'),
-            utils.CopyFileStep(output_path,
-                               constants.CENSUS_LOCALITIES + '.geojson'),
-            utils.CopyFileStep(output_path,
-                               constants.CENSUS_LOCALITIES + '.csv'),
-            utils.CopyFileStep(output_path,
-                               constants.CENSUS_LOCALITIES + '.ndjson')
+            utils.CopyFileStep(output_path, file_basename + '.json'),
+            utils.CopyFileStep(output_path, file_basename + '.geojson'),
+            utils.CopyFileStep(output_path, file_basename + '.csv'),
+            utils.CopyFileStep(output_path, file_basename + '.ndjson')
         ])
     ])
 
