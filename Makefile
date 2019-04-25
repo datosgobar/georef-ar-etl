@@ -18,8 +18,22 @@ update:
 	make migrate
 	$(ETL_PIP) install -r requirements.txt -r requirements-dev.txt
 
+# Ejecuta todos los procesos
 run:
 	$(ETL_COMMAND)
+
+# Ejecuta todos los procesos, pero solo la parte de generación de archivos
+files:
+	$(ETL_COMMAND) -p provincias --start 8
+	$(ETL_COMMAND) -p departamentos --start 9
+	$(ETL_COMMAND) -p municipios --start 9
+	$(ETL_COMMAND) -p asentamientos --start 9
+	$(ETL_COMMAND) -p localidades --start 6
+	$(ETL_COMMAND) -p localidades_censales --start 9
+	$(ETL_COMMAND) -p calles --start 5
+	$(ETL_COMMAND) -p intersecciones --start 4
+	$(ETL_COMMAND) -p cuadras --start 6
+	$(ETL_COMMAND) -p sinonimos -p terminos_excluyentes
 
 info:
 	$(ETL_COMMAND) -c info
