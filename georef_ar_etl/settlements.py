@@ -36,11 +36,7 @@ def create_process(config):
             'gid': 'integer',
             'geom': 'geometry'
         }),
-        CompositeStep([
-            SettlementsExtractionStep(),
-            utils.DropTableStep()
-        ]),
-        utils.FirstResultStep,
+        SettlementsExtractionStep(),
         utils.ValidateTableSizeStep(size=13555, tolerance=50),
         CompositeStep([
             loaders.CreateJSONFileStep(Settlement, constants.ETL_VERSION,
