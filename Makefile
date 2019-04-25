@@ -29,7 +29,7 @@ files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail
 	$(ETL_COMMAND) -p departamentos --start 9 --no-mail
 	$(ETL_COMMAND) -p municipios --start 9 --no-mail
-	$(ETL_COMMAND) -p asentamientos --start 9 --no-mail
+	$(ETL_COMMAND) -p asentamientos --start 8 --no-mail
 	$(ETL_COMMAND) -p localidades --start 6 --no-mail
 	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
 	$(ETL_COMMAND) -p calles --start 5 --no-mail
