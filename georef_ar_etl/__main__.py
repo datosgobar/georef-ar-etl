@@ -5,7 +5,7 @@ from .exceptions import ProcessException
 from .context import Context, Report, RUN_MODES
 from . import read_config, get_logger, create_engine, constants
 from . import provinces, departments, municipalities
-from . import localities, census_localities
+from . import settlements, localities, census_localities
 from . import streets, intersections, street_blocks
 from . import synonyms, excluding_terms
 
@@ -13,6 +13,7 @@ PROCESSES = [
     constants.PROVINCES,
     constants.DEPARTMENTS,
     constants.MUNICIPALITIES,
+    constants.SETTLEMENTS,
     constants.LOCALITIES,
     constants.CENSUS_LOCALITIES,
     constants.STREETS,
@@ -26,6 +27,7 @@ MODULES = [
     provinces,
     departments,
     municipalities,
+    settlements,
     localities,
     census_localities,
     streets,

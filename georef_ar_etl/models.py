@@ -218,23 +218,11 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
         }
 
 
-class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
-               InNullableMunicipalityMixin):
-    __tablename__ = constants.LOCALITIES_ETL_TABLE
-    _id_len = constants.LOCALITY_ID_LEN
-
+class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
+                      InNullableMunicipalityMixin):
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     geometria = Column(Geometry('MULTIPOINT', srid=SRID), nullable=False)
-
-    @validates('categoria')
-    def validate_category(self, _key, category):
-        if category not in constants.LOCALITY_TYPES:
-            raise ValidationException(
-                'El valor "{}" no es un tipo de localidad válido.'.format(
-                    category))
-
-        return category
 
     def to_dict(self, session):
         return {
@@ -261,6 +249,34 @@ class Locality(Base, EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
+
+
+class Settlement(Base, SettlementMixin):
+    __tablename__ = constants.SETTLEMENTS_ETL_TABLE
+    _id_len = constants.SETTLEMENT_ID_LEN
+
+    @validates('categoria')
+    def validate_category(self, _key, category):
+        if category not in constants.BAHRA_TYPES:
+            raise ValidationException(
+                'El valor "{}" no es un tipo de asentamiento válido.'.format(
+                    category))
+
+        return category
+
+
+class Locality(Base, SettlementMixin):
+    __tablename__ = constants.LOCALITIES_ETL_TABLE
+    _id_len = constants.LOCALITY_ID_LEN
+
+    @validates('categoria')
+    def validate_category(self, _key, category):
+        if category not in constants.LOCALITY_TYPES:
+            raise ValidationException(
+                'El valor "{}" no es un tipo de localidad válido.'.format(
+                    category))
+
+        return category
 
 
 class CensusLocality(Base, EntityMixin, InProvinceMixin,

@@ -1,41 +1,21 @@
 from .exceptions import ValidationException
 from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, Locality
-from . import extractors, transformers, loaders, geometry, utils, constants
-from . import patch
+from .settlements import SettlementsExtractionStep
+from . import loaders, geometry, utils, constants
 
 
 def create_process(config):
     output_path = config.get('etl', 'output_dest_path')
 
+    def fetch_tmp_settlements_table(_, ctx):
+        return utils.automap_table(constants.SETTLEMENTS_TMP_TABLE, ctx)
+
     return Process(constants.LOCALITIES, [
-        utils.CheckDependenciesStep([Province, Department, Municipality]),
-        extractors.DownloadURLStep(constants.LOCALITIES + '.tar.gz',
-                                   config.get('etl', 'localities_url')),
-        transformers.ExtractTarStep(),
-        loaders.Ogr2ogrStep(table_name=constants.LOCALITIES_TMP_TABLE,
-                            geom_type='MultiPoint', precision=False,
-                            env={'SHAPE_ENCODING': 'latin1'}),
-        utils.ValidateTableSchemaStep({
-            'ogc_fid': 'integer',
-            'cod_prov': 'varchar',
-            'nom_prov': 'varchar',
-            'cod_depto': 'varchar',
-            'nom_depto': 'varchar',
-            'cod_loc': 'varchar',
-            'cod_sit': 'varchar',
-            'cod_entida': 'varchar',
-            'cod_bahra': 'varchar',
-            'tipo_bahra': 'varchar',
-            'nombre_bah': 'varchar',
-            'lat_gd': 'double',
-            'long_gd': 'double',
-            'lat_gms': 'varchar',
-            'long_gms': 'varchar',
-            'fuente_ubi': 'varchar',
-            'gid': 'integer',
-            'geom': 'geometry'
-        }),
+        utils.CheckDependenciesStep([constants.SETTLEMENTS_TMP_TABLE]),
+        utils.FunctionStep(ctx_fn=fetch_tmp_settlements_table,
+                           name='fetch_tmp_settlements_table',
+                           reads_input=False),
         CompositeStep([
             LocalitiesExtractionStep(),
             utils.DropTableStep()
@@ -61,33 +41,13 @@ def create_process(config):
     ])
 
 
-class LocalitiesExtractionStep(transformers.EntitiesExtractionStep):
+class LocalitiesExtractionStep(SettlementsExtractionStep):
     def __init__(self):
-        super().__init__('localities_extraction', Locality,
-                         entity_class_pkey='id',
-                         tmp_entity_class_pkey='cod_bahra')
+        super().__init__('localities_extraction', Locality)
 
-    def _patch_tmp_entities(self, tmp_localities, ctx):
-        # Borrar 'EL FICAL'
-        patch.delete(tmp_localities, ctx, cod_bahra='70056060001',
-                     nombre_bah='EL FICAL')
-
-        # Actualiza códigos para los asentamientos del departamento de Río
-        # Grande
-        def update_rio_grande(row):
-            row.cod_depto = '008'
-            row.cod_bahra = (row.cod_prov + row.cod_depto + row.cod_loc +
-                             row.cod_entida)
-        patch.apply_fn(tmp_localities, update_rio_grande, ctx, cod_prov='94',
-                       cod_depto='007')
-
-        # Actualiza códigos para los asentamientos del departamento de Usuhaia
-        def update_ushuaia(row):
-            row.cod_depto = '015'
-            row.cod_bahra = (row.cod_prov + row.cod_depto + row.cod_loc +
-                             row.cod_entida)
-        patch.apply_fn(tmp_localities, update_ushuaia, ctx, cod_prov='94',
-                       cod_depto='014')
+    def _patch_tmp_entities(self, tmp_settlements, ctx):
+        # No parchear la tabla tmp_localidades de nuevo.
+        pass
 
     def _build_entities_query(self, tmp_entities, ctx):
         bulk_size = ctx.config.getint('etl', 'bulk_size')

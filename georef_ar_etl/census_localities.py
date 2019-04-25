@@ -46,10 +46,34 @@ def create_process(config):
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(size=3526, tolerance=50),
-        loaders.CreateNDJSONFileStep(CensusLocality, constants.ETL_VERSION,
-                                     constants.CENSUS_LOCALITIES + '.ndjson'),
-        utils.CopyFileStep(output_path,
-                           constants.CENSUS_LOCALITIES + '.ndjson')
+        CompositeStep([
+            loaders.CreateJSONFileStep(
+                CensusLocality,
+                constants.ETL_VERSION,
+                constants.CENSUS_LOCALITIES + '.json'),
+            loaders.CreateGeoJSONFileStep(
+                CensusLocality,
+                constants.ETL_VERSION,
+                constants.CENSUS_LOCALITIES + '.geojson'),
+            loaders.CreateCSVFileStep(
+                CensusLocality,
+                constants.ETL_VERSION,
+                constants.CENSUS_LOCALITIES + '.csv'),
+            loaders.CreateNDJSONFileStep(
+                CensusLocality,
+                constants.ETL_VERSION,
+                constants.CENSUS_LOCALITIES + '.ndjson')
+        ]),
+        CompositeStep([
+            utils.CopyFileStep(output_path,
+                               constants.CENSUS_LOCALITIES + '.json'),
+            utils.CopyFileStep(output_path,
+                               constants.CENSUS_LOCALITIES + '.geojson'),
+            utils.CopyFileStep(output_path,
+                               constants.CENSUS_LOCALITIES + '.csv'),
+            utils.CopyFileStep(output_path,
+                               constants.CENSUS_LOCALITIES + '.ndjson')
+        ])
     ])
 
 
