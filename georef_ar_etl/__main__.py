@@ -62,11 +62,13 @@ def parse_args():
                         help='Comando a ejecutar.')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Imprimir información adicional.')
+    parser.add_argument('--no-mail', action='store_true',
+                        help='Deshabilita el envío de mails.')
 
     return parser.parse_args()
 
 
-def etl(enabled_processes, start, end, ctx):
+def etl(enabled_processes, start, end, no_mail, ctx):
     ctx.report.info('Georef ETL')
     ctx.report.info('Versión: {}'.format(constants.ETL_VERSION) + '\n')
 
@@ -87,7 +89,7 @@ def etl(enabled_processes, start, end, ctx):
 
     ctx.report.write(ctx.config['etl']['reports_dir'])
 
-    if ctx.config.getboolean('mailer', 'enabled'):
+    if ctx.config.getboolean('mailer', 'enabled') and not no_mail:
         ctx.report.info('Enviando mail...')
         recipients = [
             r.strip()
@@ -137,7 +139,7 @@ def main():
     )
 
     if args.command == 'etl':
-        etl(args.processes, args.start, args.end, ctx)
+        etl(args.processes, args.start, args.end, args.no_mail, ctx)
     elif args.command == 'console':
         console(ctx)
     elif args.command == 'info':
