@@ -27,7 +27,7 @@ class ETLTestCase(TestCase):
         self._tmp_provinces = None
         self._tmp_departments = None
         self._tmp_municipalities = None
-        self._tmp_localities = None
+        self._tmp_settlements = None
         self._tmp_census_localities = None
         self._tmp_blocks = None
 
@@ -145,21 +145,21 @@ class ETLTestCase(TestCase):
         return cls._tmp_municipalities
 
     @classmethod
-    def create_test_localities(cls):
-        # Cargar las localidades de la provincia de prueba
-        cls.copy_test_file('test_localidades/test_localidades.dbf')
-        cls.copy_test_file('test_localidades/test_localidades.shp')
-        cls.copy_test_file('test_localidades/test_localidades.shx')
-        cls.copy_test_file('test_localidades/test_localidades.prj')
+    def create_test_settlements(cls):
+        # Cargar los asentamientos de la provincia de prueba
+        cls.copy_test_file('test_asentamientos/test_asentamientos.dbf')
+        cls.copy_test_file('test_asentamientos/test_asentamientos.shp')
+        cls.copy_test_file('test_asentamientos/test_asentamientos.shx')
+        cls.copy_test_file('test_asentamientos/test_asentamientos.prj')
 
-        loader = Ogr2ogrStep(table_name='tmp_localidades',
+        loader = Ogr2ogrStep(table_name='tmp_asentamientos',
                              geom_type='MultiPoint',
                              env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        cls._tmp_localities = loader.run('test_localidades', cls._ctx)
-        return cls._tmp_localities
+        cls._tmp_settlements = loader.run('test_asentamientos', cls._ctx)
+        return cls._tmp_settlements
 
     @classmethod
     def create_test_census_localities(cls, extract=False):
@@ -189,11 +189,9 @@ class ETLTestCase(TestCase):
         return cls._tmp_census_localities
 
     @classmethod
-    def create_test_streets(cls):
-        blocks = cls.create_test_blocks()
+    def extract_streets(cls, blocks):
         step = StreetsExtractionStep()
         step.run((blocks, None), cls._ctx)
-        return blocks
 
     @classmethod
     def create_test_blocks(cls):

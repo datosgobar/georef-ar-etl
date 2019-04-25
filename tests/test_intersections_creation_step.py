@@ -11,7 +11,8 @@ class TestIntersectionsCreationStep(ETLTestCase):
         super().setUpClass()
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
-        cls.create_test_streets()
+        cls._tmp_blocks = cls.create_test_blocks()
+        cls.extract_streets(cls._tmp_blocks)
 
         # Las intersecciones no se modifican entre tests
         step = IntersectionsCreationStep()

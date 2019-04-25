@@ -1,5 +1,6 @@
 from georef_ar_etl.models import Locality, Province
 from georef_ar_etl.exceptions import ValidationException
+from georef_ar_etl.settlements import SettlementsExtractionStep
 from georef_ar_etl.localities import LocalitiesExtractionStep
 from . import ETLTestCase
 from .test_geometry import TEST_MULTIPOLYGON
@@ -18,12 +19,20 @@ class TestLocalitiesExtractionStep(ETLTestCase):
 
     def setUp(self):
         super().setUp()
-        self._tmp_localities = self.create_test_localities()
+        # El proceso de extracción de localidades utiliza la tabla temporal de
+        # asentamientos como entrada.
+        self._tmp_settlements = self.create_test_settlements()
+
+        # En una corrida normal, el proceso de extracción de asentamientos
+        # corre antes que el de localidades, y realiza algunos parches a la
+        # tabla temporal de asentamientos. Replicar este comportamiento en el
+        # setUp.
+        step = SettlementsExtractionStep()
+        step.run(self._tmp_settlements, self._ctx)
 
     def tearDown(self):
         self._ctx.session.commit()
         self._ctx.session.query(Locality).delete()
-        self._ctx.session.query(self._tmp_localities).delete()
         super().tearDown()
 
     def test_single(self):
@@ -31,7 +40,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         tmp_localidades e insertadas en la tabla correspondiente
         georef_localidades."""
         step = LocalitiesExtractionStep()
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
 
         self.assertEqual(self._ctx.session.query(localities).count(),
                          SAN_JUAN_LOCALITIES_COUNT)
@@ -46,13 +55,13 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         # Ejecutar la extracción por primera vez
         locality_id = '70049040000'
         step = LocalitiesExtractionStep()
-        step.run(self._tmp_localities, self._ctx)
+        step.run(self._tmp_settlements, self._ctx)
 
-        self._ctx.session.query(self._tmp_localities).\
+        self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra=locality_id).\
             update({'nombre_bah': 'LAS LAS FLORES'})
 
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
         name = self._ctx.session.query(localities).\
             filter_by(id=locality_id).\
             one().nombre
@@ -64,14 +73,14 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         tabla georef_localidades."""
         # Ejecutar la extracción por primera vez
         step = LocalitiesExtractionStep()
-        step.run(self._tmp_localities, self._ctx)
+        step.run(self._tmp_settlements, self._ctx)
 
         # Modificar el ID de un localidad
-        self._ctx.session.query(self._tmp_localities).\
+        self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra='70049040000').\
             update({'cod_bahra': '70021000099'})
 
-        step.run(self._tmp_localities, self._ctx)
+        step.run(self._tmp_settlements, self._ctx)
         report_data = self._ctx.report.get_data('localities_extraction')
         self.assertListEqual(report_data['new_entities_ids'], ['70021000099'])
         self.assertListEqual(report_data['deleted_entities_ids'],
@@ -81,12 +90,12 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
         locality_id = '70049040000'
-        self._ctx.session.query(self._tmp_localities).\
+        self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra=locality_id).\
             update({'nombre_bah': '  LAS FLORES   \n\nLAS FLORES2'})
 
         step = LocalitiesExtractionStep()
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
         name = self._ctx.session.query(localities).\
             filter_by(id=locality_id).\
             one().nombre
@@ -96,7 +105,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         """No se debería poder crear una localidad con longitud de ID
         inválida."""
         step = LocalitiesExtractionStep()
-        locality = self._ctx.session.query(self._tmp_localities).\
+        locality = self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra='70049040000').one()
 
         self._ctx.session.expunge(locality)
@@ -111,12 +120,12 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         """Si una localidad hace referencia a una provincia inexistente, se
         debería reportar el error."""
         new_id = '99049040000'
-        self._ctx.session.query(self._tmp_localities).\
+        self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra='70049040000').\
             update({'cod_bahra': new_id})
 
         step = LocalitiesExtractionStep()
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
         query = self._ctx.session.query(localities).filter_by(id=new_id)
         self.assertEqual(query.count(), 0)
 
@@ -129,12 +138,12 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         """Si una localidad hace referencia a un departamento inexistente, se
         debería reportar el error."""
         new_id = '70999040000'
-        self._ctx.session.query(self._tmp_localities).\
+        self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra='70049040000').\
             update({'cod_bahra': new_id})
 
         step = LocalitiesExtractionStep()
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
         query = self._ctx.session.query(localities).filter_by(id=new_id)
         self.assertEqual(query.count(), 0)
 
@@ -160,7 +169,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         )
         self._ctx.session.add(prov)
 
-        new_locality = self._tmp_localities(
+        new_locality = self._tmp_settlements(
             cod_bahra='02000010000',
             nombre_bah='test',
             tipo_bahra='LS',
@@ -171,7 +180,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         self._ctx.session.commit()
 
         step = LocalitiesExtractionStep()
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
 
         loc = self._ctx.session.query(localities).get('02000010000')
         self.assertTrue(loc.departamento_id is None)
@@ -180,7 +189,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         """Si una localidad está geográficamente contenida por un municipio, se
         debería establecer ese municipio como su propiedad 'municipio_id'."""
         step = LocalitiesExtractionStep()
-        localities = step.run(self._tmp_localities, self._ctx)
+        localities = step.run(self._tmp_settlements, self._ctx)
 
         locality = self._ctx.session.query(localities).get('70070050002')
         self.assertEqual(locality.municipio_id, '700070')

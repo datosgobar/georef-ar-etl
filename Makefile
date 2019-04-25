@@ -77,7 +77,7 @@ create_test_files:
 	$(ETL_COMMAND) -p provincias --end 3
 	$(ETL_COMMAND) -p departamentos --end 4
 	$(ETL_COMMAND) -p municipios --end 4
-	$(ETL_COMMAND) -p localidades --end 4
+	$(ETL_COMMAND) -p asentamientos --end 4
 	$(ETL_COMMAND) -p localidades_censales --end 4
 	$(ETL_COMMAND) -p calles --end 3
 
@@ -106,10 +106,10 @@ create_test_files:
 		-overwrite
 
 	ogr2ogr -f "ESRI Shapefile" \
-		tests/test_files/test_localidades \
+		tests/test_files/test_asentamientos \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
-		-sql "select * from tmp_localidades where cod_bahra like '$(TEST_PROVINCE)%'" \
-		-nln "test_localidades" \
+		-sql "select * from tmp_asentamientos where cod_bahra like '$(TEST_PROVINCE)%'" \
+		-nln "test_asentamientos" \
 		-lco "ENCODING=utf-8" \
 		-overwrite
 

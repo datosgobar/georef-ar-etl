@@ -1,6 +1,6 @@
 import random
 from georef_ar_etl import constants
-from georef_ar_etl.models import StreetBlock
+from georef_ar_etl.models import StreetBlock, Street
 from georef_ar_etl.street_blocks import StreetBlocksExtractionStep
 from . import ETLTestCase
 
@@ -16,13 +16,15 @@ class TestStreetBlocksExtractionStep(ETLTestCase):
 
     def setUp(self):
         super().setUp()
-        self._tmp_blocks = self.create_test_streets()
+        self._tmp_blocks = self.create_test_blocks()
+        self.extract_streets(self._tmp_blocks)
 
     def tearDown(self):
         self._ctx.session.commit()
         # No es necesario borrar tmp_blocks ya que self.create_test_blocks()
         # borra las cuadras temporales (overwrite=True)
         self._ctx.session.query(StreetBlock).delete()
+        self._ctx.session.query(Street).delete()
         super().tearDown()
 
     def test_simple(self):
