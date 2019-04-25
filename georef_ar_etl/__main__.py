@@ -129,11 +129,21 @@ def main():
     config = read_config()
     logger, logger_stream = get_logger()
 
+    # Para crear las tablas de los modelos, se debería utilizar la receta
+    # 'migrate', que se asegura de ejecutar todas las migraciones de Alembic
+    # que existan. Sin embargo, para facilitar el uso del ETL durante el
+    # desarrollo ('interactive'), se crean las tablas automáticamente si no se
+    # encuentran. Notar que esto puede llevar a situaciones como que se cree
+    # una tabla que en realidad debería haber sido creada en una migración, lo
+    # cual resultaria en errores cuando se intente ejecutar la migración.
+    init_models = args.mode == 'interactive'
+
     ctx = Context(
         config=config,
         fs=osfs.OSFS(config.get('etl', 'files_dir'), create=True,
                      create_mode=constants.DIR_PERMS),
-        engine=create_engine(config['db'], echo=args.verbose),
+        engine=create_engine(config['db'], echo=args.verbose,
+                             init_models=init_models),
         report=Report(logger, logger_stream),
         mode=args.mode
     )
