@@ -10,6 +10,8 @@ GIT_BRANCH ?= master
 
 TEST_FILES ?= *.py
 
+.PHONY: files
+
 # Ejecución del ETL
 
 update:
