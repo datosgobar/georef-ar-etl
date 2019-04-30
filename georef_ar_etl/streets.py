@@ -1,6 +1,6 @@
 from sqlalchemy.sql import select, func
 from sqlalchemy.sql.sqltypes import Integer
-from .exceptions import ValidationException, ProcessException
+from .exceptions import ValidationException
 from .process import Process, CompositeStep, StepSequence
 from .models import Province, Department, Street
 from . import extractors, loaders, utils, constants, patch, transformers

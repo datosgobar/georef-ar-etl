@@ -1,6 +1,5 @@
 from georef_ar_etl import constants
 from georef_ar_etl.models import Street
-from georef_ar_etl.exceptions import ProcessException
 from georef_ar_etl.streets import StreetsExtractionStep,\
     INVALID_BLOCKS_CENSUS_LOCALITIES
 from . import ETLTestCase

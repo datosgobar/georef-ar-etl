@@ -1,4 +1,4 @@
-from .exceptions import ValidationException, ProcessException
+from .exceptions import ValidationException
 from .process import Process, CompositeStep
 from .models import Province, Department
 from . import extractors, transformers, loaders, geometry, utils, constants

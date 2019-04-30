@@ -1,4 +1,3 @@
-from georef_ar_etl.exceptions import ProcessException
 from georef_ar_etl.models import Department
 from georef_ar_etl.departments import DepartmentsExtractionStep
 from . import ETLTestCase
