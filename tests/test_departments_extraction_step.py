@@ -117,13 +117,3 @@ class TestDepartmentsExtractionStep(ETLTestCase):
         self.assertEqual(len(report_data['errors']), 1)
         self.assertEqual(len(report_data['new_entities_ids']),
                          SAN_JUAN_DEPT_COUNT - 1)
-
-    def test_invalid_commune(self):
-        """Si un departamento de CABA tiene un ID no divisible por 7, debería
-        generarse un error. Ver comentario en constants.py para más
-        información."""
-        self._ctx.session.add(self._tmp_departments(ogc_fid=9999, in1='02006'))
-        step = DepartmentsExtractionStep()
-
-        with self.assertRaises(ProcessException):
-            step.run(self._tmp_departments, self._ctx)

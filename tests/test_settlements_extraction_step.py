@@ -1,5 +1,5 @@
 from georef_ar_etl.models import Settlement, Province
-from georef_ar_etl.exceptions import ValidationException
+from georef_ar_etl.exceptions import ValidationException, ProcessException
 from georef_ar_etl.settlements import SettlementsExtractionStep
 from . import ETLTestCase
 from .test_geometry import TEST_MULTIPOLYGON
@@ -184,3 +184,13 @@ class TestSettlementsExtractionStep(ETLTestCase):
 
         settlement = self._ctx.session.query(settlements).get('70056000081')
         self.assertEqual(settlement.municipio_id, '700056')
+
+    def test_invalid_commune(self):
+        """Si un asentamiento de CABA tiene un ID de departamento mayor a 15,
+        debería generarse un error. Ver comentario en constants.py para más
+        información."""
+        self._ctx.session.add(self._tmp_settlements(cod_bahra='02016000081'))
+        step = SettlementsExtractionStep()
+
+        with self.assertRaises(ProcessException):
+            step.run(self._tmp_settlements, self._ctx)

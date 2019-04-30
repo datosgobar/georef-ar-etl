@@ -61,10 +61,10 @@ PROVINCE_IDS = [
 # Existen dos numeraciones posibles para las comunas de CABA:
 # - Del 1 al 15,
 # - Del 7 al 105 (1 * 7 al 15 * 7)
-# La numeración preferida es la del 1 al 15, por lo que los datos que usan la
+# La numeración preferida es la del 7 al 105, por lo que los datos que usan la
 # numeración alterna deben ser modificados para usar la otra. Para lograr esto,
-# se divide por 7 el ID de la comuna.
-CABA_DIV_FACTOR = 7
+# se multiplica por 7 el ID de la comuna (ver resolución 55/2019 de INDEC).
+CABA_MULT_FACTOR = 7
 
 # Algunas entidades geográficamente dentro de CABA tienen IDs que comienzan con
 # '02000', haciendo referencia a un departamento '000' de la provincia '02'

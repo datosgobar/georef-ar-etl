@@ -8,8 +8,6 @@ ALEMBIC_COMMAND = $(ETL_ALEMBIC) --config config/alembic.ini
 ETL_COMMAND = $(ETL_PYTHON) -m georef_ar_etl
 GIT_BRANCH ?= master
 
-TEST_FILES ?= *.py
-
 .PHONY: files
 
 # Ejecución del ETL
@@ -72,11 +70,9 @@ code_checks:
 	pyflakes georef_ar_etl tests
 	pylint georef_ar_etl tests
 
+# TEST_FILES puede definirse opcionalmente
 test:
-	python -m unittest
-
-test_custom:
-	python -m unittest tests/$(TEST_FILES)
+	python -m unittest $(TEST_FILES)
 
 coverage:
 	coverage run --source=georef_ar_etl --omit=georef_ar_etl/__main__.py -m unittest

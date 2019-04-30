@@ -1,4 +1,4 @@
-from .exceptions import ValidationException
+from .exceptions import ValidationException, ProcessException
 from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, Settlement
 from . import extractors, transformers, loaders, geometry, utils, constants
@@ -61,12 +61,35 @@ def create_process(config):
     ])
 
 
+def update_commune_id(row):
+    # Multiplicar por 7 los últimos tres dígitos del ID del departamento
+    # Ver comentario en constants.py para más detalles.
+    prov_id_part = row.cod_bahra[:constants.PROVINCE_ID_LEN]
+    dept_id_part = row.cod_bahra[
+        constants.PROVINCE_ID_LEN:constants.DEPARTMENT_ID_LEN]
+    id_rest = row.cod_bahra[constants.DEPARTMENT_ID_LEN:]
+
+    dept_id_int = int(dept_id_part)
+    if dept_id_int > 15:
+        # Alguno de los IDs no cumple con la numeración antigua
+        raise ProcessException('El ID de comuna {} no es válido.'.format(
+            dept_id_part))
+
+    dept_new_id_int = dept_id_int * constants.CABA_MULT_FACTOR
+    row.cod_bahra = prov_id_part + str(dept_new_id_int).rjust(
+        len(dept_id_part), '0') + id_rest
+
+
 class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self, name='settlements_extraction', entity_class=Settlement):
         super().__init__(name, entity_class, entity_class_pkey='id',
                          tmp_entity_class_pkey='cod_bahra')
 
     def _patch_tmp_entities(self, tmp_settlements, ctx):
+        # Actualizar códigos de comunas (departamentos de CABA)
+        patch.apply_fn(tmp_settlements, update_commune_id, ctx,
+                       tmp_settlements.cod_bahra.like('02%'))
+
         # Borrar 'EL FICAL'
         patch.delete(tmp_settlements, ctx, cod_bahra='70056060001',
                      nombre_bah='EL FICAL')

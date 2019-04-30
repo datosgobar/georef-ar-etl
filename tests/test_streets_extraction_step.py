@@ -87,17 +87,6 @@ class TestStreetsExtractionStep(ETLTestCase):
         report_data = self._ctx.report.get_data('streets_extraction')
         self.assertEqual(len(report_data['errors']), 1)
 
-    def test_invalid_commune(self):
-        """Si una cuadra de CABA tiene un ID de departamento no divisible por
-        7, debería generarse un error. Ver comentario en constants.py para más
-        información."""
-        self._ctx.session.add(self._tmp_blocks(ogc_fid=9999,
-                                               nomencla='0200200000000'))
-        step = StreetsExtractionStep()
-
-        with self.assertRaises(ProcessException):
-            step.run((self._tmp_blocks, None), self._ctx)
-
     def test_street_numbers(self):
         """La altura de una calle debería comenzar en la altura más baja de
         todas sus cuadras, y terminar el la mas alta de todas sus cuadras."""
