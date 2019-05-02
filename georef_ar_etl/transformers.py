@@ -82,27 +82,31 @@ class EntitiesExtractionStep(Step):
             raise ProcessException('No hay entidades a procesar.')
 
         ctx.report.info('Entidades a procesar: {}'.format(count))
-        ctx.report.info('Insertando entidades procesadas...')
 
         for tmp_entity in utils.pbar(query, ctx, total=count):
             entity_id = getattr(tmp_entity, self._tmp_entity_class_pkey)
             prev_entity = ctx.session.query(self._entity_class).get(entity_id)
 
+            if entity_id in added or entity_id in updated:
+                raise ProcessException(
+                    'Clave primaria "{}" repetida,'
+                    ' tabla: "{}", columna: "{}".'.format(
+                        entity_id, tmp_entities.__table__.name,
+                        self._tmp_entity_class_pkey))
+
             try:
                 new_entity = self._process_entity(tmp_entity, cached_session,
                                                   ctx)
             except ValidationException as e:
-                errors.append(
-                    (entity_id, str(e))
-                )
+                errors.append((entity_id, str(e)))
                 continue
 
             if prev_entity:
                 utils.update_entity(new_entity, prev_entity)
                 updated.add(entity_id)
             else:
-                added.add(entity_id)
                 entities.append(new_entity)
+                added.add(entity_id)
 
             if len(entities) > bulk_size:
                 # Insertar todas las entidades en la Session. La próxima vez

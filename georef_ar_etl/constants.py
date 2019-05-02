@@ -1,6 +1,6 @@
 from enum import Enum
 
-ETL_VERSION = '11.0.0'
+ETL_VERSION = '12.0.0'
 DATA_DIR = 'data'
 CONFIG_PATH = 'config/georef.cfg'
 DIR_PERMS = 0o700

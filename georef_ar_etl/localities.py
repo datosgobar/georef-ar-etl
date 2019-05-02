@@ -1,6 +1,7 @@
 from .exceptions import ValidationException
 from .process import Process, CompositeStep
-from .models import Province, Department, Municipality, Locality
+from .models import Province, Department, Municipality, CensusLocality,\
+    Locality
 from .settlements import SettlementsExtractionStep
 from . import loaders, geometry, utils, constants
 
@@ -61,6 +62,7 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
         loc_id = tmp_locality.cod_bahra
         prov_id = loc_id[:constants.PROVINCE_ID_LEN]
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
+        census_loc_id = loc_id[:constants.CENSUS_LOCALITY_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
         if not province:
@@ -77,6 +79,18 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
         municipality = geometry.get_entity_at_point(Municipality,
                                                     tmp_locality.geom, ctx)
 
+        if prov_id == constants.CABA_PROV_ID:
+            # Las calles de CABA pertenecen a la localidad censal 02000010,
+            # pero sus IDs *no* comienzan con ese código.
+            census_loc_id = constants.CABA_CENSUS_LOCALITY
+
+        census_loc = cached_session.query(CensusLocality).get(
+            census_loc_id)
+        if not census_loc:
+            raise ValidationException(
+                'No existe la localidad censal con ID {}'.format(
+                    census_loc_id))
+
         return Locality(
             id=loc_id,
             nombre=utils.clean_string(tmp_locality.nombre_bah),
@@ -85,6 +99,7 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
             provincia_id=prov_id,
             departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
+            localidad_censal_id=census_loc.id if census_loc else None,
             fuente=utils.clean_string(tmp_locality.fuente_ubi),
             geometria=tmp_locality.geom
         )

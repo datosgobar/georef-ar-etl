@@ -1,6 +1,7 @@
 from .exceptions import ValidationException, ProcessException
 from .process import Process, CompositeStep
-from .models import Province, Department, Municipality, Settlement
+from .models import Province, Department, Municipality, CensusLocality,\
+    Settlement
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
@@ -9,7 +10,8 @@ def create_process(config):
     output_path = config.get('etl', 'output_dest_path')
 
     return Process(constants.SETTLEMENTS, [
-        utils.CheckDependenciesStep([Province, Department, Municipality]),
+        utils.CheckDependenciesStep([Province, Department, Municipality,
+                                     CensusLocality]),
         extractors.DownloadURLStep(constants.SETTLEMENTS + '.tar.gz',
                                    config.get('etl', 'settlements_url')),
         transformers.ExtractTarStep(),
@@ -94,6 +96,15 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_settlements, ctx, cod_bahra='70056060001',
                      nombre_bah='EL FICAL')
 
+        # Asignarle una localidad censal a "La Toma (Jujuy)"
+        patch.update_field(tmp_settlements, 'cod_bahra', '38056025001', ctx,
+                           cod_bahra='38056013000')
+
+        # Asignarle una localidad censal a "BARRIO RUTA 24 KILOMETRO 10 (Buenos
+        # Aires provincia)"
+        patch.update_field(tmp_settlements, 'cod_bahra', '06364030005', ctx,
+                           cod_bahra='06364010000')
+
         # Actualiza códigos para los asentamientos del departamento de Río
         # Grande
         def update_rio_grande(row):
@@ -112,9 +123,10 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
     def _process_entity(self, tmp_settlement, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_settlement.geom,
                                                      ctx)
-        loc_id = tmp_settlement.cod_bahra
-        prov_id = loc_id[:constants.PROVINCE_ID_LEN]
-        dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
+        settlement_id = tmp_settlement.cod_bahra
+        prov_id = settlement_id[:constants.PROVINCE_ID_LEN]
+        dept_id = settlement_id[:constants.DEPARTMENT_ID_LEN]
+        census_loc_id = settlement_id[:constants.CENSUS_LOCALITY_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
         if not province:
@@ -131,14 +143,23 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         municipality = geometry.get_entity_at_point(Municipality,
                                                     tmp_settlement.geom, ctx)
 
+        if prov_id == constants.CABA_PROV_ID:
+            # Las calles de CABA pertenecen a la localidad censal 02000010,
+            # pero sus IDs *no* comienzan con ese código.
+            census_loc_id = constants.CABA_CENSUS_LOCALITY
+
+        census_loc = cached_session.query(CensusLocality).get(
+            census_loc_id)
+
         return Settlement(
-            id=loc_id,
+            id=settlement_id,
             nombre=utils.clean_string(tmp_settlement.nombre_bah),
             categoria=utils.clean_string(tmp_settlement.tipo_bahra),
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
+            localidad_censal_id=census_loc.id if census_loc else None,
             fuente=utils.clean_string(tmp_settlement.fuente_ubi),
             geometria=tmp_settlement.geom
         )

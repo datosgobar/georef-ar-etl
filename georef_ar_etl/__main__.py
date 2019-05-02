@@ -3,7 +3,7 @@ import code
 from fs import osfs
 from .exceptions import ProcessException
 from .context import Context, Report, RUN_MODES
-from . import read_config, get_logger, create_engine, constants
+from . import read_config, get_logger, create_engine, constants, models
 from . import provinces, departments, municipalities
 from . import settlements, localities, census_localities
 from . import streets, intersections, street_blocks
@@ -40,7 +40,8 @@ MODULES = [
 COMMANDS = [
     'etl',
     'console',
-    'info'
+    'info',
+    'stats'
 ]
 
 
@@ -124,6 +125,16 @@ def info(ctx):
         process.print_info(ctx)
 
 
+def stats(ctx):
+    for name, table in models.Base.metadata.tables.items():
+        ctx.report.info('Tabla: {}'.format(name))
+        ctx.report.increase_indent()
+
+        ctx.report.info('Count: {}\n'.format(ctx.session.query(table).count()))
+
+        ctx.report.decrease_indent()
+
+
 def main():
     args = parse_args()
     config = read_config()
@@ -154,6 +165,8 @@ def main():
         console(ctx)
     elif args.command == 'info':
         info(ctx)
+    elif args.command == 'stats':
+        stats(ctx)
     else:
         raise RuntimeError('Invalid command.')
 

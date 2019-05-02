@@ -287,6 +287,10 @@ class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
                 'id': self.municipio_id,
                 'nombre': self.municipio_nombre(session)
             },
+            'localidad_censal': {
+                'id': self.localidad_censal_id,
+                'nombre': self.localidad_censal_nombre(session)
+            },
             'categoria': constants.BAHRA_TYPES[self.categoria],
             'centroide': {
                 'lon': self.lon,
@@ -424,6 +428,10 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
             'departamento': {
                 'id': self.departamento_id,
                 'nombre': self.departamento_nombre(session)
+            },
+            'localidad_censal': {
+                'id': self.localidad_censal_id,
+                'nombre': self.localidad_censal_nombre(session)
             },
             'categoria': self.categoria
         }

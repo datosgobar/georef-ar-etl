@@ -1,9 +1,9 @@
-from georef_ar_etl.models import Locality, Province
+from georef_ar_etl.models import Locality, CensusLocality, Province
 from georef_ar_etl.exceptions import ValidationException
 from georef_ar_etl.settlements import SettlementsExtractionStep
 from georef_ar_etl.localities import LocalitiesExtractionStep
 from . import ETLTestCase
-from .test_geometry import TEST_MULTIPOLYGON
+from .test_geometry import TEST_MULTIPOLYGON, TEST_POINT
 
 SAN_JUAN_LOCALITIES_COUNT = 99
 TEST_MULTIPOINT = 'SRID=4326;MULTIPOINT((10 40))'
@@ -16,6 +16,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
         cls.create_test_municipalities(extract=True)
+        cls.create_test_census_localities(extract=True)
 
     def setUp(self):
         super().setUp()
@@ -78,11 +79,11 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         # Modificar el ID de un localidad
         self._ctx.session.query(self._tmp_settlements).\
             filter_by(cod_bahra='70049040000').\
-            update({'cod_bahra': '70021000099'})
+            update({'cod_bahra': '70049040999'})
 
         step.run(self._tmp_settlements, self._ctx)
         report_data = self._ctx.report.get_data('localities_extraction')
-        self.assertListEqual(report_data['new_entities_ids'], ['70021000099'])
+        self.assertListEqual(report_data['new_entities_ids'], ['70049040999'])
         self.assertListEqual(report_data['deleted_entities_ids'],
                              ['70049040000'])
 
@@ -168,6 +169,20 @@ class TestLocalitiesExtractionStep(ETLTestCase):
             geometria=TEST_MULTIPOLYGON
         )
         self._ctx.session.add(prov)
+
+        census_loc = CensusLocality(
+            id='02000010',
+            nombre='test',
+            categoria='LS',
+            funcion=None,
+            lon=0, lat=0,
+            provincia_id='02',
+            departamento_id='02000',
+            municipio_id=None,
+            fuente='test',
+            geometria=TEST_POINT
+        )
+        self._ctx.session.add(census_loc)
 
         new_locality = self._tmp_settlements(
             cod_bahra='02000010000',

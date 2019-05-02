@@ -27,9 +27,9 @@ files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail
 	$(ETL_COMMAND) -p departamentos --start 9 --no-mail
 	$(ETL_COMMAND) -p municipios --start 9 --no-mail
+	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
 	$(ETL_COMMAND) -p asentamientos --start 8 --no-mail
 	$(ETL_COMMAND) -p localidades --start 6 --no-mail
-	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
 	$(ETL_COMMAND) -p calles --start 5 --no-mail
 	$(ETL_COMMAND) -p intersecciones --start 4 --no-mail
 	$(ETL_COMMAND) -p cuadras --start 6 --no-mail
@@ -40,6 +40,9 @@ info:
 
 console:
 	$(ETL_COMMAND) -c console
+
+stats:
+	$(ETL_COMMAND) -c stats
 
 
 # Recetas para utilizar Alembic, la herramienta de migraciones de bases de
@@ -89,8 +92,8 @@ create_test_files:
 	$(ETL_COMMAND) -p provincias --end 3
 	$(ETL_COMMAND) -p departamentos --end 4
 	$(ETL_COMMAND) -p municipios --end 4
-	$(ETL_COMMAND) -p asentamientos --end 4
 	$(ETL_COMMAND) -p localidades_censales --end 4
+	$(ETL_COMMAND) -p asentamientos --end 4
 	$(ETL_COMMAND) -p calles --end 3
 
 	ogr2ogr -f "ESRI Shapefile" \
