@@ -143,7 +143,10 @@ class CreateJSONFileStep(CreateOutputFileStep):
 
             with stream_writer:
                 for entity in utils.pbar(query, ctx, total=count):
-                    stream_writer.append(entity.to_dict(cached_session))
+                    entity_dict = entity.to_dict(cached_session)
+                    del entity_dict['geometria']
+
+                    stream_writer.append(entity_dict)
 
 
 class CreateNDJSONFileStep(CreateOutputFileStep):
