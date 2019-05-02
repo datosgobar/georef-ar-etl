@@ -2,7 +2,7 @@ from sqlalchemy.sql import select, func
 from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException
 from .process import Process, CompositeStep, StepSequence
-from .models import Province, Department, Street
+from .models import Province, Department, CensusLocality, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 
 INVALID_BLOCKS_CENSUS_LOCALITIES = [
@@ -41,7 +41,7 @@ def create_process(config):
     ] * (len(download_cstep) - 1), name='ogr2ogr_cstep')
 
     return Process(constants.STREETS, [
-        utils.CheckDependenciesStep([Province, Department]),
+        utils.CheckDependenciesStep([Province, Department, CensusLocality]),
         CompositeStep([
             StepSequence([
                 download_cstep,
@@ -126,6 +126,15 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='nomencla')
 
     def _patch_tmp_entities(self, tmp_blocks, ctx):
+        def update_marcos_paz(row):
+            row.nomencla = '06525020' + row.nomencla[
+                constants.CENSUS_LOCALITY_ID_LEN:]
+
+        # Asignar localidad censal a las calles de Marcos Paz que no
+        # la tienen asignada.
+        patch.apply_fn(tmp_blocks, update_marcos_paz, ctx,
+                       tmp_blocks.nomencla.like('06525999%'))
+
         def update_ushuaia(row):
             row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
 
@@ -213,6 +222,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         street_id = block.nomencla
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
+        census_loc_id = street_id[:constants.CENSUS_LOCALITY_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
         if not province:
@@ -223,6 +233,18 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         if not department:
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
+
+        if prov_id == constants.CABA_PROV_ID:
+            # Las calles de CABA pertenecen a la localidad censal 02000010,
+            # pero sus IDs *no* comienzan con ese código.
+            census_loc_id = constants.CABA_CENSUS_LOCALITY
+
+        census_locality = cached_session.query(CensusLocality).get(
+            census_loc_id)
+        if not census_locality:
+            raise ValidationException(
+                'No existe la localidad censal con ID {}'.format(
+                    census_loc_id))
 
         return Street(
             id=street_id,
@@ -235,5 +257,6 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             fin_izquierda=block.hastai or 0,
             geometria=block.geom,
             provincia_id=prov_id,
-            departamento_id=dept_id
+            departamento_id=dept_id,
+            localidad_censal_id=census_loc_id
         )

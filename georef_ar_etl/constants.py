@@ -53,9 +53,11 @@ STREET_TYPE_OTHER = 'OTRO'
 
 # Se necesitan saber los IDs de las provincias antes de ejecutar el ETL, en
 # el archivo streets.py.
+CABA_PROV_ID = '02'
 PROVINCE_IDS = [
-    '02', '06', '10', '14', '18', '22', '26', '30', '34', '38', '42', '46',
-    '50', '54', '58', '62', '66', '70', '74', '78', '82', '86', '90', '94'
+    CABA_PROV_ID, '06', '10', '14', '18', '22', '26', '30', '34', '38', '42',
+    '46', '50', '54', '58', '62', '66', '70', '74', '78', '82', '86', '90',
+    '94'
 ]
 
 # Existen dos numeraciones posibles para las comunas de CABA:
@@ -72,6 +74,12 @@ CABA_MULT_FACTOR = 7
 # como válido cuando se crean entidades, pero en la relación (modelo y DB) se
 # almacena NULL como departamento.
 CABA_VIRTUAL_DEPARTMENT_ID = '02000'
+
+# CABA solo contiene una localidad censal, sin embargo las calles de CABA
+# contienen IDs que *no* comienzan con el ID de esta localidad censal.
+# Entonces, necesario contar con el ID de la localidad censal para buscarla en
+# la base.
+CABA_CENSUS_LOCALITY = '02000010'
 
 PROVINCES = 'provincias'
 DEPARTMENTS = 'departamentos'

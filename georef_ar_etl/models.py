@@ -117,6 +117,52 @@ class InNullableMunicipalityMixin:
         return session.query(Municipality).get(self.municipio_id).nombre
 
 
+class InCensusLocalityMixin:
+    @declared_attr
+    def localidad_censal_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.CENSUS_LOCALITIES_ETL_TABLE + '.id',
+                       ondelete='cascade'),
+            # Facilitar la migración de la DB haciendo que el campo sea
+            # nullable en la base.
+            nullable=True
+        )
+
+    @validates('localidad_censal_id')
+    def validate_census_locality_id(self, _key, value):
+        if not value:
+            raise ValidationException('La localidad censal no puede ser nula.')
+
+        return value
+
+    def localidad_censal_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
+        return session.query(CensusLocality).get(
+            self.localidad_censal_id).nombre
+
+
+class InNullableCensusLocalityMixin:
+    @declared_attr
+    def localidad_censal_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.CENSUS_LOCALITIES_ETL_TABLE + '.id',
+                       ondelete='cascade'),
+            nullable=True
+        )
+
+    def localidad_censal_nombre(self, session):
+        # Nombre de método en castellano para mantener consistencia con los
+        # demás campos de los modelos
+        if not self.localidad_censal_id:
+            return None
+
+        return session.query(CensusLocality).get(
+            self.localidad_censal_id).nombre
+
+
 class Province(Base, EntityMixin):
     __tablename__ = constants.PROVINCES_ETL_TABLE
     _id_len = constants.PROVINCE_ID_LEN
@@ -251,7 +297,7 @@ class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
         }
 
 
-class Settlement(Base, SettlementMixin):
+class Settlement(Base, SettlementMixin, InNullableCensusLocalityMixin):
     __tablename__ = constants.SETTLEMENTS_ETL_TABLE
     _id_len = constants.SETTLEMENT_ID_LEN
 
@@ -265,7 +311,7 @@ class Settlement(Base, SettlementMixin):
         return category
 
 
-class Locality(Base, SettlementMixin):
+class Locality(Base, SettlementMixin, InCensusLocalityMixin):
     __tablename__ = constants.LOCALITIES_ETL_TABLE
     _id_len = constants.LOCALITY_ID_LEN
 
@@ -354,7 +400,7 @@ class DoorNumberedMixin:
 
 
 class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
-             DoorNumberedMixin):
+             InCensusLocalityMixin, DoorNumberedMixin):
     __tablename__ = constants.STREETS_ETL_TABLE
     _id_len = constants.STREET_ID_LEN
 

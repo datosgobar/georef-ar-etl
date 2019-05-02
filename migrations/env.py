@@ -33,6 +33,9 @@ def include_object(obj, name, type_, reflected, compare_to):
     # - La tabla especial 'spatial_ref_sys' generada por la extensión PostGIS
     # - Tablas tmp_
     # - Índices
+    if not name:
+        return True
+
     return name != 'spatial_ref_sys' and \
         not name.startswith('tmp') and \
         type_ != 'index'
