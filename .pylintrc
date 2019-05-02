@@ -148,6 +148,7 @@ disable=print-statement,
 	too-many-arguments,
 	too-many-locals,
 	too-few-public-methods,
+	too-many-ancestors,
 	duplicate-code
 
 # Enable the message, report, category or checker with the given id(s). You can

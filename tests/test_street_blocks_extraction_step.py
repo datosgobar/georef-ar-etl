@@ -13,6 +13,7 @@ class TestStreetBlocksExtractionStep(ETLTestCase):
         super().setUpClass()
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
+        cls.create_test_census_localities(extract=True)
 
     def setUp(self):
         super().setUp()

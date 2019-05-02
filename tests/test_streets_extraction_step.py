@@ -15,6 +15,7 @@ class TestStreetsExtractionStep(ETLTestCase):
         super().setUpClass()
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
+        cls.create_test_census_localities(extract=True)
 
     def setUp(self):
         super().setUp()
@@ -90,10 +91,10 @@ class TestStreetsExtractionStep(ETLTestCase):
         """La altura de una calle debería comenzar en la altura más baja de
         todas sus cuadras, y terminar el la mas alta de todas sus cuadras."""
         block_nums = [
-            ('7003500000000', '0', '100'),
-            ('7003500000000', '101', '200'),
-            ('7003500000001', '9', '200'),
-            ('7003500000001', '201', '1000')
+            ('7005604000000', '0', '100'),
+            ('7005604000000', '101', '200'),
+            ('7005604000001', '9', '200'),
+            ('7005604000001', '201', '1000')
         ]
 
         for i, block in enumerate(block_nums):
@@ -109,8 +110,8 @@ class TestStreetsExtractionStep(ETLTestCase):
         step = StreetsExtractionStep()
         streets = step.run((self._tmp_blocks, None), self._ctx)
 
-        street1 = self._ctx.session.query(streets).get('7003500000000')
-        street2 = self._ctx.session.query(streets).get('7003500000001')
+        street1 = self._ctx.session.query(streets).get('7005604000000')
+        street2 = self._ctx.session.query(streets).get('7005604000001')
 
         self.assertEqual(street1.inicio_izquierda, 0)
         self.assertEqual(street1.fin_derecha, 200)
