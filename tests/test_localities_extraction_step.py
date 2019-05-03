@@ -169,6 +169,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
             geometria=TEST_MULTIPOLYGON
         )
         self._ctx.session.add(prov)
+        self._ctx.session.commit()
 
         census_loc = CensusLocality(
             id='02000010',
@@ -183,6 +184,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
             geometria=TEST_POINT
         )
         self._ctx.session.add(census_loc)
+        self._ctx.session.commit()
 
         new_locality = self._tmp_settlements(
             cod_bahra='02000010000',
