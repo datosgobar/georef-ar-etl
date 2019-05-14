@@ -15,10 +15,13 @@ class DownloadURLStep(Step):
             ctx.report.info('Salteando descarga: %s', self._url)
             return self._filename
 
-        ctx.report.info('Descargando: %s', self._url)
-        chunk_size = ctx.config.getint('etl', 'chunk_size')
+        report_data = ctx.report.get_data(self.name)
 
         with requests.get(self._url, stream=True, params=self._params) as req:
+            # req.url contiene la url con el querystring final
+            ctx.report.info('Descargando: %s', req.url)
+            chunk_size = ctx.config.getint('etl', 'chunk_size')
+
             if req.status_code != 200:
                 raise ProcessException(
                     'La petición HTTP retornó código {}.'.format(
@@ -32,5 +35,7 @@ class DownloadURLStep(Step):
 
             ctx.report.info('Archivo descargado. Hash MD5: {}'.format(
                 md5.hexdigest()))
+
+            report_data[req.url] = md5.hexdigest()
 
         return self._filename

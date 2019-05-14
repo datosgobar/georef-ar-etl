@@ -1,3 +1,4 @@
+import hashlib
 import responses
 from georef_ar_etl.extractors import DownloadURLStep
 from georef_ar_etl.exceptions import ProcessException
@@ -39,3 +40,19 @@ class TestDownloadURLStep(ETLTestCase):
 
         with self.assertRaises(ProcessException):
             step.run(None, self._ctx)
+
+    @responses.activate
+    def test_download_hash(self):
+        """El paso debería calcular el hash MD5 del archivo de descarga."""
+        filename = 'file.txt'
+        url = 'https://example.com/file.txt'
+        body = 'testing de hash md5'
+
+        responses.add(responses.GET, url, status=200, body=body, stream=True)
+        DownloadURLStep(filename, url).run(None, self._ctx)
+
+        md5 = hashlib.md5()
+        md5.update(body.encode())
+
+        report_data = self._ctx.report.get_data('download_url')
+        self.assertEqual(report_data[url], md5.hexdigest())
