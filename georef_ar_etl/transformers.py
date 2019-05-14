@@ -82,7 +82,6 @@ class EntitiesExtractionStep(Step):
             raise ProcessException('No hay entidades a procesar.')
 
         ctx.report.info('Entidades a procesar: {}'.format(count))
-
         for tmp_entity in utils.pbar(query, ctx, total=count):
             entity_id = getattr(tmp_entity, self._tmp_entity_class_pkey)
             prev_entity = ctx.session.query(self._entity_class).get(entity_id)
@@ -125,11 +124,16 @@ class EntitiesExtractionStep(Step):
             entity_id = getattr(entity, self._entity_class_pkey)
 
             if entity_id not in updated and entity_id not in added:
-                ctx.session.query(self._entity_class).\
-                    filter(getattr(self._entity_class,
-                                   self._entity_class_pkey) == entity_id).\
-                    delete()
                 deleted.append(entity_id)
+
+        # Realizar un borrado "bulk" (sin actualizar la sesión).
+        # Para que esto no genere problemas, expirar cualquier objeto que ya
+        # esté dentro de la sesión.
+        ctx.session.expire_all()
+        ctx.session.query(self._entity_class).\
+            filter(getattr(self._entity_class, self._entity_class_pkey).in_(
+                deleted)).\
+            delete(synchronize_session=False)
 
         ctx.report.info('Entidades nuevas: %s', len(added))
         ctx.report.info('Entidades actualizadas: %s', len(updated))
