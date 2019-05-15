@@ -7,12 +7,12 @@ DIR_PERMS = 0o700
 
 
 class BAHRAType(Enum):
-    E = 'Entidad (E)'
-    LC = 'Componente de localidad compuesta (LC)'
-    LS = 'Localidad simple (LS)'
-    ST = 'Sitio edificado (ST)'
-    LSE = 'Localidad simple con entidad (LSE)'
-    LCE = 'Componente de localidad compuesta con entidad (LCE)'
+    E = 'Entidad'
+    LC = 'Componente de localidad compuesta'
+    LS = 'Localidad simple'
+    ST = 'Sitio edificado'
+    LSE = 'Localidad simple con entidad'
+    LCE = 'Componente de localidad compuesta con entidad'
 
 
 # Todos los tipos BAHRA
