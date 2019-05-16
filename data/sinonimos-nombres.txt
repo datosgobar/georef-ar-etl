@@ -1,7 +1,7 @@
 # Listado de sinónimos para Georef API
 # https://apis.datos.gob.ar/georef
 
-ciudad autonoma de buenos aires, caba, capital federal, c.a.b.a
+ciudad autonoma de buenos aires, caba, capital federal, c.a.b.a, distrito federal
 buenos aires, bsas, bs.as, ba, bs as
 santiago, stgo, sgo
 tierra del fuego,tierra del fuego antartida e islas del atlantico sur, tdf, tf, tierra del fgo
