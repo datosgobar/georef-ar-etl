@@ -69,18 +69,19 @@ class IntersectionsCreationStep(Step):
         query = self._build_intersection_query(province, bulk_size, ctx)
 
         for street_a, street_b in utils.pbar(query, ctx):
-            intersection = Intersection(
-                id='{}-{}'.format(street_a.id, street_b.id),
-                calle_a_id=street_a.id,
-                calle_b_id=street_b.id,
-                geometria=geometry.get_intersection_centroid(
-                    street_a.geometria,
-                    street_b.geometria,
-                    ctx
-                )
-            )
+            points = geometry.get_streets_intersections(street_a.geometria,
+                                                        street_b.geometria,
+                                                        ctx)
 
-            utils.add_maybe_flush(intersection, ctx, bulk_size)
-            count += 1
+            for idx, point in enumerate(points):
+                intersection = Intersection(
+                    id='{}-{}-{}'.format(street_a.id, street_b.id, idx + 1),
+                    calle_a_id=street_a.id,
+                    calle_b_id=street_b.id,
+                    geometria=point
+                )
+
+                utils.add_maybe_flush(intersection, ctx, bulk_size)
+                count += 1
 
         ctx.report.info('Intersecciones creadas, cantidad: %s.\n', count)

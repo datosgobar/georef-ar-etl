@@ -7,6 +7,8 @@ TEST_MULTIPOLYGON = 'SRID=4326;MULTIPOLYGON(((0 0, 0 10, 10 10, 10 0, 0 0)))'
 TEST_MULTIPOLYGON_B = 'SRID=4326;MULTIPOLYGON(((0 0, 0 5, 5 5, 5 0, 0 0)))'
 TEST_MULTILINESTRING = 'SRID=4326;MULTILINESTRING((0 0, 10 10))'
 TEST_MULTILINESTRING_B = 'SRID=4326;MULTILINESTRING((10 0, 0 10))'
+TEST_MULTILINESTRING_C = ('SRID=4326;MULTILINESTRING((0 0, 10 10),'
+                          '(0.001 0, 10.001 10))')
 TEST_POINT = 'SRID=4326;POINT(9 9)'
 
 
@@ -27,9 +29,9 @@ class TestGeometry(ETLTestCase):
         self.assertAlmostEqual(centroid[0], 5)
         self.assertAlmostEqual(centroid[1], 5)
 
-    def test_intersection_centroid(self):
-        """La función get_intersection_centroid debería retornar el punto de
-        intersección de dos geometrías (centroide)."""
+    def test_streets_intersections_single(self):
+        """La función get_streets_intersections debería retornar una sola
+        intersección si las dos calles solo interseccionan en un punto."""
         tbl = self.create_table('tbl', {
             'id': sqltypes.Integer,
             'geom': Geometry('MULTILINESTRING')
@@ -40,13 +42,50 @@ class TestGeometry(ETLTestCase):
         self._ctx.session.add_all([entity, entity_b])
         self._ctx.session.commit()
 
-        centroid_wkb = geometry.get_intersection_centroid(entity.geom,
-                                                          entity_b.geom,
-                                                          self._ctx)
+        points = geometry.get_streets_intersections(entity.geom, entity_b.geom,
+                                                    self._ctx)
 
-        centroid = geometry.get_centroid_coordinates(centroid_wkb, self._ctx)
+        self.assertEqual(len(points), 1)
+        centroid = geometry.get_centroid_coordinates(points[0], self._ctx)
         self.assertAlmostEqual(centroid[0], 5)
         self.assertAlmostEqual(centroid[1], 5)
+
+    def test_streets_intersections_multiple(self):
+        """La función get_streets_intersections debería retornar varias
+        intersecciones si las intersecciones de las calles están
+        suficientemente alejadas."""
+        tbl = self.create_table('tbl', {
+            'id': sqltypes.Integer,
+            'geom': Geometry('MULTILINESTRING')
+        }, pkey='id')
+
+        entity = tbl(id=0, geom=TEST_MULTILINESTRING_B)
+        entity_b = tbl(id=1, geom=TEST_MULTILINESTRING_C)
+        self._ctx.session.add_all([entity, entity_b])
+        self._ctx.session.commit()
+
+        points = geometry.get_streets_intersections(entity.geom, entity_b.geom,
+                                                    self._ctx)
+        self.assertEqual(len(points), 2)
+
+    def test_streets_intersections_multiple_merged(self):
+        """Si el rango de tolerancia de get_streets_intersections es
+        suficientemente alto, entonces varios puntos de intersección deberían
+        combinarse en uno solo."""
+        tbl = self.create_table('tbl', {
+            'id': sqltypes.Integer,
+            'geom': Geometry('MULTILINESTRING')
+        }, pkey='id')
+
+        entity = tbl(id=0, geom=TEST_MULTILINESTRING_B)
+        entity_b = tbl(id=1, geom=TEST_MULTILINESTRING_C)
+        self._ctx.session.add_all([entity, entity_b])
+        self._ctx.session.commit()
+
+        points = geometry.get_streets_intersections(entity.geom, entity_b.geom,
+                                                    self._ctx,
+                                                    cluster_distance_m=100)
+        self.assertEqual(len(points), 1)
 
     def test_get_intersection_percentage(self):
         """La función get_intersection_percentage debería devolver el
