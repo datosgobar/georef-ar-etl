@@ -47,6 +47,13 @@ class TestIntersectionsCreationStep(ETLTestCase):
         self.assertTrue(self._ctx.session.query(Intersection).get(
             '7003501000045-7003501001120-1'))
 
+        # Las calles "ZAPATA" y "SAN JUAN" tienen dos intersecciones, pero
+        # están tan cerca que son consideradas una.
+        self.assertTrue(self._ctx.session.query(Intersection).get(
+            '7005608000565-7005608000615-1'))
+        self.assertFalse(self._ctx.session.query(Intersection).get(
+            '7005608000565-7005608000615-2'))
+
         # Intersección de "CALLE S N" y "CALLE S N" (un solo punto)
         self.assertTrue(self._ctx.session.query(Intersection).get(
             '7003501000145-7003501000265-1'))

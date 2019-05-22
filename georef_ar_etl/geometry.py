@@ -63,8 +63,14 @@ def get_streets_intersections(geom_a, geom_b, ctx, cluster_distance_m=50):
 
     """
     points = [
+        # Algunas calles se solapan entre sí, por lo que la intersección entre
+        # ellas resulta en una o más líneas, en lugar de puntos. Utilizar
+        # DumpPoints() en lugar de Dump() nos asegura de que incluso en estos
+        # casos, el resultado final es un listado de puntos. Para casos donde
+        # la intersección es uno o más puntos, utilizar Dump() o DumpPoints()
+        # da el mismo resultado.
         result[0] for result in
-        ctx.session.query(geom_a.ST_Intersection(geom_b).ST_Dump().geom)
+        ctx.session.query(geom_a.ST_Intersection(geom_b).ST_DumpPoints().geom)
     ]
 
     if not points:
