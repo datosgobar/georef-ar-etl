@@ -1,7 +1,10 @@
 from sqlalchemy.orm import aliased
 from .process import Process, Step
 from .models import Province, Department, Street, Intersection
+from .exceptions import ProcessException
 from . import constants, geometry, utils, loaders
+
+MAX_POINTS_PER_INTERSECTION = 99
 
 
 def create_process(config):
@@ -74,8 +77,16 @@ class IntersectionsCreationStep(Step):
                                                         ctx)
 
             for idx, point in enumerate(points):
+                if idx + 1 > MAX_POINTS_PER_INTERSECTION:
+                    raise ProcessException('Más de {} puntos para intersección'
+                                           ' de calles con IDs {} y {}'.format(
+                                               MAX_POINTS_PER_INTERSECTION,
+                                               street_a.id, street_b.id
+                                           ))
+
+                isct_num = str(idx + 1).rjust(2, '0')
                 intersection = Intersection(
-                    id='{}-{}-{}'.format(street_a.id, street_b.id, idx + 1),
+                    id='{}-{}-{}'.format(street_a.id, street_b.id, isct_num),
                     calle_a_id=street_a.id,
                     calle_b_id=street_b.id,
                     geometria=point

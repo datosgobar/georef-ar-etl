@@ -43,22 +43,22 @@ class TestIntersectionsCreationStep(ETLTestCase):
         # Dos intersecciones de "ABERASTAIN" y "PJE S N" separadas por
         # aproximadamente 85 metros.
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7003501000045-7003501001120-2'))
+            '7003501000045-7003501001120-02'))
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7003501000045-7003501001120-1'))
+            '7003501000045-7003501001120-01'))
 
         # Las calles "ZAPATA" y "SAN JUAN" tienen dos intersecciones, pero
         # están tan cerca que son consideradas una.
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7005608000565-7005608000615-1'))
+            '7005608000565-7005608000615-01'))
         self.assertFalse(self._ctx.session.query(Intersection).get(
-            '7005608000565-7005608000615-2'))
+            '7005608000565-7005608000615-02'))
 
         # Intersección de "CALLE S N" y "CALLE S N" (un solo punto)
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7003501000145-7003501000265-1'))
+            '7003501000145-7003501000265-01'))
         self.assertFalse(self._ctx.session.query(Intersection).get(
-            '7003501000145-7003501000265-2'))
+            '7003501000145-7003501000265-02'))
 
     def test_self_intersection(self):
         """Las calles no deberían intersectar con sí mismas."""
