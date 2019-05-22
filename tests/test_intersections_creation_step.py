@@ -19,11 +19,6 @@ class TestIntersectionsCreationStep(ETLTestCase):
         step = IntersectionsCreationStep()
         step.run(None, cls._ctx)
 
-    def tearDown(self):
-        self._ctx.session.commit()
-        self._ctx.session.query(Intersection).delete()
-        super().tearDown()
-
     def test_intersections_creation(self):
         """Se deberían calcular las intersecciones de calles para cada
         provincia."""
@@ -40,6 +35,23 @@ class TestIntersectionsCreationStep(ETLTestCase):
 
         self.assertEqual(self._ctx.session.query(Intersection).filter(
             Intersection.id in reversed_ids).count(), 0)
+
+    def test_multiple_intersections(self):
+        """Algunas intersecciones de calles deberían estar representadas por
+        varios puntos, con el ID de cada uno siendo una secuencia 1, 2, etc."""
+
+        # Dos intersecciones de "ABERASTAIN" y "PJE S N" separadas por
+        # aproximadamente 85 metros.
+        self.assertTrue(self._ctx.session.query(Intersection).get(
+            '7003501000045-7003501001120-2'))
+        self.assertTrue(self._ctx.session.query(Intersection).get(
+            '7003501000045-7003501001120-1'))
+
+        # Intersección de "CALLE S N" y "CALLE S N" (un solo punto)
+        self.assertTrue(self._ctx.session.query(Intersection).get(
+            '7003501000145-7003501000265-1'))
+        self.assertFalse(self._ctx.session.query(Intersection).get(
+            '7003501000145-7003501000265-2'))
 
     def test_self_intersection(self):
         """Las calles no deberían intersectar con sí mismas."""
