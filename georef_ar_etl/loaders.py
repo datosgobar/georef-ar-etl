@@ -131,6 +131,7 @@ class CreateJSONFileStep(CreateOutputFileStep):
             'cantidad': count,
             'total': count,
             'inicio': 0,
+            'parametros': {},
             entity_name: JSONArrayPlaceholder()
         }
 
