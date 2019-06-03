@@ -1,3 +1,9 @@
+"""Módulo 'exceptions' de georef-ar-etl.
+
+Define errores comunes (excepciones) utilizados durante el ETL.
+
+"""
+
 class ValidationException(Exception):
     """Representa un error ocurrido durante la creación de una nueva entidad.
 

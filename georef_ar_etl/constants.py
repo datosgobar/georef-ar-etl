@@ -1,3 +1,9 @@
+"""Módulo 'constants' de georef-ar-etl.
+
+Define valores constantes utilizados en distintas partes del ETL.
+
+"""
+
 from enum import Enum
 
 ETL_VERSION = '12.0.0'

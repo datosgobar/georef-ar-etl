@@ -1,3 +1,9 @@
+"""Módulo 'context' de georef-ar-etl.
+
+Define las clases 'Context' y 'Report', y otras utilidades relacionadas.
+
+"""
+
 import os
 import smtplib
 import json

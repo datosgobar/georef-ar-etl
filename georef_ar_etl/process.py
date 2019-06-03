@@ -1,3 +1,10 @@
+"""Módulo 'process' de georef-ar-etl.
+
+Define las clases 'Process', 'Step' y sus derivados, que son utilizados para
+construir los pasos de cada proceso del ETL.
+
+"""
+
 from abc import ABC, abstractmethod
 from .exceptions import ProcessException
 
