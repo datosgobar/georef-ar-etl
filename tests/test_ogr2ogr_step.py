@@ -38,4 +38,4 @@ class TestOgr2ogrStep(ETLTestCase):
             'geom': 'geometry'
         }).run(table, self._ctx)
 
-        ValidateTableSizeStep(size=158).run(table, self._ctx)
+        ValidateTableSizeStep(target_size=158).run(table, self._ctx)

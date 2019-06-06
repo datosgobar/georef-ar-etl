@@ -1,6 +1,13 @@
+"""Módulo 'utils' de georef-ar-etl.
+
+Define funciones y clases de utilidades varias.
+
+"""
+
 import os
 import sys
 import csv
+import operator
 from sqlalchemy import MetaData
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.sql import sqltypes
@@ -85,24 +92,28 @@ class ValidateTableSchemaStep(Step):
 
 
 class ValidateTableSizeStep(Step):
-    def __init__(self, size=None, tolerance=0):
+    def __init__(self, target_size, op='eq'):
         super().__init__('validate_table_size')
-        self._size = size
-        self._tolerance = tolerance
+        self._target_size = target_size
+        self._operator = getattr(operator, op)
 
     def _run_internal(self, table, ctx):
         count = ctx.session.query(table).count()
-        diff = abs(self._size - count)
+        ctx.report.info('Tamaño objetivo: {}'.format(self._target_size))
+        ctx.report.info('Operador: "{}"'.format(self._operator.__name__))
 
-        if diff > self._tolerance and ctx.mode != 'interactive':
-            raise ProcessException(
-                'La tabla contiene {} elementos, pero debe contar con {} '
-                '(margen de error: {}).'.format(count, self._size,
-                                                self._tolerance))
-        if diff > 0:
-            ctx.report.info(
-                'La cantidad de elementos es {} (esperado: {})'.format(
-                    count, self._size))
+        if not self._operator(count, self._target_size):
+            message = ('La tabla contiene {} elementos, pero falló la '
+                       'validación contra target_size={}, utilizando el '
+                       'operador "{}".'.format(count, self._target_size,
+                                               self._operator.__name__))
+
+            if ctx.mode != 'interactive':
+                raise ProcessException(message)
+
+            # En modo interactivo, permitir que las tablas tomen tamaños no
+            # esperados.
+            ctx.report.warn(message)
 
         return table
 

@@ -39,7 +39,7 @@ def create_process(config):
             'geom': 'geometry'
         }),
         SettlementsExtractionStep(),
-        utils.ValidateTableSizeStep(size=13555, tolerance=50),
+        utils.ValidateTableSizeStep(target_size=13500, op='ge'),
         CompositeStep([
             loaders.CreateJSONFileStep(Settlement, constants.ETL_VERSION,
                                        constants.SETTLEMENTS + '.json'),

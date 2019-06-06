@@ -28,7 +28,7 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=24),
+        utils.ValidateTableSizeStep(target_size=24),
         CompositeStep([
             loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
                                        constants.PROVINCES + '.json'),

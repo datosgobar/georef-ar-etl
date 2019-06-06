@@ -30,7 +30,7 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(size=1800, tolerance=100),
+        utils.ValidateTableSizeStep(target_size=1800, op='ge'),
         CompositeStep([
             loaders.CreateJSONFileStep(
                 Municipality, constants.ETL_VERSION,
