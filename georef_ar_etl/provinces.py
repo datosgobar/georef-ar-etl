@@ -28,7 +28,8 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(target_size=24),
+        utils.ValidateTableSizeStep(
+            target_size=config.getint('etl', 'provinces_target_size')),
         CompositeStep([
             loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
                                        constants.PROVINCES + '.json'),

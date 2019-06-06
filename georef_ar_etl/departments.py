@@ -30,7 +30,8 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(target_size=529),
+        utils.ValidateTableSizeStep(
+            target_size=config.getint('etl', 'departments_target_size')),
         CompositeStep([
             loaders.CreateJSONFileStep(Department, constants.ETL_VERSION,
                                        constants.DEPARTMENTS + '.json'),

@@ -102,7 +102,9 @@ def create_process(config):
             ], name='load_tmp_streets')
         ]),
         StreetsExtractionStep(),
-        utils.ValidateTableSizeStep(target_size=151000, op='ge'),
+        utils.ValidateTableSizeStep(
+            target_size=config.getint('etl', 'streets_target_size'),
+            op='ge'),
         CompositeStep([
             loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
                                        constants.STREETS + '.json'),

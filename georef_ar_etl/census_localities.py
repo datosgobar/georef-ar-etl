@@ -48,7 +48,9 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(target_size=3500, op='ge'),
+        utils.ValidateTableSizeStep(
+            target_size=config.getint('etl', 'census_localities_target_size'),
+            op='ge'),
         CompositeStep([
             loaders.CreateJSONFileStep(CensusLocality, constants.ETL_VERSION,
                                        file_basename + '.json'),

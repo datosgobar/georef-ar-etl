@@ -20,7 +20,9 @@ def create_process(config):
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
-        utils.ValidateTableSizeStep(target_size=1116000, op='ge'),
+        utils.ValidateTableSizeStep(
+            target_size=config.getint('etl', 'street_blocks_target_size'),
+            op='ge'),
         loaders.CreateNDJSONFileStep(StreetBlock, constants.ETL_VERSION,
                                      constants.STREET_BLOCKS + '.ndjson'),
         utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson')
