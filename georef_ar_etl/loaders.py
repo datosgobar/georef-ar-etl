@@ -7,6 +7,8 @@ from abc import abstractmethod
 from datetime import datetime
 from datetime import timezone
 from sqlalchemy import MetaData
+from shapely.geometry import shape
+import shapely
 import geojson
 from . import constants, utils
 from .process import Step, ProcessException
@@ -18,6 +20,7 @@ NDJSON_LINE_SEPARATOR = '\n'
 
 
 class Ogr2ogrStep(Step):
+
     def __init__(self, table_name, geom_type, env=None, precision=True,
                  overwrite=True, metadata=None, db_config=None,
                  source_epsg=None):
@@ -97,6 +100,7 @@ class Ogr2ogrStep(Step):
 
 
 class CreateOutputFileStep(Step):
+
     def __init__(self, name, table, *filename_parts):
         super().__init__(name, reads_input=False)
         self._table = table
@@ -121,6 +125,7 @@ class CreateOutputFileStep(Step):
 
 
 class CreateJSONFileStep(CreateOutputFileStep):
+
     def __init__(self, table, *filename_parts):
         super().__init__('create_json_file', table, *filename_parts)
 
@@ -151,6 +156,7 @@ class CreateJSONFileStep(CreateOutputFileStep):
 
 
 class CreateNDJSONFileStep(CreateOutputFileStep):
+
     def __init__(self, table, *filename_parts):
         super().__init__('create_ndjson_file', table, *filename_parts)
 
@@ -177,8 +183,12 @@ class CreateNDJSONFileStep(CreateOutputFileStep):
 
 
 class CreateGeoJSONFileStep(CreateOutputFileStep):
-    def __init__(self, table, *filename_parts):
+
+    def __init__(self, table, *filename_parts,
+                 tolerance=None, caba_tolerance=None):
         super().__init__('create_geojson_file', table, *filename_parts)
+        self.tolerance = tolerance or 0.0085
+        self.caba_tolerance = caba_tolerance or 0.001
 
     def _write_file(self, query, count, cached_session, ctx):
         collection = geojson.FeatureCollection(JSONArrayPlaceholder())
@@ -191,12 +201,31 @@ class CreateGeoJSONFileStep(CreateOutputFileStep):
             with stream_writer as w:
                 for entity in utils.pbar(query, ctx, total=count):
                     entity_dict = entity.to_dict(cached_session)
+
+                    # conserva la geometría simplificada para GEOJSON
+                    shapely_geom = shape(entity_dict['geometria'])
+                    if shapely_geom:
+                        if str(entity_dict["id"]).startswith("02"):
+                            shapely_geom_simplified = shapely_geom.simplify(
+                                tolerance=self.caba_tolerance,
+                                preserve_topology=True)
+                        else:
+                            shapely_geom_simplified = shapely_geom.simplify(
+                                tolerance=self.tolerance,
+                                preserve_topology=True)
+                        geometry = shapely.geometry.mapping(
+                            shapely_geom_simplified)
+                    else:
+                        geometry = entity_dict['geometria']
+
                     del entity_dict['geometria']
 
-                    centroid = entity_dict.pop('centroide')
-                    point = geojson.Point((centroid['lon'], centroid['lat']))
+                    # DEPRECADO: convierte centroide en la geometría
+                    # del entity_dict['geometria']
+                    # centroid = entity_dict.pop('centroide')
+                    # point = geojson.Point((centroid['lon'], centroid['lat']))
 
-                    feature = geojson.Feature(geometry=point,
+                    feature = geojson.Feature(geometry=geometry,
                                               properties=entity_dict)
                     w.append(feature)
 
@@ -232,6 +261,7 @@ def flatten_dict(d, max_depth=3, sep='_'):
 
 
 class CreateCSVFileStep(CreateOutputFileStep):
+
     def __init__(self, table, *filename_parts):
         super().__init__('create_csv_file', table, *filename_parts)
 

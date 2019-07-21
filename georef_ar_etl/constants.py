@@ -6,7 +6,7 @@ Define valores constantes utilizados en distintas partes del ETL.
 
 from enum import Enum
 
-ETL_VERSION = '12.0.0'
+ETL_VERSION = '12.1.0'
 DATA_DIR = 'data'
 CONFIG_PATH = 'config/georef.cfg'
 DIR_PERMS = 0o700

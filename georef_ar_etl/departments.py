@@ -35,8 +35,13 @@ def create_process(config):
         CompositeStep([
             loaders.CreateJSONFileStep(Department, constants.ETL_VERSION,
                                        constants.DEPARTMENTS + '.json'),
-            loaders.CreateGeoJSONFileStep(Department, constants.ETL_VERSION,
-                                          constants.DEPARTMENTS + '.geojson'),
+            loaders.CreateGeoJSONFileStep(
+                Department,
+                constants.ETL_VERSION,
+                constants.DEPARTMENTS + '.geojson',
+                tolerance=config.getfloat("etl", "geojson_tolerance"),
+                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+            ),
             loaders.CreateCSVFileStep(Department, constants.ETL_VERSION,
                                       constants.DEPARTMENTS + '.csv'),
             loaders.CreateNDJSONFileStep(Department, constants.ETL_VERSION,
@@ -53,6 +58,7 @@ def create_process(config):
 
 
 class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
+
     def __init__(self):
         super().__init__('departments_extraction', Department,
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')

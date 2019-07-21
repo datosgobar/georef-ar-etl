@@ -5,6 +5,7 @@ from . import ETLTestCase
 
 
 class TestCreateGeoJSONFileStep(ETLTestCase):
+
     def setUp(self):
         super().setUp()
         self.create_test_provinces(extract=True)
@@ -21,4 +22,3 @@ class TestCreateGeoJSONFileStep(ETLTestCase):
 
         self.assertEqual(data['type'], 'FeatureCollection')
         self.assertEqual(data['features'][0]['properties']['id'], '70')
-        self.assertEqual(data['features'][0]['geometry']['type'], 'Point')

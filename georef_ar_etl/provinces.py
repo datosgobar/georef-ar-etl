@@ -6,7 +6,6 @@ from . import extractors, transformers, loaders, geometry, utils, constants
 
 def create_process(config):
     output_path = config.get('etl', 'output_dest_path')
-
     return Process(constants.PROVINCES, [
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
                                    config.get('etl', 'provinces_url')),
@@ -30,11 +29,17 @@ def create_process(config):
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'provinces_target_size')),
+
         CompositeStep([
             loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
                                        constants.PROVINCES + '.json'),
-            loaders.CreateGeoJSONFileStep(Province, constants.ETL_VERSION,
-                                          constants.PROVINCES + '.geojson'),
+            loaders.CreateGeoJSONFileStep(
+                Province,
+                constants.ETL_VERSION,
+                constants.PROVINCES + '.geojson',
+                tolerance=config.getfloat("etl", "geojson_tolerance"),
+                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+            ),
             loaders.CreateCSVFileStep(Province, constants.ETL_VERSION,
                                       constants.PROVINCES + '.csv'),
             loaders.CreateNDJSONFileStep(Province, constants.ETL_VERSION,
@@ -50,6 +55,7 @@ def create_process(config):
 
 
 class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
+
     def __init__(self):
         super().__init__('provinces_extraction', Province,
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')

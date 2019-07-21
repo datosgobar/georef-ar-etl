@@ -5,3 +5,5 @@ fs==2.4.4
 requests==2.21.0
 tqdm==4.31.1
 geojson==2.4.1
+shapely==1.6.4.post2
+responses==0.10.6

@@ -39,7 +39,10 @@ def create_process(config):
                 constants.MUNICIPALITIES + '.json'),
             loaders.CreateGeoJSONFileStep(
                 Municipality, constants.ETL_VERSION,
-                constants.MUNICIPALITIES + '.geojson'),
+                constants.MUNICIPALITIES + '.geojson',
+                tolerance=config.getfloat("etl", "geojson_tolerance"),
+                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+            ),
             loaders.CreateCSVFileStep(
                 Municipality, constants.ETL_VERSION,
                 constants.MUNICIPALITIES + '.csv'),
@@ -62,6 +65,7 @@ def create_process(config):
 
 
 class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
+
     def __init__(self):
         super().__init__('municipalities_extraction', Municipality,
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
