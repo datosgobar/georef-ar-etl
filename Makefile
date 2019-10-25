@@ -22,6 +22,18 @@ update:
 run:
 	$(ETL_COMMAND)
 
+# Ejecuta el proceso de provincias
+provincias:
+	$(ETL_COMMAND) -p provincias
+
+# Ejecuta el proceso de departamentos
+departamentos:
+	$(ETL_COMMAND) -p departamentos
+
+# Ejecuta el proceso de municipios
+municipios:
+	$(ETL_COMMAND) -p municipios
+
 # Ejecuta todos los procesos, pero solo la parte de generación de archivos
 files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail

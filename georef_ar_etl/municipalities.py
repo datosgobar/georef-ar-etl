@@ -12,17 +12,25 @@ def create_process(config):
         utils.CheckDependenciesStep([Province]),
         extractors.DownloadURLStep(constants.MUNICIPALITIES + '.zip',
                                    config.get('etl', 'municipalities_url')),
-        transformers.ExtractZipStep(),
+        transformers.ExtractZipStep(
+            internal_path="Municipio"
+        ),
         loaders.Ogr2ogrStep(table_name=constants.MUNICIPALITIES_TMP_TABLE,
                             geom_type='MultiPolygon',
                             env={'SHAPE_ENCODING': 'utf-8'}),
         utils.ValidateTableSchemaStep({
+            'objectid': 'numeric',
             'ogc_fid': 'integer',
+            'entidad': 'numeric',
+            'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
             'sag': 'varchar',
+            'fdc': 'varchar',
             'in1': 'varchar',
+            'shape_star': 'numeric',
+            'shape_stle': 'numeric',
             'geom': 'geometry'
         }),
         CompositeStep([

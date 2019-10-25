@@ -9,17 +9,25 @@ def create_process(config):
     return Process(constants.PROVINCES, [
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
                                    config.get('etl', 'provinces_url')),
-        transformers.ExtractZipStep(),
+        transformers.ExtractZipStep(
+            internal_path="Provincia"
+        ),
         loaders.Ogr2ogrStep(table_name=constants.PROVINCES_TMP_TABLE,
                             geom_type='MultiPolygon',
                             env={'SHAPE_ENCODING': 'utf-8'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
+            'objectid': 'numeric',
+            'entidad': 'numeric',
+            'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
             'sag': 'varchar',
+            'fdc': 'varchar',
             'in1': 'varchar',
+            'shape_star': 'numeric',
+            'shape_stle': 'numeric',
             'geom': 'geometry'
         }),
         CompositeStep([

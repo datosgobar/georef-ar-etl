@@ -12,17 +12,24 @@ def create_process(config):
         utils.CheckDependenciesStep([Province]),
         extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
                                    config.get('etl', 'departments_url')),
-        transformers.ExtractZipStep(),
+        transformers.ExtractZipStep(
+            internal_path="Departamento"
+        ),
         loaders.Ogr2ogrStep(table_name=constants.DEPARTMENTS_TMP_TABLE,
                             geom_type='MultiPolygon',
                             env={'SHAPE_ENCODING': 'utf-8'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
+            'entidad': 'numeric',
+            'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
             'sag': 'varchar',
+            'fdc': 'varchar',
             'in1': 'varchar',
+            'shape_star': 'numeric',
+            'shape_stle': 'numeric',
             'geom': 'geometry'
         }),
         CompositeStep([
