@@ -13,7 +13,7 @@ def create_process(config):
         extractors.DownloadURLStep(constants.MUNICIPALITIES + '.zip',
                                    config.get('etl', 'municipalities_url')),
         transformers.ExtractZipStep(
-            internal_path="Municipio"
+            internal_path="municipios"
         ),
         loaders.Ogr2ogrStep(table_name=constants.MUNICIPALITIES_TMP_TABLE,
                             geom_type='MultiPolygon',

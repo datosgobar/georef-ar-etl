@@ -34,6 +34,14 @@ departamentos:
 municipios:
 	$(ETL_COMMAND) -p municipios
 
+# Ejecuta el proceso de localidades_censales
+localidades_censales:
+	$(ETL_COMMAND) -p localidades_censales
+
+# Ejecuta el proceso de calles
+calles:
+	$(ETL_COMMAND) -p calles
+
 # Ejecuta todos los procesos, pero solo la parte de generación de archivos
 files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail

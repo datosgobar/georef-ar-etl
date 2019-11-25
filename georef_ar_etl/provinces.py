@@ -10,7 +10,7 @@ def create_process(config):
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
                                    config.get('etl', 'provinces_url')),
         transformers.ExtractZipStep(
-            internal_path="Provincia"
+            internal_path="provincias"
         ),
         loaders.Ogr2ogrStep(table_name=constants.PROVINCES_TMP_TABLE,
                             geom_type='MultiPolygon',

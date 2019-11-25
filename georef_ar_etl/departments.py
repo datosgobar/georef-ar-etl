@@ -13,7 +13,7 @@ def create_process(config):
         extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
                                    config.get('etl', 'departments_url')),
         transformers.ExtractZipStep(
-            internal_path="Departamento"
+            internal_path="departamentos"
         ),
         loaders.Ogr2ogrStep(table_name=constants.DEPARTMENTS_TMP_TABLE,
                             geom_type='MultiPolygon',
