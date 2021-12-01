@@ -13,21 +13,31 @@ def create_process(config):
         extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
                                    config.get('etl', 'departments_url')),
         transformers.ExtractZipStep(
-            internal_path="departamentos"
+            internal_path=""
         ),
         loaders.Ogr2ogrStep(table_name=constants.DEPARTMENTS_TMP_TABLE,
                             geom_type='MultiPolygon',
-                            env={'SHAPE_ENCODING': 'utf-8'}),
+                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
+            'gid': 'numeric',
+            'objectid': 'numeric',
             'entidad': 'numeric',
             'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
             'sag': 'varchar',
+            'lima_100k_': 'numeric',
             'fdc': 'varchar',
             'in1': 'varchar',
+            'escala': 'numeric',
+            'created_us': 'varchar',
+            'created_da': 'date',
+            'last_edite': 'varchar',
+            'last_edi_1': 'date',
+            'globalid': 'varchar',
+            'departamen': 'numeric',
             'shape_star': 'numeric',
             'shape_stle': 'numeric',
             'geom': 'geometry'

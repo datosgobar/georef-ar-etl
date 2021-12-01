@@ -24,6 +24,7 @@ _SQL_TYPES = {
     'integer': sqltypes.INTEGER,
     'numeric': sqltypes.NUMERIC,
     'double': pgtypes.DOUBLE_PRECISION,
+    'date': sqltypes.Date,
     'geometry': geotypes.Geometry
 }
 

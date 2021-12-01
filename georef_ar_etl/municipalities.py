@@ -13,22 +13,31 @@ def create_process(config):
         extractors.DownloadURLStep(constants.MUNICIPALITIES + '.zip',
                                    config.get('etl', 'municipalities_url')),
         transformers.ExtractZipStep(
-            internal_path="municipios"
+            internal_path=""
         ),
         loaders.Ogr2ogrStep(table_name=constants.MUNICIPALITIES_TMP_TABLE,
                             geom_type='MultiPolygon',
-                            env={'SHAPE_ENCODING': 'utf-8'}),
+                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
         utils.ValidateTableSchemaStep({
             'objectid': 'numeric',
             'ogc_fid': 'integer',
+            'gid': 'numeric',
             'entidad': 'numeric',
             'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
             'sag': 'varchar',
+            'lima_100k_': 'numeric',
             'fdc': 'varchar',
             'in1': 'varchar',
+            'escala': 'numeric',
+            'created_us': 'varchar',
+            'created_da': 'date',
+            'last_edite': 'varchar',
+            'last_edi_1': 'date',
+            'globalid': 'varchar',
+            'municipio_': 'numeric',
             'shape_star': 'numeric',
             'shape_stle': 'numeric',
             'geom': 'geometry'
@@ -86,6 +95,8 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_municipalities, ctx, in1='82210')
         patch.delete(tmp_municipalities, ctx, in1='82287')
         patch.delete(tmp_municipalities, ctx, in1='82119')
+
+        patch.delete(tmp_municipalities, ctx, gid=901)
 
         patch.update_field(tmp_municipalities, 'in1', '540287', ctx,
                            in1='550287')
