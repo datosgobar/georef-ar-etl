@@ -10,4 +10,4 @@ Segunda iteración del ETL del Servicio de Normalización de Datos Geográficos 
 Para consultar la documentación del ETL, acceder a [https://datosgobar.github.io/georef-ar-api/etl/](https://datosgobar.github.io/georef-ar-api/etl/).
 
 ## Soporte
-En caso de que encuentres algún bug, tengas problemas con la instalación, o tengas comentarios de alguna parte de Georef ETL, podés mandarnos un mail a [datos@modernizacion.gob.ar](mailto:datos@modernizacion.gob.ar) o [crear un issue](https://github.com/datosgobar/georef-ar-etl/issues/new?title=Encontre-un-bug-en-georef-ar-etl).
+En caso de que encuentres algún bug, tengas problemas con la instalación, o tengas comentarios de alguna parte de Georef ETL, podés mandarnos un mail a [datosargentina@jefatura.gob.ar](mailto:datosargentina@jefatura.gob.ar) o [crear un issue](https://github.com/datosgobar/georef-ar-etl/issues/new?title=Encontre-un-bug-en-georef-ar-etl).
