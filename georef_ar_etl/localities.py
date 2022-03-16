@@ -61,7 +61,7 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
     def _process_entity(self, tmp_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_locality.geom,
                                                      ctx)
-        loc_id = tmp_locality.cod_bahra
+        loc_id = tmp_locality.codigo_ase
         prov_id = loc_id[:constants.PROVINCE_ID_LEN]
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
         census_loc_id = loc_id[:constants.CENSUS_LOCALITY_ID_LEN]
@@ -95,8 +95,8 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
 
         return Locality(
             id=loc_id,
-            nombre=utils.clean_string(tmp_locality.nombre_bah),
-            categoria=utils.clean_string(tmp_locality.tipo_bahra),
+            nombre=utils.clean_string(tmp_locality.nombre_geo),
+            categoria=utils.clean_string(tmp_locality.tipo_asent),
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
