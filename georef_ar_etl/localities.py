@@ -55,7 +55,7 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
     def _build_entities_query(self, tmp_entities, ctx):
         bulk_size = ctx.config.getint('etl', 'bulk_size')
         return ctx.session.query(tmp_entities).\
-            filter(tmp_entities.tipo_asent.in_(constants.LOCALITY_TYPES)).\
+            filter(tmp_entities.tipo_bahra.in_(constants.LOCALITY_TYPES)).\
             yield_per(bulk_size)
 
     def _process_entity(self, tmp_locality, cached_session, ctx):
