@@ -1,0 +1,9 @@
+FROM postgres:9.6.23-buster
+
+RUN localedef -i es_AR -c -f UTF-8 -A /usr/share/locale/locale.alias es_AR.UTF-8
+ENV LANG es_AR.utf8
+
+RUN apt-get update
+RUN apt-get install -y postgresql-9.6-postgis-3
+
+COPY init-user-db.sh /docker-entrypoint-initdb.d/init-user-db.sh

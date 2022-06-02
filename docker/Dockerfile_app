@@ -1,0 +1,17 @@
+FROM python:3.5.10-slim-buster
+
+RUN apt-get update
+RUN apt-get install -y gdal-bin libpq-dev gcc python3-dev
+RUN apt-get install -y python3-psycopg2 make
+
+RUN pip install --upgrade pip
+
+WORKDIR /opt/app-root/src/georef-ar-etl
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+RUN chmod +x /opt/app-root/src/georef-ar-etl/docker/run.sh
+
+CMD ["/opt/app-root/src/georef-ar-etl/docker/run.sh"]

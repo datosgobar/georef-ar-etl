@@ -1,0 +1,35 @@
+version: '2.4'
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile_db
+    environment:
+      POSTGRES_USER: georef
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: georef_ar_etl
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    user: postgres
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-q', '-U', 'georef', '-d', 'georef_ar_etl']
+      interval: 10s
+    networks:
+      - geonet
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile_app
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../config:/opt/app-root/src/georef-ar-etl/config:ro
+      - ../files:/opt/app-root/src/georef-ar-etl/files
+      - ../reports:/opt/app-root/src/georef-ar-etl/reports
+    networks:
+      - geonet
+volumes:
+  dbdata:
+networks:
+  geonet:
