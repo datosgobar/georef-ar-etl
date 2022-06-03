@@ -4,13 +4,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_db
+    image: datosgobar/georef-etl_db
     environment:
       POSTGRES_USER: georef
       POSTGRES_PASSWORD: changeme
       POSTGRES_DB: georef_ar_etl
     volumes:
       - dbdata:/var/lib/postgresql/data
-    user: postgres
     healthcheck:
       test: ['CMD', 'pg_isready', '-q', '-U', 'georef', '-d', 'georef_ar_etl']
       interval: 10s
@@ -20,6 +20,8 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile_app
+    image: datosgobar/georef-etl_app
+    command: make run
     depends_on:
       db:
         condition: service_healthy
@@ -27,6 +29,19 @@ services:
       - ../config:/opt/app-root/src/georef-ar-etl/config:ro
       - ../files:/opt/app-root/src/georef-ar-etl/files
       - ../reports:/opt/app-root/src/georef-ar-etl/reports
+    networks:
+      - geonet
+  migration:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile_app
+    image: datosgobar/georef-etl_app
+    command: make migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../config:/opt/app-root/src/georef-ar-etl/config:ro
     networks:
       - geonet
 volumes:

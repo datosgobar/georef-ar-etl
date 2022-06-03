@@ -12,6 +12,3 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-RUN chmod +x /opt/app-root/src/georef-ar-etl/docker/run.sh
-
-CMD ["/opt/app-root/src/georef-ar-etl/docker/run.sh"]
