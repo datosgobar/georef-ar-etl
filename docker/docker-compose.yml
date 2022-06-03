@@ -21,7 +21,7 @@ services:
       context: ..
       dockerfile: ./docker/Dockerfile_app
     image: datosgobar/georef-etl_app
-    command: make run
+    command: bash -c "make migrate && make ${georef_command}"
     depends_on:
       db:
         condition: service_healthy
@@ -29,19 +29,6 @@ services:
       - ../config:/opt/app-root/src/georef-ar-etl/config:ro
       - ../files:/opt/app-root/src/georef-ar-etl/files
       - ../reports:/opt/app-root/src/georef-ar-etl/reports
-    networks:
-      - geonet
-  migration:
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile_app
-    image: datosgobar/georef-etl_app
-    command: make migrate
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ../config:/opt/app-root/src/georef-ar-etl/config:ro
     networks:
       - geonet
 volumes:
