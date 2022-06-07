@@ -16,12 +16,26 @@ services:
       interval: 10s
     networks:
       - geonet
+  db-test:
+    build:
+      context: .
+      dockerfile: Dockerfile_db
+    image: datosgobar/georef-etl_db_test
+    environment:
+      POSTGRES_USER: georef
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: georef_ar_etl_test
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-q', '-U', 'georef', '-d', 'georef_ar_etl_test']
+      interval: 10s
+    networks:
+      - geonet
   app:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile_app
     image: datosgobar/georef-etl_app
-    command: bash -c "make migrate && make ${georef_command}"
+    command: bash -c "python -m unittest discover -v"
     depends_on:
       db:
         condition: service_healthy
