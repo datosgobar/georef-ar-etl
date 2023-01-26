@@ -43,7 +43,9 @@ LOCALITY_TYPES = {
 # Las localidades censales son LC o LC, en todos los casos (campo tiploc)
 CENSUS_LOCALITY_TYPES = {
     '1': BAHRAType.LS.name,
-    '2': BAHRAType.LC.name
+    '2': BAHRAType.LC.name,
+    'Localidad simple': BAHRAType.LS.name,
+    'Componente de localidad compuesta': BAHRAType.LC.name
 }
 
 # Valores posible para campo func_loc
