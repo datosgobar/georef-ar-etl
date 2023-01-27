@@ -19,12 +19,12 @@ def create_process(config):
             'ogc_fid': 'integer',
             'gid': 'numeric',
             'entidad': 'numeric',
-            'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
             'sag': 'varchar',
             'fdc': 'varchar',
+            'fdc2': 'varchar',
             'in1': 'varchar',
             'geom': 'geometry'
         }),

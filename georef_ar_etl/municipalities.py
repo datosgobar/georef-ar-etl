@@ -17,11 +17,10 @@ def create_process(config):
         ),
         loaders.Ogr2ogrStep(table_name=constants.MUNICIPALITIES_TMP_TABLE,
                             geom_type='MultiPolygon',
-                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
+                            env={'SHAPE_ENCODING': 'utf-8'}),
         utils.ValidateTableSchemaStep({
-            'ogc_fid': 'integer',
             'gid': 'numeric',
-            'objeto': 'varchar',
+            'ogc_fid': 'integer',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
@@ -84,7 +83,12 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_municipalities, ctx, in1='82287')
         patch.delete(tmp_municipalities, ctx, in1='82119')
 
-        patch.delete(tmp_municipalities, ctx, gid=901)
+        # TODO: Verificar por qué traían más de un registro con el mismo in1
+        patch.delete(tmp_municipalities, ctx, in1='300182')
+        patch.delete(tmp_municipalities, ctx, in1='300434')
+        patch.delete(tmp_municipalities, ctx, in1='300448')
+        patch.delete(tmp_municipalities, ctx, in1='300301')
+        patch.delete(tmp_municipalities, ctx, in1='309605')
 
         patch.update_field(tmp_municipalities, 'in1', '540287', ctx,
                            in1='550287')

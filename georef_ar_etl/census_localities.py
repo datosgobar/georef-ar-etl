@@ -122,14 +122,15 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                                                     ctx)
 
         category = constants.CENSUS_LOCALITY_TYPES[tmp_census_locality.tipo_asent]
-        # function = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[
-            # tmp_census_locality.func_loc]
+        # TODO: Pendiente de incorporación
+        # function = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[tmp_census_locality.func_loc]
+        function = None
 
         return CensusLocality(
             id=loc_id,
             nombre=utils.clean_string(tmp_census_locality.fna),
             categoria=category,
-            funcion=0,
+            funcion=function,
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
