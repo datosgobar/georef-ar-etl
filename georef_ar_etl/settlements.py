@@ -14,7 +14,7 @@ def create_process(config):
                                      CensusLocality]),
         extractors.DownloadURLStep(constants.SETTLEMENTS + '.tar.gz',
                                    config.get('etl', 'settlements_url')),
-        transformers.ExtractTarStep(),
+        transformers.ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.SETTLEMENTS_TMP_TABLE,
                             geom_type='MultiPoint', precision=False,
                             env={'SHAPE_ENCODING': 'latin1'}),
