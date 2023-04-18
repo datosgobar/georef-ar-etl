@@ -71,23 +71,36 @@ class ValidateTableSchemaStep(Step):
         self._schema = schema
 
     def _run_internal(self, table, ctx):
+        schema_field_missing = []
+        table_field_missing = []
+        type_field_wrong = []
         for name, col_info in table.__table__.columns.items():
             if name not in self._schema:
-                raise ProcessException(
-                    'La columna "{}" no está presente en el esquema.'.format(
-                        name))
+                schema_field_missing.append(name)
+                continue
 
             col_class = _SQL_TYPES[self._schema[name]]
             if not isinstance(col_info.type, col_class):
-                raise ProcessException(
-                    'La columna "{}" debería ser de tipo {}.'.format(
+                type_field_wrong.append(
+                    'La columna "{}" debería ser de tipo {}. '.format(
                         name, col_info.type))
 
         for name in self._schema:
             if name not in table.__table__.columns:
-                raise ProcessException(
-                    'La columna "{}" no está presente en la tabla.'.format(
-                        name))
+                table_field_missing.append(name)
+
+        msg = 'Las columnas "{}" no están presentes en el esquema. '.format(
+            ",".join(schema_field_missing)
+        ) if schema_field_missing else ''
+        msg = msg + 'Las columnas "{}" no están presentes en la tabla. '.format(
+            ",".join(table_field_missing)
+        ) if table_field_missing else msg
+        msg = msg + "No coinciden los tipos: {}".format(
+            "".join(type_field_wrong)
+        ) if type_field_wrong else msg
+
+        if msg:
+            raise ProcessException(msg)
 
         return table
 
