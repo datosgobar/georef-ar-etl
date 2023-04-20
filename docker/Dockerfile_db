@@ -1,9 +1,9 @@
-FROM postgres:9.6
+FROM postgres:11-buster
 
 RUN localedef -i es_AR -c -f UTF-8 -A /usr/share/locale/locale.alias es_AR.UTF-8
 ENV LANG es_AR.utf8
 
-RUN apt-get update || echo 'Hubo errores en la actualización...'
-RUN apt-get install -y postgresql-9.6-postgis-2.3
+RUN apt-get update
+RUN apt-get install -y postgresql-11-postgis-2.5
 
 COPY init-user-db.sh /docker-entrypoint-initdb.d/init-user-db.sh
