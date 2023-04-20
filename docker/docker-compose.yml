@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile_db
     image: datosgobar/georef-etl_db
+    container_name: georef_etl_db
     environment:
       POSTGRES_USER: georef
       POSTGRES_PASSWORD: changeme
@@ -12,7 +13,7 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD', 'pg_isready', '-q', '-U', 'georef', '-d', 'georef_ar_etl']
+      test: ['CMD-SHELL', 'pg_isready -q -U $$POSTGRES_USER -d $$POSTGRES_DB']
       interval: 10s
     networks:
       - geonet
@@ -35,7 +36,8 @@ services:
       context: ..
       dockerfile: ./docker/Dockerfile_app
     image: datosgobar/georef-etl_app
-    command: bash -c "python -m unittest discover -v"
+    container_name: georef_etl_app
+    command: tail -F anything
     depends_on:
       db:
         condition: service_healthy
