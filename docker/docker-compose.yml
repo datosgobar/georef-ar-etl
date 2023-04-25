@@ -25,9 +25,9 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_DB_TEST}
     healthcheck:
-      test: ['CMD', 'pg_isready', '-q', '-U', 'georef', '-d', 'georef_ar_etl_test']
+      test: ['CMD-SHELL', 'pg_isready -q -U $$POSTGRES_USER -d $$POSTGRES_DB_TEST']
       interval: 10s
     networks:
       - geonet
@@ -37,7 +37,6 @@ services:
       dockerfile: ./docker/Dockerfile_app
     image: datosgobar/georef-etl_app
     container_name: georef_etl_app
-    command: tail -F anything
     depends_on:
       db:
         condition: service_healthy
