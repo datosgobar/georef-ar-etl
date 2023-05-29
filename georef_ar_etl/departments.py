@@ -17,7 +17,7 @@ def create_process(config):
         ),
         loaders.Ogr2ogrStep(table_name=constants.DEPARTMENTS_TMP_TABLE,
                             geom_type='MultiPolygon',
-                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
+                            env={'SHAPE_ENCODING': 'utf-8'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
             'gid': 'numeric',

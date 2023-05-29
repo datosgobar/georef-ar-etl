@@ -15,32 +15,25 @@ def create_process(config):
         utils.CheckDependenciesStep([Province, Department, Municipality]),
         extractors.DownloadURLStep(constants.CENSUS_LOCALITIES + '.zip',
                                    config.get('etl', 'census_localities_url')),
-        transformers.ExtractZipStep('Codgeo_Pais_x_loc_con_datos'),
+        transformers.ExtractZipStep(''),
         loaders.Ogr2ogrStep(table_name=constants.CENSUS_LOCALITIES_TMP_TABLE,
                             geom_type='Point',
                             env={'SHAPE_ENCODING': 'ISO-8859-1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
-            'link': 'varchar',
-            'codpcia': 'varchar',
-            'coddpto': 'varchar',
-            'codloc': 'varchar',
+            'fid': 'numeric',
             'provincia': 'varchar',
             'departamen': 'varchar',
-            'localidad': 'varchar',
-            'func_loc': 'varchar',
-            'tiploc': 'varchar',
-            'tip2loc': 'varchar',
-            'latitud': 'varchar',
-            'longitud': 'varchar',
-            'xgk': 'numeric',
-            'ygk': 'numeric',
-            'varones': 'numeric',
-            'mujeres': 'numeric',
-            'personas': 'numeric',
-            'hogares': 'numeric',
-            'viv_part_h': 'numeric',
-            'viv_part': 'numeric',
+            'cpr': 'varchar',
+            'cde': 'varchar',
+            'fna': 'varchar',
+            'clc': 'varchar',
+            'tlc': 'varchar',
+            'nomenv': 'varchar',
+            'ceu': 'varchar',
+            'nomgl': 'varchar',
+            'codgl': 'varchar',
+            'sag': 'varchar',
             'geom': 'geometry'
         }),
         CompositeStep([
@@ -75,27 +68,32 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
         super().__init__('census_localities_extraction', CensusLocality,
                          entity_class_pkey='id',
-                         tmp_entity_class_pkey='link')
+                         tmp_entity_class_pkey='clc')
 
     def _patch_tmp_entities(self, tmp_census_localities, ctx):
         def update_ushuaia(row):
-            row.link = '94015' + row.link[constants.DEPARTMENT_ID_LEN:]
+            row.clc = '94015' + row.clc[constants.DEPARTMENT_ID_LEN:]
 
         # Actualizar localidades censales de Ushuaia (agregado en ETL2)
         patch.apply_fn(tmp_census_localities, update_ushuaia, ctx,
-                       tmp_census_localities.link.like('94014%'))
+                       tmp_census_localities.clc.like('94014%'))
 
         def update_rio_grande(row):
-            row.link = '94008' + row.link[constants.DEPARTMENT_ID_LEN:]
+            row.clc = '94008' + row.clc[constants.DEPARTMENT_ID_LEN:]
 
         # Actualizar localidades censales de Río Grande (agregado en ETL2)
         patch.apply_fn(tmp_census_localities, update_rio_grande, ctx,
-                       tmp_census_localities.link.like('94007%'))
+                       tmp_census_localities.clc.like('94007%'))
+
+        patch.delete(tmp_census_localities, ctx, clc='06007110')
+        patch.delete(tmp_census_localities, ctx, clc='38007010')
+        patch.delete(tmp_census_localities, ctx, clc='70077010')
+        patch.delete(tmp_census_localities, ctx, clc='70098010')
 
     def _process_entity(self, tmp_census_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_census_locality.geom,
                                                      ctx)
-        loc_id = tmp_census_locality.link
+        loc_id = tmp_census_locality.clc
         prov_id = loc_id[:constants.PROVINCE_ID_LEN]
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
 
@@ -115,17 +113,17 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                                                     tmp_census_locality.geom,
                                                     ctx)
 
-        category = constants.CENSUS_LOCALITY_TYPES[tmp_census_locality.tiploc]
+        category = constants.CENSUS_LOCALITY_TYPES[tmp_census_locality.tlc]
         # TODO: Pendiente de incorporación
         # function = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[tmp_census_locality.func_loc]
         function = None
 
         return CensusLocality(
             id=loc_id,
-            nombre=utils.clean_string(tmp_census_locality.localidad),
+            nombre=utils.clean_string(tmp_census_locality.fna),
             categoria=category,
             funcion=function,
-            lon=lon, lat=lat,
+            lon=lat, lat=lon,
             provincia_id=prov_id,
             departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
