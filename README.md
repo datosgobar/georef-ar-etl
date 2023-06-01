@@ -28,8 +28,8 @@ Para correr la aplicación la primera vez:
 
 ```
 docker-compose up -d app
-docker-compose exec app make migrate
-docker-compose exec app make run
+docker-compose run app make migrate
+docker-compose run app make run
 ```
 
 Si se modifica el código fuente reconstruir la imagen
@@ -40,7 +40,7 @@ Para correr los test
 
 ```
 docker-compose up db-test
-docker-compose exec app python -m unittest -v
+docker-compose run app python -m unittest -v
 ```
 
 ## Soporte
