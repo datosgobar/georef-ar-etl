@@ -75,6 +75,27 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
 
     def _patch_tmp_entities(self, tmp_municipalities, ctx):
+
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos municipios, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(mun):
+            sql_str = """
+                            select ST_MakeValid(geom)
+                            from {}
+                            where in1=:in1
+                            limit 1
+                            """.format(mun.__table__.name)
+
+            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
+            # SQL manualmente (como excepción).
+            mun.geom = ctx.session.scalar(sql_str, {'in1': mun.in1})
+
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='060056')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180455')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180224')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180077')
+
         patch.delete(tmp_municipalities, ctx, in1=None)
         patch.delete(tmp_municipalities, ctx, gna=None)
 
@@ -84,11 +105,21 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_municipalities, ctx, in1='82119')
 
         # TODO: Verificar por qué traían más de un registro con el mismo in1
-        patch.delete(tmp_municipalities, ctx, in1='300182')
-        patch.delete(tmp_municipalities, ctx, in1='300434')
-        patch.delete(tmp_municipalities, ctx, in1='300448')
-        patch.delete(tmp_municipalities, ctx, in1='300301')
-        patch.delete(tmp_municipalities, ctx, in1='309605')
+        # Se toma como válido el municipio con gid=1965
+        patch.delete(tmp_municipalities, ctx, in1='300182', gid='1966')
+        patch.delete(tmp_municipalities, ctx, in1='300182', gid='1787')
+
+        # Se toma como válido el municipio con gid=1838
+        patch.delete(tmp_municipalities, ctx, in1='300434', gid='1906')
+
+        # Se toma como válido el municipio con gid=2021
+        patch.delete(tmp_municipalities, ctx, in1='300448', gid='1881')
+
+        # Se toma como válido el municipio con gid=1880
+        patch.delete(tmp_municipalities, ctx, in1='300301', gid='1825')
+
+        # Se toma como válido el municipio con gid=2037
+        patch.delete(tmp_municipalities, ctx, in1='309605', gid='1869')
 
         patch.update_field(tmp_municipalities, 'in1', '540287', ctx,
                            in1='550287')
