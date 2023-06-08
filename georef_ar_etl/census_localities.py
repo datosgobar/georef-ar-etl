@@ -87,8 +87,12 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
 
         patch.delete(tmp_census_localities, ctx, clc='06007110')
         patch.delete(tmp_census_localities, ctx, clc='38007010')
-        patch.delete(tmp_census_localities, ctx, clc='70077010')
-        patch.delete(tmp_census_localities, ctx, clc='70098010')
+
+        # Se toma como válida la localidad censal con fid=3059
+        patch.delete(tmp_census_localities, ctx, clc='70077010', fid='3058')
+
+        # Se toma como válida la localidad censal con fid=3067
+        patch.delete(tmp_census_localities, ctx, clc='70098010', fid='3066')
 
     def _process_entity(self, tmp_census_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_census_locality.geom,
@@ -123,7 +127,7 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             nombre=utils.clean_string(tmp_census_locality.fna),
             categoria=category,
             funcion=function,
-            lon=lat, lat=lon,
+            lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
