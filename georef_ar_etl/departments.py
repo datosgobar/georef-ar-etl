@@ -86,6 +86,7 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
             dept.geom = ctx.session.scalar(sql_str, {'in1': dept.in1})
 
         patch.apply_fn(tmp_departments, make_valid_geom, ctx, in1='54119')
+        patch.apply_fn(tmp_departments, make_valid_geom, ctx, in1='94021')
 
         # Antártida Argentina duplicada
         patch.delete(tmp_departments, ctx, ogc_fid=530, in1='94028')
@@ -98,7 +99,7 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
                            nam='25de Mayo')
 
         # Chascomús
-        patch.update_field(tmp_departments, 'in1', '06217', ctx, in1='06218')
+        # patch.update_field(tmp_departments, 'in1', '06217', ctx, in1='06218')
 
         # Río Grande
         patch.update_field(tmp_departments, 'in1', '94008', ctx, in1='94007')
