@@ -85,6 +85,7 @@ class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
             prov.geom = ctx.session.scalar(sql_str, {'in1': prov.in1})
 
         patch.apply_fn(tmp_provinces, make_valid_geom, ctx, in1='94')
+        patch.update_field(tmp_provinces, 'nam', 'Entre Ríos', ctx, nam='Entre Ríoss')
 
     def _process_entity(self, tmp_province, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_province.geom, ctx)
