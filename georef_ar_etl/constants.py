@@ -19,6 +19,8 @@ class BAHRAType(Enum):
     ST = 'Sitio edificado'
     LSE = 'Localidad simple con entidad'
     LCE = 'Componente de localidad compuesta con entidad'
+    P = 'Paraje'
+    BA = 'Base Antártica'
 
 
 # Todos los tipos BAHRA

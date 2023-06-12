@@ -1,4 +1,8 @@
+import os
+import subprocess
+
 from .exceptions import ValidationException, ProcessException
+from .loaders import OGR2OGR_CMD
 from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, CensusLocality,\
     Settlement
@@ -12,29 +16,28 @@ def create_process(config):
     return Process(constants.SETTLEMENTS, [
         utils.CheckDependenciesStep([Province, Department, Municipality,
                                      CensusLocality]),
-        extractors.DownloadURLStep(constants.SETTLEMENTS + '.tar.gz',
+        extractors.DownloadURLStep(constants.SETTLEMENTS + '.zip',
                                    config.get('etl', 'settlements_url')),
-        transformers.ExtractZipStep(),
+        ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.SETTLEMENTS_TMP_TABLE,
                             geom_type='MultiPoint', precision=False,
                             env={'SHAPE_ENCODING': 'latin1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
-            'cod_prov': 'varchar',
-            'nom_prov': 'varchar',
-            'cod_depto': 'varchar',
-            'nom_depto': 'varchar',
-            'cod_loc': 'varchar',
-            'cod_sit': 'varchar',
-            'cod_entida': 'varchar',
-            'cod_bahra': 'varchar',
-            'tipo_bahra': 'varchar',
-            'nombre_bah': 'varchar',
-            'lat_gd': 'double',
-            'long_gd': 'double',
-            'lat_gms': 'varchar',
-            'long_gms': 'varchar',
-            'fuente_ubi': 'varchar',
+            'nombre_geo': 'varchar',
+            'tipo_asent': 'varchar',
+            'codigo_ase': 'varchar',
+            'nombre_agl': 'varchar',
+            'codigo_agl': 'varchar',
+            'nombre_dep': 'varchar',
+            'codigo_ind': 'varchar',
+            'nombre_pro': 'varchar',
+            'codigo_in0': 'varchar',
+            'latitud_gr': 'varchar',
+            'longitud_g': 'varchar',
+            'latitud_g0': 'varchar',
+            'longitud_0': 'varchar',
+            'fuente_de_': 'varchar',
             'gid': 'integer',
             'geom': 'geometry'
         }),
@@ -68,10 +71,10 @@ def create_process(config):
 def update_commune_id(row):
     # Multiplicar por 7 los últimos tres dígitos del ID del departamento
     # Ver comentario en constants.py para más detalles.
-    prov_id_part = row.cod_bahra[:constants.PROVINCE_ID_LEN]
-    dept_id_part = row.cod_bahra[
+    prov_id_part = row.codigo_ase[:constants.PROVINCE_ID_LEN]
+    dept_id_part = row.codigo_ase[
         constants.PROVINCE_ID_LEN:constants.DEPARTMENT_ID_LEN]
-    id_rest = row.cod_bahra[constants.DEPARTMENT_ID_LEN:]
+    id_rest = row.codigo_ase[constants.DEPARTMENT_ID_LEN:]
 
     dept_id_int = int(dept_id_part)
     if dept_id_int > 15:
@@ -80,52 +83,93 @@ def update_commune_id(row):
             dept_id_part))
 
     dept_new_id_int = dept_id_int * constants.CABA_MULT_FACTOR
-    row.cod_bahra = prov_id_part + str(dept_new_id_int).rjust(
+    row.codigo_ase = prov_id_part + str(dept_new_id_int).rjust(
         len(dept_id_part), '0') + id_rest
+
+
+class ExtractZipStep(transformers.ExtractZipStep):
+
+    def _run_internal(self, filename, ctx):
+        file = super()._run_internal(filename, ctx)
+        merged_file = self._merge_shp_files(file, ctx)
+        return merged_file
+
+    def _merge_shp_files(self, filename_src, ctx):
+
+        path_src = ctx.fs.getsyspath(filename_src)
+        shapefile_list = [os.path.join(path_src, f) for f in os.listdir(path_src) if f.endswith('.shp')]
+
+        dirname_merge = os.path.join(filename_src, 'merge/')
+        ctx.fs.makedir(dirname_merge)
+
+        file_merge = os.path.join(ctx.fs.getsyspath(dirname_merge), 'merge.shp')
+
+        def run_args(args):
+            result = subprocess.run(args)
+            if result.returncode:
+                raise ProcessException(
+                    'El comando ogr2ogr retornó codigo {} al intentar hacer un merge.'.format(
+                        result.returncode))
+
+        args = [OGR2OGR_CMD, '-f', 'ESRI Shapefile', '{}'.format(file_merge), '{}'.format(shapefile_list[0])]
+        run_args(args)
+
+        for f in shapefile_list[1:]:
+            args = [
+                OGR2OGR_CMD, '-f', 'ESRI Shapefile',
+                '-update', '-append',
+                '{}'.format(file_merge), '{}'.format(f),
+                '-nln', 'merge'
+            ]
+            run_args(args)
+
+        return dirname_merge
 
 
 class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self, name='settlements_extraction', entity_class=Settlement):
         super().__init__(name, entity_class, entity_class_pkey='id',
-                         tmp_entity_class_pkey='cod_bahra')
+                         tmp_entity_class_pkey='codigo_ase')
 
     def _patch_tmp_entities(self, tmp_settlements, ctx):
         # Actualizar códigos de comunas (departamentos de CABA)
         patch.apply_fn(tmp_settlements, update_commune_id, ctx,
-                       tmp_settlements.cod_bahra.like('02%'))
+                       tmp_settlements.codigo_ase.like('02%'))
 
         # Borrar 'EL FICAL'
-        patch.delete(tmp_settlements, ctx, cod_bahra='70056060001',
-                     nombre_bah='EL FICAL')
+        patch.delete(tmp_settlements, ctx, codigo_ase='70056060001',
+                     nombre_geo='EL FICAL')
 
         # Asignarle una localidad censal a "La Toma (Jujuy)"
-        patch.update_field(tmp_settlements, 'cod_bahra', '38056025001', ctx,
-                           cod_bahra='38056013000')
+        patch.update_field(tmp_settlements, 'codigo_ase', '38056025001', ctx,
+                           codigo_ase='38056013000')
 
         # Asignarle una localidad censal a "BARRIO RUTA 24 KILOMETRO 10 (Buenos
         # Aires provincia)"
-        patch.update_field(tmp_settlements, 'cod_bahra', '06364030005', ctx,
-                           cod_bahra='06364010000')
+        patch.update_field(tmp_settlements, 'codigo_ase', '06364030005', ctx,
+                           codigo_ase='06364010000')
 
         # Actualiza códigos para los asentamientos del departamento de Río
         # Grande
         def update_rio_grande(row):
-            row.cod_bahra = '94008' + row.cod_bahra[
+            department = geometry.get_entity_at_point(Department, row.geom, ctx)
+            row.codigo_ase = department.id + row.codigo_ase[
                 constants.DEPARTMENT_ID_LEN:]
-        patch.apply_fn(tmp_settlements, update_rio_grande, ctx, cod_prov='94',
-                       cod_depto='007')
+        patch.apply_fn(tmp_settlements, update_rio_grande, ctx, codigo_in0='94',
+                       codigo_ind='94007')
 
         # Actualiza códigos para los asentamientos del departamento de Usuhaia
         def update_ushuaia(row):
-            row.cod_bahra = '94015' + row.cod_bahra[
+            department = geometry.get_entity_at_point(Department, row.geom, ctx)
+            row.codigo_ase = department.id + row.codigo_ase[
                 constants.DEPARTMENT_ID_LEN:]
-        patch.apply_fn(tmp_settlements, update_ushuaia, ctx, cod_prov='94',
-                       cod_depto='014')
+        patch.apply_fn(tmp_settlements, update_ushuaia, ctx, codigo_in0='94',
+                       codigo_ind='94014')
 
     def _process_entity(self, tmp_settlement, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_settlement.geom,
                                                      ctx)
-        settlement_id = tmp_settlement.cod_bahra
+        settlement_id = tmp_settlement.codigo_ase
         prov_id = settlement_id[:constants.PROVINCE_ID_LEN]
         dept_id = settlement_id[:constants.DEPARTMENT_ID_LEN]
         census_loc_id = settlement_id[:constants.CENSUS_LOCALITY_ID_LEN]
@@ -155,13 +199,13 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
 
         return Settlement(
             id=settlement_id,
-            nombre=utils.clean_string(tmp_settlement.nombre_bah),
-            categoria=utils.clean_string(tmp_settlement.tipo_bahra),
+            nombre=utils.clean_string(tmp_settlement.nombre_geo),
+            categoria=utils.clean_string(tmp_settlement.tipo_asent),
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
             localidad_censal_id=census_loc.id if census_loc else None,
-            fuente=utils.clean_string(tmp_settlement.fuente_ubi),
+            fuente=utils.clean_string(tmp_settlement.fuente_de_),
             geometria=tmp_settlement.geom
         )

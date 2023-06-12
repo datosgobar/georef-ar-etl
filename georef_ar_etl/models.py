@@ -597,7 +597,7 @@ class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
                 'id': self.localidad_censal_id,
                 'nombre': self.localidad_censal_nombre(session)
             },
-            'categoria': constants.BAHRA_TYPES[self.categoria],
+            'categoria': self.categoria,
             'centroide': {
                 'lon': self.lon,
                 'lat': self.lat
@@ -605,6 +605,10 @@ class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
+
+    def validate_id(self, _key, value):
+        # TODO: Verificar las consecuencias de sobreescribir esta validación
+        return value
 
 
 class Settlement(Base, SettlementMixin, InNullableCensusLocalityMixin):
@@ -632,7 +636,7 @@ class Settlement(Base, SettlementMixin, InNullableCensusLocalityMixin):
             str: Valor del campo validado.
 
         """
-        if category not in constants.BAHRA_TYPES:
+        if category not in list(constants.BAHRA_TYPES.values()):
             raise ValidationException(
                 'El valor "{}" no es un tipo de asentamiento válido.'.format(
                     category))
