@@ -1,3 +1,4 @@
+from .constants import BAHRAType
 from .exceptions import ValidationException
 from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, CensusLocality,\
@@ -55,13 +56,13 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
     def _build_entities_query(self, tmp_entities, ctx):
         bulk_size = ctx.config.getint('etl', 'bulk_size')
         return ctx.session.query(tmp_entities).\
-            filter(tmp_entities.tipo_bahra.in_(constants.LOCALITY_TYPES)).\
+            filter(tmp_entities.tipo_asent.in_(constants.LOCALITY_TYPES)).\
             yield_per(bulk_size)
 
     def _process_entity(self, tmp_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_locality.geom,
                                                      ctx)
-        loc_id = tmp_locality.cod_bahra
+        loc_id = tmp_locality.codigo_ase
         prov_id = loc_id[:constants.PROVINCE_ID_LEN]
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
         census_loc_id = loc_id[:constants.CENSUS_LOCALITY_ID_LEN]
@@ -95,13 +96,13 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
 
         return Locality(
             id=loc_id,
-            nombre=utils.clean_string(tmp_locality.nombre_bah),
-            categoria=utils.clean_string(tmp_locality.tipo_bahra),
+            nombre=utils.clean_string(tmp_locality.nombre_geo),
+            categoria=utils.clean_string(tmp_locality.tipo_asent),
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
             municipio_id=municipality.id if municipality else None,
             localidad_censal_id=census_loc.id if census_loc else None,
-            fuente=utils.clean_string(tmp_locality.fuente_ubi),
+            fuente=utils.clean_string(tmp_locality.fuente_de_),
             geometria=tmp_locality.geom
         )

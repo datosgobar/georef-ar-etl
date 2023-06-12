@@ -32,13 +32,15 @@ BAHRA_TYPES = {
 
 # Subconjunto de tipos BAHRA seleccionados para crear el dataset de localidades
 LOCALITY_TYPES = {
-    member.name
+    member.value
     for member in [
         BAHRAType.E,
         BAHRAType.LC,
         BAHRAType.LS,
         BAHRAType.LCE,
-        BAHRAType.LSE
+        BAHRAType.LSE,
+        BAHRAType.P,
+        BAHRAType.BA
     ]
 }
 
