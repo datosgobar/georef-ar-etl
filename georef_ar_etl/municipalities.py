@@ -95,6 +95,9 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180455')
         patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180224')
         patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180077')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='585042')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180143')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180196')
 
         patch.delete(tmp_municipalities, ctx, in1=None)
         patch.delete(tmp_municipalities, ctx, gna=None)
