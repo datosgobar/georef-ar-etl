@@ -104,7 +104,8 @@ def etl(enabled_processes, start, end, no_mail, ctx):
             recipients=recipients,
             environment=ctx.config['etl']['environment'],
             ssl=ctx.config.getboolean('mailer', 'ssl'),
-            port=ctx.config.getint('mailer', 'port')
+            port=ctx.config.getint('mailer', 'port'),
+            include_json=ctx.config.getboolean('mailer', 'include_json', fallback=True)
         )
 
         ctx.report.info('Mail enviado.')

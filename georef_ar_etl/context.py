@@ -293,7 +293,7 @@ class Report:  # pylint: disable=attribute-defined-outside-init
             json.dump(self._data, f, ensure_ascii=False, indent=4)
 
     def email(self, host, user, password, recipients, environment, ssl=True,
-              port=0):
+              port=0, include_json=False):
         """Envía el contenido (texto) del reporte por mail.
 
         Args:
@@ -317,10 +317,14 @@ class Report:  # pylint: disable=attribute-defined-outside-init
             self._warnings
         )
         msg = 'Reporte de entidades de Georef ETL.'
-        report_txt = self._logger_stream.getvalue()
-        send_email(host, user, password, subject, msg, recipients, {
-            self._filename_base.format('txt'): report_txt
-        }, ssl=ssl, port=port)
+        attachments = {
+            self._filename_base.format('txt'): self._logger_stream.getvalue()
+        }
+        if include_json:
+            attachments.update({
+                self._filename_base.format('json'): json.dumps(self._data, ensure_ascii=False, indent=4)
+            })
+        send_email(host, user, password, subject, msg, recipients, attachments, ssl=ssl, port=port)
 
     @property
     def logger(self):
