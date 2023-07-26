@@ -10,8 +10,10 @@ import json
 import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from io import StringIO
 from sqlalchemy.orm import sessionmaker
 from . import constants
+from .constants import PROCESS_SUB_PREFIX, RECIPIENTS_PREFIX
 
 RUN_MODES = ['normal', 'interactive', 'testing']
 SMTP_TIMEOUT = 20
@@ -58,6 +60,37 @@ def send_email(host, user, password, subject, message, recipients,
             msg.attach(attachment)
 
         smtp.send_message(msg)
+
+
+def get_mail_groups(processes, ctx):
+    recipient_processes_dict = {}
+    for process in processes:
+        recipients = [
+            r.strip()
+            for r in ctx.config['mailer'].get(RECIPIENTS_PREFIX + process.name, fallback='').split(',')
+        ]
+        for recipient in recipients:
+            recipient_processes_dict.setdefault(recipient, set()).add(process.name)
+
+    recipients_group_list = []
+    for recipient, processes in recipient_processes_dict.items():
+        if recipient == '':
+            continue
+
+        grouped = False
+        for group in recipients_group_list:
+            if group['processes'] == processes:
+                group['recipients'].add(recipient)
+                grouped = True
+                break
+
+        if not grouped:
+            recipients_group_list.append({
+                'processes': processes,
+                'recipients': {recipient}
+            })
+
+    return recipients_group_list
 
 
 class CachedQuery:
@@ -272,6 +305,48 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         self._indent = 0
         self._filename_base = time.strftime('georef-etl-%Y.%m.%d-%H.%M.%S.{}')
         self._data = {}
+        self._current_process = None
+
+    def _get_report_txt(self, processes=None):
+
+        result = StringIO()
+
+        process = None
+        self._logger_stream.seek(0)
+        for line in self._logger_stream.readlines():
+            delimiter_process = line.split(PROCESS_SUB_PREFIX)
+            if len(delimiter_process) == 2:
+                process = delimiter_process[1][:-1]
+                continue
+
+            if not processes or process and process in processes:
+                result.write(line)
+
+        return result.getvalue()
+
+    def _get_report_json(self, processes=None):
+
+        if not processes:
+            return self._data
+
+        processes_map = {
+            constants.PROVINCES: 'provinces_extraction',
+            constants.DEPARTMENTS: 'departments_extraction',
+            constants.MUNICIPALITIES: 'municipalities_extraction',
+            constants.CENSUS_LOCALITIES: 'census_localities_extraction',
+            constants.SETTLEMENTS: 'settlements_extraction',
+            constants.LOCALITIES: 'localities_extraction',
+            constants.STREETS: 'street_extraction'
+        }
+        report = {'download_url': {}}
+        for process in processes:
+            if process in processes_map.keys():
+                key = processes_map[process]
+                if process in self._data.get('download_url', {}).keys():
+                    report.setdefault('download_url', {}).update({process: self._data['download_url'][process]})
+                report.update({key: self._data.get(key, None)})
+
+        return report
 
     def write(self, dirname):
         """Escribe los contenidos del reporte (texto y datos) a dos archivos
@@ -287,13 +362,13 @@ class Report:  # pylint: disable=attribute-defined-outside-init
 
         if self._logger_stream:
             with open(os.path.join(dirname, filename_txt), 'w') as f:
-                f.write(self._logger_stream.getvalue())
+                f.write(self._get_report_txt())
 
         with open(os.path.join(dirname, filename_json), 'w') as f:
-            json.dump(self._data, f, ensure_ascii=False, indent=4)
+            json.dump(self._get_report_json(), f, ensure_ascii=False, indent=4)
 
     def email(self, host, user, password, recipients, environment, ssl=True,
-              port=0, include_json=False):
+              port=0, include_json=False, processes=None):
         """Envía el contenido (texto) del reporte por mail.
 
         Args:
@@ -305,7 +380,9 @@ class Report:  # pylint: disable=attribute-defined-outside-init
             environment (str): Entorno de ejecución (prod/stg/dev).
             ssl (bool): Verdadero si la conexión inicial debería utilizar
                 SSL/TLS.
-            port (int): Puerto a utilizar (0 para utilizar el default).
+            port (int): Puerto a utilizar (0 para utilizar el default)
+            include_json (bool): Especifica si hay que incluir el reporte en json en los adjuntos
+            processes (list): Una lista con los procesos a filtrar en el reporte que será enviado a los destinatarios.
 
         """
         if not self._logger_stream:
@@ -317,12 +394,16 @@ class Report:  # pylint: disable=attribute-defined-outside-init
             self._warnings
         )
         msg = 'Reporte de entidades de Georef ETL.'
+        if processes:
+            msg = msg + f'\n\tEntidades filtradas: {", ".join(processes)}'
         attachments = {
-            self._filename_base.format('txt'): self._logger_stream.getvalue()
+            self._filename_base.format('txt'): self._get_report_txt(processes)
         }
         if include_json:
             attachments.update({
-                self._filename_base.format('json'): json.dumps(self._data, ensure_ascii=False, indent=4)
+                self._filename_base.format('json'): json.dumps(
+                    self._get_report_json(processes), ensure_ascii=False, indent=4
+                )
             })
         send_email(host, user, password, subject, msg, recipients, attachments, ssl=ssl, port=port)
 

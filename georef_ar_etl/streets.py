@@ -24,6 +24,7 @@ def create_process(config):
         extractors.DownloadURLStep(
             '{}_{}.csv'.format(constants.STREET_BLOCKS, province_id),
             url_template.format(province_id),
+            constants.STREET_BLOCKS,
             params={
                 'CQL_FILTER': 'nomencla like \'{}%\''.format(province_id)
             }
@@ -79,7 +80,7 @@ def create_process(config):
             ], name='load_tmp_street_blocks'),
             StepSequence([
                 extractors.DownloadURLStep(constants.STREETS + '.zip',
-                                           config.get('etl', 'streets_url')),
+                                           config.get('etl', 'streets_url'), constants.STREETS),
                 transformers.ExtractZipStep(),
                 loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
                                     geom_type='MultiLineString',

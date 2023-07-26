@@ -12,9 +12,9 @@ def create_process(config):
     return Process(constants.SETTLEMENTS, [
         utils.CheckDependenciesStep([Province, Department, Municipality,
                                      CensusLocality]),
-        extractors.DownloadURLStep(constants.SETTLEMENTS + '.tar.gz',
-                                   config.get('etl', 'settlements_url')),
-        transformers.ExtractTarStep(),
+        extractors.DownloadURLStep(constants.SETTLEMENTS + '.zip',
+                                   config.get('etl', 'settlements_url'), constants.SETTLEMENTS),
+        ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.SETTLEMENTS_TMP_TABLE,
                             geom_type='MultiPoint', precision=False,
                             env={'SHAPE_ENCODING': 'latin1'}),
