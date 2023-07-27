@@ -3,7 +3,7 @@
 Define las clases 'Context' y 'Report', y otras utilidades relacionadas.
 
 """
-
+import logging
 import os
 import smtplib
 import json
@@ -11,12 +11,60 @@ import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import StringIO
+from logging import LogRecord
 from sqlalchemy.orm import sessionmaker
 from . import constants
-from .constants import PROCESS_SUB_PREFIX, RECIPIENTS_PREFIX
 
 RUN_MODES = ['normal', 'interactive', 'testing']
 SMTP_TIMEOUT = 20
+
+
+class ProcessGroupHandler(logging.StreamHandler):
+    """
+    Representa un gestor de registros para poder almacenar los datos relevantes a cada grupo de procesos. La intención
+    es que almacene un stream de los logs generados por los procesos que pertenecen al grupo y descarte los de otros
+    procesos para poder suministrar un reporte por mail personalizado.
+    """
+
+    def __init__(self, stream, processes_group) -> None:
+        """
+
+        @param stream: Un objeto Stream que almacene los registros
+        @param processes_group: Una lista o conjunto de nombres de procesos que conforman el grupo
+        """
+        super().__init__(stream)
+        self.emit_enabled = True
+        self.warning_count = 0
+        self.error_count = 0
+        self._processes_group = processes_group
+
+    def emit(self, record: LogRecord) -> None:
+        if self.emit_enabled:
+            super().emit(record)
+            if record.levelno == logging.ERROR:
+                self.error_count += 1
+            elif record.levelno == logging.WARNING:
+                self.warning_count += 1
+
+    def set_process(self, process):
+        """
+        Define si el gestor estará registrando o no en función del proceso activo
+
+        @param process: El proceso activo
+        """
+        self.emit_enabled = not process or process.name in self._processes_group
+
+    def belong_group(self, processes_group):
+        """
+        Define si el gestor pertenece al mismo grupo
+
+        @param processes_group: Una lista o conjunto de nombres de procesos
+        @return: True si pertenecen al mismo grupo.
+        """
+        return set(processes_group) == set(self._processes_group)
+
+    def getvalue(self):
+        return self.stream.getvalue()
 
 
 def send_email(host, user, password, subject, message, recipients,
@@ -67,7 +115,7 @@ def get_mail_groups(processes, ctx):
     for process in processes:
         recipients = [
             r.strip()
-            for r in ctx.config['mailer'].get(RECIPIENTS_PREFIX + process.name, fallback='').split(',')
+            for r in ctx.config['mailer'].get(constants.RECIPIENTS_PREFIX + process.name, fallback='').split(',')
         ]
         for recipient in recipients:
             recipient_processes_dict.setdefault(recipient, set()).add(process.name)
@@ -208,6 +256,27 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         self._logger_stream = logger_stream
         self.reset()
 
+    def init_process_logs(self, processes_groups):
+        self._process_logs = []
+        formatter = logging.Formatter('{asctime} - {levelname:^7s} - {message}',
+                                      '%Y-%m-%d %H:%M:%S', style='{')
+        for process_group in processes_groups:
+            process_handler = ProcessGroupHandler(StringIO(), process_group)
+            process_handler.setLevel(logging.INFO)
+            process_handler.setFormatter(formatter)
+            logging.getLogger().addHandler(process_handler)
+            self._process_logs.append(process_handler)
+
+    def set_process(self, process):
+        for process_log in self._process_logs:
+            process_log.set_process(process)
+
+    def _get_process_group_handler(self, process_group):
+        for process_log in self._process_logs:
+            if process_log.belong_group(process_group):
+                return process_log
+        raise RuntimeError('Cannot get report: no logger stream defined for group.')
+
     def get_data(self, creator):
         """Accede a datos del reporte, almacenados bajo una key específica. Si
         no existen datos, se crea un diccionario nuevo para almacenar datos
@@ -305,24 +374,14 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         self._indent = 0
         self._filename_base = time.strftime('georef-etl-%Y.%m.%d-%H.%M.%S.{}')
         self._data = {}
-        self._current_process = None
+        self._process_registry = {}
 
     def _get_report_txt(self, processes=None):
 
-        result = StringIO()
+        if not processes:
+            return self._logger_stream.getvalue()
 
-        process = None
-        self._logger_stream.seek(0)
-        for line in self._logger_stream.readlines():
-            delimiter_process = line.split(PROCESS_SUB_PREFIX)
-            if len(delimiter_process) == 2:
-                process = delimiter_process[1][:-1]
-                continue
-
-            if not processes or process and process in processes:
-                result.write(line)
-
-        return result.getvalue()
+        return self._get_process_group_handler(processes).getvalue()
 
     def _get_report_json(self, processes=None):
 
@@ -390,8 +449,8 @@ class Report:  # pylint: disable=attribute-defined-outside-init
 
         subject = 'Georef ETL [{}] - Errores: {} - Warnings: {}'.format(
             environment,
-            self._errors,
-            self._warnings
+            self._get_process_group_handler(processes).error_count if processes else self._errors,
+            self._get_process_group_handler(processes).warning_count if processes else self._warnings
         )
         msg = 'Reporte de entidades de Georef ETL.'
         if processes:
