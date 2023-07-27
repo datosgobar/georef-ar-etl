@@ -14,7 +14,7 @@ def create_process(config):
     return Process(constants.CENSUS_LOCALITIES, [
         utils.CheckDependenciesStep([Province, Department, Municipality]),
         extractors.DownloadURLStep(constants.CENSUS_LOCALITIES + '.zip',
-                                   config.get('etl', 'census_localities_url')),
+                                   config.get('etl', 'census_localities_url'), constants.CENSUS_LOCALITIES),
         transformers.ExtractZipStep(''),
         loaders.Ogr2ogrStep(table_name=constants.CENSUS_LOCALITIES_TMP_TABLE,
                             geom_type='Point',

@@ -1,8 +1,9 @@
 import argparse
 import code
 from fs import osfs
+
 from .exceptions import ProcessException
-from .context import Context, Report, RUN_MODES
+from .context import Context, Report, RUN_MODES, get_mail_groups
 from . import read_config, get_logger, create_engine, constants, models
 from . import provinces, departments, municipalities
 from . import settlements, localities, census_localities
@@ -70,13 +71,18 @@ def parse_args():
 
 
 def etl(enabled_processes, start, end, no_mail, ctx):
-    ctx.report.info('Georef ETL')
-    ctx.report.info('Versión: {}'.format(constants.ETL_VERSION) + '\n')
 
     processes = [module.create_process(ctx.config) for module in MODULES]
 
+    groups = get_mail_groups(processes, ctx)
+    ctx.report.init_process_logs([group['processes'] for group in groups])
+
+    ctx.report.info('Georef ETL')
+    ctx.report.info('Versión: {}'.format(constants.ETL_VERSION) + '\n')
+
     for process in processes:
         if not enabled_processes or process.name in enabled_processes:
+            ctx.report.set_process(process)
             try:
                 process.run(ctx, start, end)
             except ProcessException:
@@ -87,6 +93,8 @@ def etl(enabled_processes, start, end, no_mail, ctx):
                 ctx.report.exception('Ocurrió un error desconocido:')
                 ctx.report.info('Interrumpiendo la ejecución de procesos.')
                 break
+
+    ctx.report.set_process(None)
 
     ctx.report.write(ctx.config['etl']['reports_dir'])
 
@@ -107,6 +115,18 @@ def etl(enabled_processes, start, end, no_mail, ctx):
             port=ctx.config.getint('mailer', 'port'),
             include_json=ctx.config.getboolean('mailer', 'include_json', fallback=True)
         )
+        for group in groups:
+            ctx.report.email(
+                host=ctx.config['mailer']['host'],
+                user=ctx.config['mailer']['user'],
+                password=ctx.config['mailer']['password'],
+                recipients=list(group['recipients']),
+                environment=ctx.config['etl']['environment'],
+                ssl=ctx.config.getboolean('mailer', 'ssl'),
+                port=ctx.config.getint('mailer', 'port'),
+                include_json=ctx.config.getboolean('mailer', 'include_json', fallback=True),
+                processes=group['processes']
+            )
 
         ctx.report.info('Mail enviado.')
 

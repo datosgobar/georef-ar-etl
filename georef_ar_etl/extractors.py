@@ -4,11 +4,12 @@ from .process import Step, ProcessException
 
 
 class DownloadURLStep(Step):
-    def __init__(self, filename, url, params=None):
+    def __init__(self, filename, url, process_name, params=None):
         super().__init__('download_url', reads_input=False)
         self._filename = filename
         self._url = url
         self._params = params
+        self._process_name = process_name
 
     def _run_internal(self, data, ctx):
         if ctx.fs.isfile(self._filename) and ctx.mode == 'interactive':
@@ -36,6 +37,6 @@ class DownloadURLStep(Step):
             ctx.report.info('Archivo descargado. Hash MD5: {}'.format(
                 md5.hexdigest()))
 
-            report_data[req.url] = md5.hexdigest()
+            report_data.setdefault(self._process_name, {})[req.url] = md5.hexdigest()
 
         return self._filename

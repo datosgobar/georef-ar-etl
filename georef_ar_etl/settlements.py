@@ -17,7 +17,7 @@ def create_process(config):
         utils.CheckDependenciesStep([Province, Department, Municipality,
                                      CensusLocality]),
         extractors.DownloadURLStep(constants.SETTLEMENTS + '.zip',
-                                   config.get('etl', 'settlements_url')),
+                                   config.get('etl', 'settlements_url'), constants.SETTLEMENTS),
         ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.SETTLEMENTS_TMP_TABLE,
                             geom_type='MultiPoint', precision=False,

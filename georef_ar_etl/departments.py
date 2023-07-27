@@ -11,7 +11,7 @@ def create_process(config):
     return Process(constants.DEPARTMENTS, [
         utils.CheckDependenciesStep([Province]),
         extractors.DownloadURLStep(constants.DEPARTMENTS + '.zip',
-                                   config.get('etl', 'departments_url')),
+                                   config.get('etl', 'departments_url'), constants.DEPARTMENTS),
         transformers.ExtractZipStep(
             internal_path=""
         ),
