@@ -454,7 +454,7 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         )
         msg = 'Reporte de entidades de Georef ETL.'
         if processes:
-            msg = msg + f'\n\tEntidades filtradas: {", ".join(processes)}'
+            msg = msg + "\n\tEntidades filtradas: {}".format(", ".join(processes))
         attachments = {
             self._filename_base.format('txt'): self._get_report_txt(processes)
         }
