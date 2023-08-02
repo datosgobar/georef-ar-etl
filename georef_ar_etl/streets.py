@@ -6,13 +6,13 @@ from .models import Province, Department, CensusLocality, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 
 INVALID_BLOCKS_CENSUS_LOCALITIES = [
-    # '62042450',
-    # '74056100',
-    # '74056150',
-    # '14098230',
-    # '14098170',
-    # '58042010',
-    # '06778020'
+    '62042450',
+    '74056100',
+    '74056150',
+    '14098230',
+    '14098170',
+    '58042010',
+    '06778020'
 ]
 
 
