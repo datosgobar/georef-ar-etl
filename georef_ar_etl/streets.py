@@ -6,13 +6,13 @@ from .models import Province, Department, CensusLocality, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 
 INVALID_BLOCKS_CENSUS_LOCALITIES = [
-    '62042450',
-    '74056100',
-    '74056150',
-    '14098230',
-    '14098170',
-    '58042010',
-    '06778020'
+    # '62042450',
+    # '74056100',
+    # '74056150',
+    # '14098230',
+    # '14098170',
+    # '58042010',
+    # '06778020'
 ]
 
 
@@ -24,10 +24,7 @@ def create_process(config):
         extractors.DownloadURLStep(
             '{}_{}.csv'.format(constants.STREET_BLOCKS, province_id),
             url_template.format(province_id),
-            constants.STREET_BLOCKS,
-            params={
-                'CQL_FILTER': 'nomencla like \'{}%\''.format(province_id)
-            }
+            constants.STREET_BLOCKS
         ) for province_id in constants.PROVINCE_IDS
     ], name='download_cstep')
 
@@ -75,6 +72,11 @@ def create_process(config):
                     'nomencla10': 'varchar',
                     'nomenclai': 'varchar',
                     'nomenclad': 'varchar',
+                    'codinomb': 'varchar',
+                    'de_esquema': 'varchar',
+                    'srid': 'varchar',
+                    'created_at': 'varchar',
+                    'id': 'varchar',
                     'geom': 'geometry'
                 })
             ], name='load_tmp_street_blocks'),
@@ -151,6 +153,10 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         # Actualizar calles de Río Grande (agregado en ETL2)
         patch.apply_fn(tmp_blocks, update_rio_grande, ctx,
                        tmp_blocks.nomencla.like('94007%'))
+
+        patch.delete(tmp_blocks, ctx, nombre='')
+
+        patch.delete(tmp_blocks, ctx, tipo='')
 
         ctx.session.commit()
 
