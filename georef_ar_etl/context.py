@@ -3,17 +3,21 @@
 Define las clases 'Context' y 'Report', y otras utilidades relacionadas.
 
 """
+import io
 import logging
 import os
 import smtplib
 import json
 import time
+from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
 from io import StringIO
 from logging import LogRecord
 from sqlalchemy.orm import sessionmaker
 from . import constants
+from zipfile import ZipFile, ZIP_DEFLATED
 
 RUN_MODES = ['normal', 'interactive', 'testing']
 SMTP_TIMEOUT = 20
@@ -102,7 +106,12 @@ def send_email(host, user, password, subject, message, recipients,
         msg.attach(MIMEText(message))
 
         for name, contents in (attachments or {}).items():
-            attachment = MIMEText(contents)
+            if isinstance(contents, str):
+                attachment = MIMEText(contents)
+            else:
+                attachment = MIMEBase('application', 'zip')
+                attachment.set_payload(contents)
+                encoders.encode_base64(attachment)
             attachment['Content-Disposition'] = \
                 'attachment; filename="{}"'.format(name)
             msg.attach(attachment)
@@ -407,6 +416,17 @@ class Report:  # pylint: disable=attribute-defined-outside-init
 
         return report
 
+    def _get_report_zip(self, processes=None):
+        buffer = io.BytesIO()
+        with ZipFile(buffer, 'w', compression=ZIP_DEFLATED) as zipfile:
+            zipfile.writestr(self._filename_base.format("txt"), self._get_report_txt(processes))
+            zipfile.writestr(
+                self._filename_base.format("json"),
+                json.dumps(self._get_report_json(processes), ensure_ascii=False, indent=4)
+            )
+
+        return buffer.getvalue()
+
     def write(self, dirname):
         """Escribe los contenidos del reporte (texto y datos) a dos archivos
         dentro de un directorio específico.
@@ -455,15 +475,16 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         msg = 'Reporte de entidades de Georef ETL.'
         if processes:
             msg = msg + "\n\tEntidades filtradas: {}".format(", ".join(processes))
-        attachments = {
-            self._filename_base.format('txt'): self._get_report_txt(processes)
-        }
-        if include_json:
-            attachments.update({
-                self._filename_base.format('json'): json.dumps(
-                    self._get_report_json(processes), ensure_ascii=False, indent=4
-                )
-            })
+
+        if not include_json:
+            attachments = {
+                self._filename_base.format('txt'): self._get_report_txt(processes)
+            }
+        else:
+            attachments = {
+                self._filename_base.format('zip'): self._get_report_zip(processes),
+                self._filename_base.format('txt'): self._get_report_txt(processes)
+            }
         send_email(host, user, password, subject, msg, recipients, attachments, ssl=ssl, port=port)
 
     @property
