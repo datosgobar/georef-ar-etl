@@ -482,8 +482,7 @@ class Report:  # pylint: disable=attribute-defined-outside-init
             }
         else:
             attachments = {
-                self._filename_base.format('zip'): self._get_report_zip(processes),
-                self._filename_base.format('txt'): self._get_report_txt(processes)
+                self._filename_base.format('zip'): self._get_report_zip(processes)
             }
         send_email(host, user, password, subject, msg, recipients, attachments, ssl=ssl, port=port)
 
