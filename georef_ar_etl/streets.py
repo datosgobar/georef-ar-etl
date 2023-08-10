@@ -15,6 +15,80 @@ INVALID_BLOCKS_CENSUS_LOCALITIES = [
     # '06778020'
 ]
 
+INVALID_BLOCKS_CLC = {
+    '06028028': '06028010',
+    '06035035': '06035010',
+    '06091091': '06091010',
+    '06098098': '06098010',
+    '06105030': '06105040',
+    '06105040': '06105050',
+    '06105050': '06105060',
+    '06105060': '06105070',
+    '06105070': '06105080',
+    '06245245': '06245010',
+    '06252252': '06252010',
+    '06260260': '06260010',
+    '06266020': '06266100',
+    '06270270': '06270010',
+    '06274274': '06274010',
+    '06364364': '06364030',
+    '06371371': '06371010',
+    '06408408': '06408010',
+    '06410410': '06410010',
+    '06412412': '06412010',
+    '06427427': '06427010',
+    '06434434': '06434010',
+    '06441441': '06441030',
+    '06490490': '06490010',
+    '06515515': '06515010',
+    '06525525': '06525020',
+    '06539539': '06539010',
+    '06560560': '06560010',
+    '06568568': '06568010',
+    '06638638': '06638040',
+    '06648648': '06648010',
+    '06658658': '06658010',
+    '06749749': '06749010',
+    '06756756': '06756010',
+    '06760760': '06760010',
+    '06763070': '06763060',
+    '06778778': '06778020',
+    '06805805': '06805010',
+    '06833040': '06833050',
+    '06833050': '06833060',
+    '06833060': '06833070',
+    '06833070': '06833080',
+    '06833080': '06833090',
+    '06833090': '06833100',
+    '06833100': '06833110',
+    '06840840': '06840010',
+    '06847030': '06847020',
+    '06861861': '06861010',
+    '14175103': '14049112',
+    # '30021140': '30021125',
+    # '30021140': '30021128',
+    '38007093': '38007092',
+    '66105010': '38084055',
+    # '42133020': '42133050',
+    '50049250': '50049015',
+    '50063090': '50063070',
+    '50070090': '50070100',
+    '54007010': '54007025',
+    '38084055': '66105010',
+    '70098010': '70063010',
+    '82105240': '82105250',
+    '82119020': '82119150',
+    '86049010': '86049015',
+    '86049120': '86049040',
+    # '86049050': '86049060',
+    # '86049050': '86049120',
+    '86147050': '86091040',
+    '86091050': '86091060',
+    '86147060': '86147095',
+    '86147130': '86147123',
+    '90098040': '90098035',
+}
+
 
 def create_process(config):
     url_template = config.get('etl', 'street_blocks_url_template')
@@ -131,6 +205,11 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='nomencla')
 
     def _patch_tmp_entities(self, tmp_blocks, ctx):
+
+        patch.delete(tmp_blocks, ctx, tipo='')
+
+        patch.delete(tmp_blocks, ctx, nombre='')
+
         def update_marcos_paz(row):
             row.nomencla = '06525020' + row.nomencla[
                 constants.CENSUS_LOCALITY_ID_LEN:]
@@ -154,9 +233,20 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         patch.apply_fn(tmp_blocks, update_rio_grande, ctx,
                        tmp_blocks.nomencla.like('94007%'))
 
-        patch.delete(tmp_blocks, ctx, nombre='')
+        def update_clc(row):
+            old_clc = row.nomencla[:constants.CENSUS_LOCALITY_ID_LEN]
+            new_clc = INVALID_BLOCKS_CLC.get(old_clc)
+            row.nomencla = new_clc + row.nomencla[constants.CENSUS_LOCALITY_ID_LEN:]
+            row.mzai = new_clc + row.mzai[constants.CENSUS_LOCALITY_ID_LEN:]
+            row.mzad = new_clc + row.mzad[constants.CENSUS_LOCALITY_ID_LEN:]
+            row.codloc20 = new_clc
+            row.nomenclai = new_clc + row.nomenclai[constants.CENSUS_LOCALITY_ID_LEN:]
+            row.nomenclad = new_clc + row.nomenclad[constants.CENSUS_LOCALITY_ID_LEN:]
+            row.de_esquema = 'e' + new_clc
 
-        patch.delete(tmp_blocks, ctx, tipo='')
+
+        for clc in INVALID_BLOCKS_CLC.keys():
+            patch.apply_fn(tmp_blocks, update_clc, ctx, tmp_blocks.nomencla.like('{}%'.format(clc)))
 
         ctx.session.commit()
 
