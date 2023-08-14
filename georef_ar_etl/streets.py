@@ -12,7 +12,8 @@ INVALID_BLOCKS_CENSUS_LOCALITIES = [
     # '14098230',
     # '14098170',
     # '58042010',
-    # '06778020'
+    # '06778020',
+    '42133050'
 ]
 
 INVALID_BLOCKS_CLC = {
@@ -69,7 +70,7 @@ INVALID_BLOCKS_CLC = {
     # '30021140': '30021128',
     '38007093': '38007092',
     '66105010': '38084055',
-    # '42133020': '42133050',
+    '42133020': '42133050',
     '50049250': '50049015',
     '50063090': '50063070',
     '50070090': '50070100',
@@ -209,6 +210,9 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_blocks, ctx, tipo='')
 
         patch.delete(tmp_blocks, ctx, nombre='')
+
+        # Una cuadra de la calle "064414417007012" no contiene geometría
+        patch.delete(tmp_blocks, ctx, geom=None)
 
         def update_marcos_paz(row):
             row.nomencla = '06525020' + row.nomencla[
