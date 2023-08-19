@@ -186,6 +186,13 @@ def create_process(config):
         CompositeStep([
             loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
                                        constants.STREETS + '.json'),
+            loaders.CreateGeoJSONFileStep(
+                Street,
+                constants.ETL_VERSION,
+                constants.STREETS + '.geojson',
+                tolerance=config.getfloat("etl", "geojson_tolerance"),
+                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+            ),
             loaders.CreateCSVFileStep(Street, constants.ETL_VERSION,
                                       constants.STREETS + '.csv'),
             loaders.CreateNDJSONFileStep(Street, constants.ETL_VERSION,
@@ -193,6 +200,7 @@ def create_process(config):
         ]),
         CompositeStep([
             utils.CopyFileStep(output_path, constants.STREETS + '.json'),
+            utils.CopyFileStep(output_path, constants.STREETS + '.geojson'),
             utils.CopyFileStep(output_path, constants.STREETS + '.csv'),
             utils.CopyFileStep(output_path, constants.STREETS + '.ndjson')
         ])

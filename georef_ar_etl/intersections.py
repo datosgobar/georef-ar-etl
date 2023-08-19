@@ -1,5 +1,5 @@
 from sqlalchemy.orm import aliased
-from .process import Process, Step
+from .process import Process, Step, CompositeStep
 from .models import Province, Department, Street, Intersection
 from .exceptions import ProcessException
 from . import constants, geometry, utils, loaders
@@ -16,9 +16,22 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'intersections_target_size'),
             op='ge'),
-        loaders.CreateNDJSONFileStep(Intersection, constants.ETL_VERSION,
-                                     constants.INTERSECTIONS + '.ndjson'),
-        utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.ndjson')
+        CompositeStep([
+            loaders.CreateNDJSONFileStep(Intersection, constants.ETL_VERSION,
+                                         constants.INTERSECTIONS + '.ndjson'),
+            loaders.CreateGeoJSONFileStep(
+                Intersection,
+                constants.ETL_VERSION,
+                constants.STREET_BLOCKS + '.geojson',
+                tolerance=config.getfloat("etl", "geojson_tolerance"),
+                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+            )
+        ]),
+        CompositeStep([
+            utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.ndjson'),
+            utils.CopyFileStep(output_path, constants.INTERSECTIONS + '.geojson')
+        ]),
+
     ])
 
 

@@ -23,9 +23,21 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'street_blocks_target_size'),
             op='ge'),
-        loaders.CreateNDJSONFileStep(StreetBlock, constants.ETL_VERSION,
-                                     constants.STREET_BLOCKS + '.ndjson'),
-        utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson')
+        CompositeStep([
+            loaders.CreateNDJSONFileStep(StreetBlock, constants.ETL_VERSION,
+                                         constants.STREET_BLOCKS + '.ndjson'),
+            loaders.CreateGeoJSONFileStep(
+                StreetBlock,
+                constants.ETL_VERSION,
+                constants.STREET_BLOCKS + '.geojson',
+                tolerance=config.getfloat("etl", "geojson_tolerance"),
+                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+            )
+        ]),
+        CompositeStep([
+            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson'),
+            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.geojson')
+        ]),
     ])
 
 
