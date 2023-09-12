@@ -24,7 +24,6 @@ def create_process(config):
             'nam': 'varchar',
             'sag': 'varchar',
             'fdc': 'varchar',
-            'fdc2': 'varchar',
             'in1': 'varchar',
             'geom': 'geometry'
         }),

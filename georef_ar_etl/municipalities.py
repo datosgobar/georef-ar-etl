@@ -108,6 +108,9 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_municipalities, ctx, in1='82119')
 
         # TODO: Verificar por qué traían más de un registro con el mismo in1
+        # Se toma como válido el municipio con gid=2086
+        patch.delete(tmp_municipalities, ctx, in1='300105', gid='1709')
+
         # Se toma como válido el municipio con gid=1965
         patch.delete(tmp_municipalities, ctx, in1='300182', gid='1966')
         patch.delete(tmp_municipalities, ctx, in1='300182', gid='1787')
@@ -123,6 +126,9 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
 
         # Se toma como válido el municipio con gid=2037
         patch.delete(tmp_municipalities, ctx, in1='309605', gid='1869')
+
+        # Se toma como válido el municipio con gid=2016
+        patch.delete(tmp_municipalities, ctx, in1='302999', gid='1815')
 
         patch.update_field(tmp_municipalities, 'in1', '540287', ctx,
                            in1='550287')
