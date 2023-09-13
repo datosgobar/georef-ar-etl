@@ -97,7 +97,7 @@ def create_process(config):
 
     download_cstep = CompositeStep([
         extractors.DownloadURLStep(
-            '{}_{}.csv'.format(constants.STREET_BLOCKS, province_id),
+            '{}_{}.geojson'.format(constants.STREET_BLOCKS, province_id),
             url_template.format(province_id),
             constants.STREET_BLOCKS
         ) for province_id in constants.PROVINCE_IDS
@@ -121,37 +121,15 @@ def create_process(config):
                 ogr2ogr_cstep,
                 utils.FirstResultStep,
                 utils.ValidateTableSchemaStep({
-                    'ogc_fid': 'integer',
-                    'fid': 'varchar',
-                    'fnode_': 'varchar',
-                    'tnode_': 'varchar',
-                    'lpoly_': 'varchar',
-                    'rpoly_': 'varchar',
-                    'length': 'varchar',
-                    'codigo10': 'varchar',
+                    'id': 'integer',
                     'nomencla': 'varchar',
-                    'codigo20': 'varchar',
-                    'ancho': 'varchar',
-                    'anchomed': 'varchar',
                     'tipo': 'varchar',
                     'nombre': 'varchar',
-                    'ladoi': 'varchar',
-                    'ladod': 'varchar',
-                    'desdei': 'varchar',
-                    'desded': 'varchar',
-                    'hastad': 'varchar',
-                    'hastai': 'varchar',
-                    'mzai': 'varchar',
-                    'mzad': 'varchar',
+                    'desdei': 'integer',
+                    'desded': 'integer',
+                    'hastad': 'integer',
+                    'hastai': 'integer',
                     'codloc20': 'varchar',
-                    'nomencla10': 'varchar',
-                    'nomenclai': 'varchar',
-                    'nomenclad': 'varchar',
-                    'codinomb': 'varchar',
-                    'de_esquema': 'varchar',
-                    'srid': 'varchar',
-                    'created_at': 'varchar',
-                    'id': 'varchar',
                     'geom': 'geometry'
                 })
             ], name='load_tmp_street_blocks'),
@@ -249,13 +227,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             old_clc = row.nomencla[:constants.CENSUS_LOCALITY_ID_LEN]
             new_clc = INVALID_BLOCKS_CLC.get(old_clc)
             row.nomencla = new_clc + row.nomencla[constants.CENSUS_LOCALITY_ID_LEN:]
-            row.mzai = new_clc + row.mzai[constants.CENSUS_LOCALITY_ID_LEN:]
-            row.mzad = new_clc + row.mzad[constants.CENSUS_LOCALITY_ID_LEN:]
             row.codloc20 = new_clc
-            row.nomenclai = new_clc + row.nomenclai[constants.CENSUS_LOCALITY_ID_LEN:]
-            row.nomenclad = new_clc + row.nomenclad[constants.CENSUS_LOCALITY_ID_LEN:]
-            row.de_esquema = 'e' + new_clc
-
 
         for clc in INVALID_BLOCKS_CLC.keys():
             patch.apply_fn(tmp_blocks, update_clc, ctx, tmp_blocks.nomencla.like('{}%'.format(clc)))
@@ -270,7 +242,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
     def _build_entities_query(self, tmp_blocks, ctx):
         fields = [
-            func.min(tmp_blocks.ogc_fid).label('ogc_fid'),
+            func.min(tmp_blocks.id).label('id'),
             tmp_blocks.nomencla,
             func.min(tmp_blocks.nombre).label('nombre'),
             func.min(tmp_blocks.tipo).label('tipo'),
