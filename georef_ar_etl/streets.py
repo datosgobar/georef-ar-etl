@@ -13,81 +13,81 @@ INVALID_BLOCKS_CENSUS_LOCALITIES = [
     # '14098170',
     # '58042010',
     # '06778020',
-    '42133050'
+    # '42133050'
 ]
 
 INVALID_BLOCKS_CLC = {
-    '06028028': '06028010',
-    '06035035': '06035010',
-    '06091091': '06091010',
-    '06098098': '06098010',
-    '06105030': '06105040',
-    '06105040': '06105050',
-    '06105050': '06105060',
-    '06105060': '06105070',
-    '06105070': '06105080',
-    '06245245': '06245010',
-    '06252252': '06252010',
-    '06260260': '06260010',
-    '06266020': '06266100',
-    '06270270': '06270010',
-    '06274274': '06274010',
-    '06364364': '06364030',
-    '06371371': '06371010',
-    '06408408': '06408010',
-    '06410410': '06410010',
-    '06412412': '06412010',
-    '06427427': '06427010',
-    '06434434': '06434010',
-    '06441441': '06441030',
-    '06490490': '06490010',
-    '06515515': '06515010',
-    '06525525': '06525020',
-    '06539539': '06539010',
-    '06560560': '06560010',
-    '06568568': '06568010',
-    '06638638': '06638040',
-    '06648648': '06648010',
-    '06658658': '06658010',
-    '06749749': '06749010',
-    '06756756': '06756010',
-    '06760760': '06760010',
-    '06763070': '06763060',
-    '06778778': '06778020',
-    '06805805': '06805010',
-    '06833040': '06833050',
-    '06833050': '06833060',
-    '06833060': '06833070',
-    '06833070': '06833080',
-    '06833080': '06833090',
-    '06833090': '06833100',
-    '06833100': '06833110',
-    '06840840': '06840010',
-    '06847030': '06847020',
-    '06861861': '06861010',
-    '14175103': '14049112',
+    # '06028028': '06028010',
+    # '06035035': '06035010',
+    # '06091091': '06091010',
+    # '06098098': '06098010',
+    # '06105030': '06105040',
+    # '06105040': '06105050',
+    # '06105050': '06105060',
+    # '06105060': '06105070',
+    # '06105070': '06105080',
+    # '06245245': '06245010',
+    # '06252252': '06252010',
+    # '06260260': '06260010',
+    # '06266020': '06266100',
+    # '06270270': '06270010',
+    # '06274274': '06274010',
+    # '06364364': '06364030',
+    # '06371371': '06371010',
+    # '06408408': '06408010',
+    # '06410410': '06410010',
+    # '06412412': '06412010',
+    # '06427427': '06427010',
+    # '06434434': '06434010',
+    # '06441441': '06441030',
+    # '06490490': '06490010',
+    # '06515515': '06515010',
+    # '06525525': '06525020',
+    # '06539539': '06539010',
+    # '06560560': '06560010',
+    # '06568568': '06568010',
+    # '06638638': '06638040',
+    # '06648648': '06648010',
+    # '06658658': '06658010',
+    # '06749749': '06749010',
+    # '06756756': '06756010',
+    # '06760760': '06760010',
+    # '06763070': '06763060',
+    # '06778778': '06778020',
+    # '06805805': '06805010',
+    # '06833040': '06833050',
+    # '06833050': '06833060',
+    # '06833060': '06833070',
+    # '06833070': '06833080',
+    # '06833080': '06833090',
+    # '06833090': '06833100',
+    # '06833100': '06833110',
+    # '06840840': '06840010',
+    # '06847030': '06847020',
+    # '06861861': '06861010',
+    # '14175103': '14049112',
     # '30021140': '30021125',
     # '30021140': '30021128',
-    '38007093': '38007092',
-    '66105010': '38084055',
-    '42133020': '42133050',
-    '50049250': '50049015',
-    '50063090': '50063070',
-    '50070090': '50070100',
-    '54007010': '54007025',
-    '38084055': '66105010',
-    '70098010': '70063010',
-    '82105240': '82105250',
-    '82119020': '82119150',
-    '86049010': '86049015',
-    '86049120': '86049040',
+    # '38007093': '38007092',
+    # '66105010': '38084055',
+    # '42133020': '42133050',
+    # '50049250': '50049015',
+    # '50063090': '50063070',
+    # '50070090': '50070100',
+    # '54007010': '54007025',
+    # '38084055': '66105010',
+    # '70098010': '70063010',
+    # '82105240': '82105250',
+    # '82119020': '82119150',
+    # '86049010': '86049015',
+    # '86049120': '86049040',
     # '86049050': '86049060',
     # '86049050': '86049120',
-    '86147050': '86091040',
-    '86091050': '86091060',
-    '86147060': '86147095',
-    '86147130': '86147123',
-    '90098040': '90098035',
+    # '86147050': '86091040',
+    # '86091050': '86091060',
+    # '86147060': '86147095',
+    # '86147130': '86147123',
+    # '90098040': '90098035',
 }
 
 
@@ -113,6 +113,25 @@ def create_process(config):
                             source_epsg='EPSG:4326')
     ] * (len(download_cstep) - 1), name='ogr2ogr_cstep')
 
+    url_template_street = config.get('etl', 'streets_url_template')
+    download_cstep_streets = CompositeStep([
+        extractors.DownloadURLStep(
+            '{}_{}.geojson'.format(constants.STREETS, province_id),
+            url_template_street.format(province_id),
+            constants.STREETS
+        ) for province_id in constants.PROVINCE_IDS
+    ], name='download_cstep_streets')
+
+    ogr2ogr_cstep_streets = CompositeStep([
+      loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                          geom_type='MultiLineString',
+                          source_epsg='EPSG:4326')
+    ] + [
+      loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                          geom_type='MultiLineString', overwrite=False,
+                          source_epsg='EPSG:4326')
+    ] * (len(download_cstep) - 1), name='ogr2ogr_cstep_streets')
+
     return Process(constants.STREETS, [
         utils.CheckDependenciesStep([Province, Department, CensusLocality]),
         CompositeStep([
@@ -134,25 +153,19 @@ def create_process(config):
                 })
             ], name='load_tmp_street_blocks'),
             StepSequence([
-                extractors.DownloadURLStep(constants.STREETS + '.zip',
-                                           config.get('etl', 'streets_url'), constants.STREETS),
-                transformers.ExtractZipStep(),
-                loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
-                                    geom_type='MultiLineString',
-                                    env={'SHAPE_ENCODING': 'latin1'}),
+                download_cstep_streets,
+                ogr2ogr_cstep_streets,
+                utils.FirstResultStep,
                 utils.ValidateTableSchemaStep({
-                    'ogc_fid': 'integer',
+                    'id': 'integer',
                     'nomencla': 'varchar',
-                    'codigo': 'double',
                     'tipo': 'varchar',
                     'nombre': 'varchar',
-                    'desdei': 'double',
-                    'desded': 'double',
-                    'hastai': 'double',
-                    'hastad': 'double',
+                    'desdei': 'varchar',
+                    'desded': 'varchar',
+                    'hastai': 'varchar',
+                    'hastad': 'varchar',
                     'codloc': 'varchar',
-                    'codaglo': 'varchar',
-                    'link': 'varchar',
                     'geom': 'geometry'
                 })
             ], name='load_tmp_streets')
@@ -199,6 +212,20 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         # Una cuadra de la calle "064414417007012" no contiene geometría
         patch.delete(tmp_blocks, ctx, geom=None)
+
+        def make_valid_geom(block):
+            sql_str = """
+                            select ST_Multi(geom)
+                            from {}
+                            where nomencla=:nomencla
+                            limit 1
+                            """.format(block.__table__.name)
+
+            block.geom = ctx.session.scalar(sql_str, {'nomencla': block.nomencla})
+
+        patch.delete(tmp_blocks, ctx, nomencla='4213305000025')
+        patch.delete(tmp_blocks, ctx, nomencla='4213305000030')
+        patch.delete(tmp_blocks, ctx, nomencla='4213305000075')
 
         def update_marcos_paz(row):
             row.nomencla = '06525020' + row.nomencla[
