@@ -71,20 +71,8 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='clc')
 
     def _patch_tmp_entities(self, tmp_census_localities, ctx):
-        def update_ushuaia(row):
-            row.clc = '94015' + row.clc[constants.DEPARTMENT_ID_LEN:]
 
-        # Actualizar localidades censales de Ushuaia (agregado en ETL2)
-        patch.apply_fn(tmp_census_localities, update_ushuaia, ctx,
-                       tmp_census_localities.clc.like('94014%'))
-
-        def update_rio_grande(row):
-            row.clc = '94008' + row.clc[constants.DEPARTMENT_ID_LEN:]
-
-        # Actualizar localidades censales de Río Grande (agregado en ETL2)
-        patch.apply_fn(tmp_census_localities, update_rio_grande, ctx,
-                       tmp_census_localities.clc.like('94007%'))
-
+        # TODO: Averiguar por qué aparecen distintas localidad con el mismo 'clc'
         patch.delete(tmp_census_localities, ctx, clc='06007110')
         patch.delete(tmp_census_localities, ctx, clc='38007010')
 
