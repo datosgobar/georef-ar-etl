@@ -213,42 +213,9 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         # Una cuadra de la calle "064414417007012" no contiene geometría
         patch.delete(tmp_blocks, ctx, geom=None)
 
-        def make_valid_geom(block):
-            sql_str = """
-                            select ST_Multi(geom)
-                            from {}
-                            where nomencla=:nomencla
-                            limit 1
-                            """.format(block.__table__.name)
-
-            block.geom = ctx.session.scalar(sql_str, {'nomencla': block.nomencla})
-
         patch.delete(tmp_blocks, ctx, nomencla='4213305000025')
         patch.delete(tmp_blocks, ctx, nomencla='4213305000030')
         patch.delete(tmp_blocks, ctx, nomencla='4213305000075')
-
-        def update_marcos_paz(row):
-            row.nomencla = '06525020' + row.nomencla[
-                constants.CENSUS_LOCALITY_ID_LEN:]
-
-        # Asignar localidad censal a las calles de Marcos Paz que no
-        # la tienen asignada.
-        patch.apply_fn(tmp_blocks, update_marcos_paz, ctx,
-                       tmp_blocks.nomencla.like('06525999%'))
-
-        def update_ushuaia(row):
-            row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
-
-        # Actualizar calles de Ushuaia (agregado en ETL2)
-        patch.apply_fn(tmp_blocks, update_ushuaia, ctx,
-                       tmp_blocks.nomencla.like('94014%'))
-
-        def update_rio_grande(row):
-            row.nomencla = '94008' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
-
-        # Actualizar calles de Río Grande (agregado en ETL2)
-        patch.apply_fn(tmp_blocks, update_rio_grande, ctx,
-                       tmp_blocks.nomencla.like('94007%'))
 
         def update_clc(row):
             old_clc = row.nomencla[:constants.CENSUS_LOCALITY_ID_LEN]
