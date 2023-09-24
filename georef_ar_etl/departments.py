@@ -69,46 +69,7 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
 
     def _patch_tmp_entities(self, tmp_departments, ctx):
-        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
-        # del depto. ID 54119, lanza un error "Points of LinearRing do not form
-        # a closed linestring". Validar la geometría utilizando ST_MakeValid().
-        def make_valid_geom(dept):
-            sql_str = """
-            select ST_MakeValid(geom)
-            from {}
-            where in1=:in1
-            limit 1
-            """.format(tmp_departments.__table__.name)
-
-            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
-            # SQL manualmente (como excepción).
-            dept.geom = ctx.session.scalar(sql_str, {'in1': dept.in1})
-
-        patch.apply_fn(tmp_departments, make_valid_geom, ctx, in1='54119')
-        patch.apply_fn(tmp_departments, make_valid_geom, ctx, in1='94021')
-
-        # Antártida Argentina duplicada
-        patch.delete(tmp_departments, ctx, ogc_fid=530, in1='94028')
-
-        # Error de tipeo
-        patch.update_field(tmp_departments, 'in1', '54084', ctx, in1='55084')
-
-        # Error de tipeo ("25de Mayo")
-        patch.update_field(tmp_departments, 'nam', '25 de Mayo', ctx,
-                           nam='25de Mayo')
-
-        # Chascomús
-        # patch.update_field(tmp_departments, 'in1', '06217', ctx, in1='06218')
-
-        # Río Grande
-        patch.update_field(tmp_departments, 'in1', '94008', ctx, in1='94007')
-
-        # Ushuaia
-        patch.update_field(tmp_departments, 'in1', '94015', ctx, in1='94014')
-
-        # Tolhuin
-        patch.update_field(tmp_departments, 'in1', '94011', ctx,
-                           fna='Departamento Río Grande', nam='Tolhuin')
+        pass
 
     def _process_entity(self, tmp_department, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_department.geom,
