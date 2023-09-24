@@ -136,35 +136,12 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         patch.apply_fn(tmp_settlements, update_commune_id, ctx,
                        tmp_settlements.codigo_ase.like('02%'))
 
-        # Borrar 'EL FICAL'
-        patch.delete(tmp_settlements, ctx, codigo_ase='70056060001',
-                     nombre_geo='EL FICAL')
-
-        # Asignarle una localidad censal a "La Toma (Jujuy)"
-        patch.update_field(tmp_settlements, 'codigo_ase', '38056025001', ctx,
-                           codigo_ase='38056013000')
-
-        # Asignarle una localidad censal a "BARRIO RUTA 24 KILOMETRO 10 (Buenos
-        # Aires provincia)"
-        patch.update_field(tmp_settlements, 'codigo_ase', '06364030005', ctx,
-                           codigo_ase='06364010000')
-
-        # Actualiza códigos para los asentamientos del departamento de Río
-        # Grande
         def update_rio_grande(row):
             department = geometry.get_entity_at_point(Department, row.geom, ctx)
             row.codigo_ase = department.id + row.codigo_ase[
                 constants.DEPARTMENT_ID_LEN:]
-        patch.apply_fn(tmp_settlements, update_rio_grande, ctx, codigo_in0='94',
-                       codigo_ind='94007')
-
-        # Actualiza códigos para los asentamientos del departamento de Usuhaia
-        def update_ushuaia(row):
-            department = geometry.get_entity_at_point(Department, row.geom, ctx)
-            row.codigo_ase = department.id + row.codigo_ase[
-                constants.DEPARTMENT_ID_LEN:]
-        patch.apply_fn(tmp_settlements, update_ushuaia, ctx, codigo_in0='94',
-                       codigo_ind='94014')
+        patch.apply_fn(tmp_settlements, update_rio_grande, ctx, codigo_ind='94007')
+        patch.apply_fn(tmp_settlements, update_rio_grande, ctx, codigo_ind='94014')
 
     def _process_entity(self, tmp_settlement, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_settlement.geom,
