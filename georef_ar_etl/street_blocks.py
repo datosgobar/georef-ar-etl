@@ -32,11 +32,17 @@ def create_process(config):
                 constants.STREET_BLOCKS + '.geojson',
                 tolerance=config.getfloat("etl", "geojson_tolerance"),
                 caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
-            )
+            ),
+            loaders.CreateJSONFileStep(StreetBlock, constants.ETL_VERSION,
+                                       constants.STREET_BLOCKS + '.json'),
+            loaders.CreateCSVFileStep(StreetBlock, constants.ETL_VERSION,
+                                      constants.STREET_BLOCKS + '.csv'),
         ]),
         CompositeStep([
             utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson'),
-            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.geojson')
+            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.geojson'),
+            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.json'),
+            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.csv')
         ]),
     ])
 
