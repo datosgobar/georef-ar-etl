@@ -1,3 +1,4 @@
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, Step, CompositeStep
 from .models import Street, StreetBlock
 from . import utils, constants, loaders
@@ -23,27 +24,12 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'street_blocks_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateNDJSONFileStep(StreetBlock, constants.ETL_VERSION,
-                                         constants.STREET_BLOCKS + '.ndjson'),
-            loaders.CreateGeoJSONFileStep(
-                StreetBlock,
-                constants.ETL_VERSION,
-                constants.STREET_BLOCKS + '.geojson',
-                tolerance=config.getfloat("etl", "geojson_tolerance"),
-                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
-            ),
-            loaders.CreateJSONFileStep(StreetBlock, constants.ETL_VERSION,
-                                       constants.STREET_BLOCKS + '.json'),
-            loaders.CreateCSVFileStep(StreetBlock, constants.ETL_VERSION,
-                                      constants.STREET_BLOCKS + '.csv'),
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson'),
-            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.geojson'),
-            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.json'),
-            utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.csv')
-        ]),
+        CompositeStepCreateFile(
+            StreetBlock, 'street_blocks', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('street_blocks', config),
     ])
 
 

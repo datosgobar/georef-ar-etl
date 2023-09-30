@@ -1,4 +1,5 @@
 from .exceptions import ValidationException
+from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, CensusLocality
 from . import extractors, transformers, loaders, geometry, utils, constants
@@ -44,23 +45,8 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'census_localities_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(CensusLocality, constants.ETL_VERSION,
-                                       file_basename + '.json'),
-            loaders.CreateGeoJSONFileStep(CensusLocality,
-                                          constants.ETL_VERSION,
-                                          file_basename + '.geojson'),
-            loaders.CreateCSVFileStep(CensusLocality, constants.ETL_VERSION,
-                                      file_basename + '.csv'),
-            loaders.CreateNDJSONFileStep(CensusLocality, constants.ETL_VERSION,
-                                         file_basename + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, file_basename + '.json'),
-            utils.CopyFileStep(output_path, file_basename + '.geojson'),
-            utils.CopyFileStep(output_path, file_basename + '.csv'),
-            utils.CopyFileStep(output_path, file_basename + '.ndjson')
-        ])
+        CompositeStepCreateFile(CensusLocality, 'census_localities', config),
+        CompositeStepCopyFile('census_localities', config),
     ])
 
 

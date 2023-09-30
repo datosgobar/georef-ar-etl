@@ -1,4 +1,5 @@
 from .exceptions import ValidationException
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep
 from .models import Province, Municipality
 from . import extractors, transformers, loaders, geometry, utils, constants
@@ -37,34 +38,12 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'municipalities_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(
-                Municipality, constants.ETL_VERSION,
-                constants.MUNICIPALITIES + '.json'),
-            loaders.CreateGeoJSONFileStep(
-                Municipality, constants.ETL_VERSION,
-                constants.MUNICIPALITIES + '.geojson',
-                tolerance=config.getfloat("etl", "geojson_tolerance"),
-                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
-            ),
-            loaders.CreateCSVFileStep(
-                Municipality, constants.ETL_VERSION,
-                constants.MUNICIPALITIES + '.csv'),
-            loaders.CreateNDJSONFileStep(
-                Municipality, constants.ETL_VERSION,
-                constants.MUNICIPALITIES + '.ndjson'
-            )
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path,
-                               constants.MUNICIPALITIES + '.json'),
-            utils.CopyFileStep(output_path,
-                               constants.MUNICIPALITIES + '.geojson'),
-            utils.CopyFileStep(output_path,
-                               constants.MUNICIPALITIES + '.csv'),
-            utils.CopyFileStep(output_path,
-                               constants.MUNICIPALITIES + '.ndjson')
-        ])
+        CompositeStepCreateFile(
+            Municipality, 'municipalities', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('municipalities', config),
     ])
 
 

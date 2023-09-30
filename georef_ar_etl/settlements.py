@@ -2,8 +2,8 @@ import os
 import subprocess
 
 from .exceptions import ValidationException, ProcessException
-from .loaders import OGR2OGR_CMD
-from .process import Process, CompositeStep
+from .loaders import OGR2OGR_CMD, CompositeStepCopyFile, CompositeStepCreateFile
+from .process import Process
 from .models import Province, Department, Municipality, CensusLocality,\
     Settlement
 from . import extractors, transformers, loaders, geometry, utils, constants
@@ -45,26 +45,8 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'settlements_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(Settlement, constants.ETL_VERSION,
-                                       constants.SETTLEMENTS + '.json'),
-            loaders.CreateGeoJSONFileStep(Settlement, constants.ETL_VERSION,
-                                          constants.SETTLEMENTS + '.geojson'),
-            loaders.CreateCSVFileStep(Settlement, constants.ETL_VERSION,
-                                      constants.SETTLEMENTS + '.csv'),
-            loaders.CreateNDJSONFileStep(Settlement, constants.ETL_VERSION,
-                                         constants.SETTLEMENTS + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path,
-                               constants.SETTLEMENTS + '.json'),
-            utils.CopyFileStep(output_path,
-                               constants.SETTLEMENTS + '.geojson'),
-            utils.CopyFileStep(output_path,
-                               constants.SETTLEMENTS + '.csv'),
-            utils.CopyFileStep(output_path,
-                               constants.SETTLEMENTS + '.ndjson')
-        ])
+        CompositeStepCreateFile(Settlement, 'settlements', config),
+        CompositeStepCopyFile('settlements', config),
     ])
 
 

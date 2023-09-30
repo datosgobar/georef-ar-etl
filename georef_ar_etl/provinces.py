@@ -1,3 +1,4 @@
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep
 from .models import Province
 from .exceptions import ValidationException
@@ -34,28 +35,12 @@ def create_process(config):
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'provinces_target_size')),
-
-        CompositeStep([
-            loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
-                                       constants.PROVINCES + '.json'),
-            loaders.CreateGeoJSONFileStep(
-                Province,
-                constants.ETL_VERSION,
-                constants.PROVINCES + '.geojson',
-                tolerance=config.getfloat("etl", "geojson_tolerance"),
-                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
-            ),
-            loaders.CreateCSVFileStep(Province, constants.ETL_VERSION,
-                                      constants.PROVINCES + '.csv'),
-            loaders.CreateNDJSONFileStep(Province, constants.ETL_VERSION,
-                                         constants.PROVINCES + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.json'),
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.geojson'),
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.csv'),
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.ndjson')
-        ])
+        CompositeStepCreateFile(
+            Province, 'provinces', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('provinces', config),
     ])
 
 

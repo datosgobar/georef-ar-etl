@@ -11,7 +11,7 @@ from shapely.geometry import shape
 import shapely
 import geojson
 from . import constants, utils
-from .process import Step, ProcessException
+from .process import Step, ProcessException, CompositeStep
 from .json_stream_writer import JSONStreamWriter, JSONArrayPlaceholder
 
 OGR2OGR_CMD = 'ogr2ogr'
@@ -292,3 +292,79 @@ class CreateCSVFileStep(CreateOutputFileStep):
                 flatten_dict(entity_dict)
 
                 writer.writerow(entity_dict)
+
+
+class CompositeStepCreateFile(CompositeStep):
+    def __init__(self, table, entity, config, name=None, tolerance=None, caba_tolerance=None):
+        self._table = table
+        self._entity = entity
+        self._file_name = None
+        self._config = config
+        self._tolerance = tolerance
+        self._caba_tolerance = caba_tolerance
+
+        formats = [f.strip() for f in self._config.get('format_export', entity, fallback='').split(",")]
+        steps = []
+        for f in formats:
+            if f in constants.EXPORT_FORMATS:
+                function = getattr(self, f, None)
+                if not function:
+                    raise NotImplemented("El formato de exportación {} no está implementado".format(f))
+                steps.append(function())
+
+        super().__init__(steps, name)
+
+    @property
+    def file_name(self):
+        if not self._file_name:
+            self._file_name = getattr(constants, self._entity.upper())
+        return self._file_name
+
+    def json(self):
+        return CreateJSONFileStep(
+            self._table,
+            constants.ETL_VERSION, self.file_name + '.json'
+        )
+
+    def geojson(self):
+        return CreateGeoJSONFileStep(
+            self._table,
+            constants.ETL_VERSION, self.file_name + '.geojson',
+            tolerance=self._tolerance,
+            caba_tolerance=self._caba_tolerance
+        )
+
+    def csv(self):
+        return CreateCSVFileStep(
+            self._table,
+            constants.ETL_VERSION, self.file_name + '.csv'
+        )
+
+    def ndjson(self):
+        return CreateNDJSONFileStep(
+            self._table,
+            constants.ETL_VERSION, self.file_name + '.ndjson'
+        )
+
+
+class CompositeStepCopyFile(CompositeStep):
+    def __init__(self, entity, config, name=None):
+        self._entity = entity
+        self._file_name = None
+        self._config = config
+        self._output_path = self._config.get('etl', 'output_dest_path')
+
+        formats = [f.strip() for f in self._config.get('format_export', entity, fallback='').split(",")]
+        steps = []
+        for f in formats:
+            if f in constants.EXPORT_FORMATS:
+                file = "{}.{}".format(self.file_name, f)
+                steps.append(utils.CopyFileStep(self._output_path, file))
+
+        super().__init__(steps, name)
+
+    @property
+    def file_name(self):
+        if not self._file_name:
+            self._file_name = getattr(constants, self._entity.upper())
+        return self._file_name

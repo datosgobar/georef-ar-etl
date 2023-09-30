@@ -139,3 +139,5 @@ STREETS_SOURCE = 'INDEC'
 CENSUS_LOCALITIES_SOURCE = 'INDEC'
 
 RECIPIENTS_PREFIX = 'recipients_'
+
+EXPORT_FORMATS = ['csv', 'json', 'geojson', 'ndjson']

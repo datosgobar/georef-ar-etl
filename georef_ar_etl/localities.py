@@ -1,5 +1,6 @@
 from .constants import BAHRAType
 from .exceptions import ValidationException
+from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
 from .models import Province, Department, Municipality, CensusLocality,\
     Locality
@@ -26,22 +27,8 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'localities_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(Locality, constants.ETL_VERSION,
-                                       constants.LOCALITIES + '.json'),
-            loaders.CreateGeoJSONFileStep(Locality, constants.ETL_VERSION,
-                                          constants.LOCALITIES + '.geojson'),
-            loaders.CreateCSVFileStep(Locality, constants.ETL_VERSION,
-                                      constants.LOCALITIES + '.csv'),
-            loaders.CreateNDJSONFileStep(Locality, constants.ETL_VERSION,
-                                         constants.LOCALITIES + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.json'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.geojson'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.csv'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.ndjson')
-        ])
+        CompositeStepCreateFile(Locality, 'localities', config),
+        CompositeStepCopyFile('localities', config),
     ])
 
 

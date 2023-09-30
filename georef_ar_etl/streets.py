@@ -1,6 +1,7 @@
 from sqlalchemy.sql import select, func
 from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep, StepSequence
 from .models import Province, Department, CensusLocality, Street
 from . import extractors, loaders, utils, constants, patch, transformers
@@ -174,27 +175,12 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'streets_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
-                                       constants.STREETS + '.json'),
-            loaders.CreateGeoJSONFileStep(
-                Street,
-                constants.ETL_VERSION,
-                constants.STREETS + '.geojson',
-                tolerance=config.getfloat("etl", "geojson_tolerance"),
-                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
-            ),
-            loaders.CreateCSVFileStep(Street, constants.ETL_VERSION,
-                                      constants.STREETS + '.csv'),
-            loaders.CreateNDJSONFileStep(Street, constants.ETL_VERSION,
-                                         constants.STREETS + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.STREETS + '.json'),
-            utils.CopyFileStep(output_path, constants.STREETS + '.geojson'),
-            utils.CopyFileStep(output_path, constants.STREETS + '.csv'),
-            utils.CopyFileStep(output_path, constants.STREETS + '.ndjson')
-        ])
+        CompositeStepCreateFile(
+            Street, 'streets', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('streets', config),
     ])
 
 
