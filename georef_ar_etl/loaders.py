@@ -73,10 +73,11 @@ class Ogr2ogrStep(Step):
 
         if os.path.splitext(filename)[1] == '.geojson':
             args.extend([
-                '-append'
+                '-append',
+                '-lco', 'GEOMETRY_NAME=geom'
             ])
 
-        if self._overwrite:
+        elif self._overwrite:
             args.extend([
                 '-overwrite',
                 '-lco', 'GEOMETRY_NAME=geom'

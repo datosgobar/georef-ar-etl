@@ -141,6 +141,7 @@ def create_process(config):
                 ogr2ogr_cstep,
                 utils.FirstResultStep,
                 utils.ValidateTableSchemaStep({
+                    'ogc_fid': 'integer',
                     'id': 'integer',
                     'nomencla': 'varchar',
                     'tipo': 'varchar',
@@ -158,6 +159,7 @@ def create_process(config):
                 ogr2ogr_cstep_streets,
                 utils.FirstResultStep,
                 utils.ValidateTableSchemaStep({
+                    'ogc_fid': 'integer',
                     'id': 'integer',
                     'nomencla': 'varchar',
                     'tipo': 'varchar',
