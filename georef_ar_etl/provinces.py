@@ -53,7 +53,23 @@ class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
         self._iso_data = {row['id']: row for row in iso_csv}
 
     def _patch_tmp_entities(self, tmp_provinces, ctx):
-        pass
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos municipios, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(prov):
+            sql_str = """
+                                    select ST_MakeValid(geom)
+                                    from {}
+                                    where in1=:in1
+                                    limit 1
+                                    """.format(prov.__table__.name)
+
+            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
+            # SQL manualmente (como excepción).
+            prov.geom = ctx.session.scalar(sql_str, {'in1': prov.in1})
+
+        patch.apply_fn(tmp_provinces, make_valid_geom, ctx, in1='94')
+
 
     def _process_entity(self, tmp_province, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_province.geom, ctx)

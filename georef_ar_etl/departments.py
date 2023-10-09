@@ -54,7 +54,22 @@ class DepartmentsExtractionStep(transformers.EntitiesExtractionStep):
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
 
     def _patch_tmp_entities(self, tmp_departments, ctx):
-        pass
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos municipios, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(dep):
+            sql_str = """
+                                            select ST_MakeValid(geom)
+                                            from {}
+                                            where in1=:in1
+                                            limit 1
+                                            """.format(dep.__table__.name)
+
+            # GeoAlchemy2 no disponibiliza la function ST_MakeValid, utilizar
+            # SQL manualmente (como excepción).
+            dep.geom = ctx.session.scalar(sql_str, {'in1': dep.in1})
+
+        patch.apply_fn(tmp_departments, make_valid_geom, ctx, in1='94021')
 
     def _process_entity(self, tmp_department, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_department.geom,
