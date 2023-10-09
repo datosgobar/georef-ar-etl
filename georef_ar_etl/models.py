@@ -509,7 +509,7 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
     provincia_interseccion = Column(Float, nullable=False)
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
-    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
+    geometria = Column(Geometry('GEOMETRY', srid=SRID), nullable=True)
 
     localidades_censales = get_relationship('CensusLocality')
     asentamientos = get_relationship('Settlement')
