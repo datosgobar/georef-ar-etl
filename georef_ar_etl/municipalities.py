@@ -139,7 +139,7 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
         for local_government in ctx.session.query(tmp_local_governments).filter_by(geom=None):
             lat = local_government.longitud
             lon = local_government.latitud
-            point = tmp_local_governments.geom.ST_MakePoint(lat, lon)
+            point = tmp_local_governments.geom.ST_MakePoint(lon, lat)
             local_government.geom = tmp_local_governments.geom.ST_SetSRID(
                 point,
                 4326
