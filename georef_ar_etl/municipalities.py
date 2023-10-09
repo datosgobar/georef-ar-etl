@@ -55,6 +55,30 @@ class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
 
     def _patch_tmp_entities(self, tmp_municipalities, ctx):
 
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos municipios, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(mun):
+            sql_str = """
+                                    select ST_MakeValid(geom)
+                                    from {}
+                                    where in1=:in1
+                                    limit 1
+                                    """.format(mun.__table__.name)
+
+            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
+            # SQL manualmente (como excepción).
+            mun.geom = ctx.session.scalar(sql_str, {'in1': mun.in1})
+
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='060056')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180224')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180455')
+
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='585042')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180077')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180143')
+        patch.apply_fn(tmp_municipalities, make_valid_geom, ctx, in1='180196')
+
         patch.delete(tmp_municipalities, ctx, in1=None)
         patch.delete(tmp_municipalities, ctx, gna=None)
 
