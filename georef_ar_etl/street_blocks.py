@@ -59,8 +59,8 @@ class StreetBlocksExtractionStep(Step):
 
     def _process_block(self, tmp_block, street):
         # TODO: Revisar la forma de generar el valor block_id para garantizar la unicidad
-        ogc_fid = str(tmp_block.ogc_fid).rjust(6, '0')
-        block_id = tmp_block.nomencla + ogc_fid[-6:]
+        ogc_fid = str(tmp_block.id).rjust(7, '0')
+        block_id = tmp_block.nomencla + ogc_fid[-7:]
 
         return StreetBlock(
             id=block_id,
