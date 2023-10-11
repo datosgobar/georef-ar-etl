@@ -65,22 +65,20 @@ class Ogr2ogrStep(Step):
                 '-s_srs', self._source_epsg
             ])
 
+        if self._overwrite:
+            args.extend([
+                '-overwrite',
+                '-lco', 'GEOMETRY_NAME=geom'
+            ])
+        elif os.path.splitext(filename)[1] == '.geojson':
+            args.extend([
+                '-append'
+            ])
+
         if os.path.splitext(filename)[1] == '.csv':
             args.extend([
                 '-oo', 'KEEP_GEOM_COLUMNS=no',
                 '-oo', 'GEOM_POSSIBLE_NAMES=geom',
-            ])
-
-        if os.path.splitext(filename)[1] == '.geojson':
-            args.extend([
-                '-append',
-                '-lco', 'GEOMETRY_NAME=geom'
-            ])
-
-        elif self._overwrite:
-            args.extend([
-                '-overwrite',
-                '-lco', 'GEOMETRY_NAME=geom'
             ])
 
         if not self._precision:
