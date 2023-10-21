@@ -539,7 +539,7 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
             },
             'fuente': self.fuente,
             'categoria': self.categoria,
-            'centroide': {
+            'ubicacion': {
                 'lon': self.lon,
                 'lat': self.lat
             },

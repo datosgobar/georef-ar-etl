@@ -34,7 +34,7 @@ def create_process(config):
             ], name='load_tmp_municipalities'),
             StepSequence([
                 extractors.DownloadURLStep(constants.LOCAL_GOVERNMENTS + '.csv',
-                                           config.get('etl', 'local_government_url'), constants.MUNICIPALITIES),
+                                           config.get('etl', 'local_government_url'), constants.LOCAL_GOVERNMENTS),
                 loaders.Ogr2ogrStep(table_name=constants.LOCAL_GOVERNMENTS_TMP_TABLE,
                                     geom_type='Geometry'),
                 utils.ValidateTableSchemaStep({
@@ -73,7 +73,7 @@ def create_process(config):
         CompositeStep([
             StepSequence([
                 utils.FunctionStep(fn=lambda results: list(results)),
-                MunicipalitiesExtractionStep(),
+                LocalGovernmentsExtractionStep(),
             ]),
             StepSequence([
                 utils.FunctionStep(fn=lambda results: list(results)),
@@ -85,15 +85,15 @@ def create_process(config):
             target_size=config.getint('etl', 'municipalities_target_size'),
             op='ge'),
         CompositeStepCreateFile(
-            Municipality, 'municipalities', config,
+            Municipality, 'local_governments', config,
             tolerance=config.getfloat("etl", "geojson_tolerance"),
             caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
         ),
-        CompositeStepCopyFile('municipalities', config),
+        CompositeStepCopyFile('local_governments', config),
     ])
 
 
-class MunicipalitiesExtractionStep(transformers.EntitiesExtractionStep):
+class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
 
     def __init__(self):
         super().__init__('municipalities_extraction', Municipality,
