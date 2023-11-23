@@ -4,7 +4,7 @@ import subprocess
 from .exceptions import ValidationException, ProcessException
 from .loaders import OGR2OGR_CMD, CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process
-from .models import Province, Department, Municipality, CensusLocality,\
+from .models import Province, Department, LocalGovernment, CensusLocality,\
     Settlement
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
@@ -14,7 +14,7 @@ def create_process(config):
     output_path = config.get('etl', 'output_dest_path')
 
     return Process(constants.SETTLEMENTS, [
-        utils.CheckDependenciesStep([Province, Department, Municipality,
+        utils.CheckDependenciesStep([Province, Department, LocalGovernment,
                                      CensusLocality]),
         extractors.DownloadURLStep(constants.SETTLEMENTS + '.zip',
                                    config.get('etl', 'settlements_url'), constants.SETTLEMENTS),
@@ -145,7 +145,7 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        municipality = geometry.get_entity_at_point(Municipality,
+        local_governments = geometry.get_entity_at_point(LocalGovernment,
                                                     tmp_settlement.geom, ctx)
 
         if prov_id == constants.CABA_PROV_ID:
@@ -163,7 +163,7 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
-            municipio_id=municipality.id if municipality else None,
+            gobierno_local_id=local_governments.id if local_governments else None,
             localidad_censal_id=census_loc.id if census_loc else None,
             fuente=utils.clean_string(tmp_settlement.fuente_de_),
             geometria=tmp_settlement.geom

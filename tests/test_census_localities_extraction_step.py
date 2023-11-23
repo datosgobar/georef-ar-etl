@@ -14,7 +14,7 @@ class TestCensusLocalitiesExtractionStep(ETLTestCase):
         super().setUpClass()
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
-        cls.create_test_municipalities(extract=True)
+        cls.create_test_local_governments(extract=True)
 
     def setUp(self):
         super().setUp()
@@ -179,16 +179,16 @@ class TestCensusLocalitiesExtractionStep(ETLTestCase):
         loc = self._ctx.session.query(census_localities).get('02000000')
         self.assertTrue(loc.departamento_id is None)
 
-    def test_municipality(self):
+    def test_local_government(self):
         """Si una localidad censal está geográficamente contenida por un
-        municipio, se debería establecer ese municipio como su propiedad
-        'municipio_id'."""
+        gobierno local, se debería establecer ese gobierno local como su propiedad
+        'gobierno_local_id'."""
         step = CensusLocalitiesExtractionStep()
         census_localities = step.run(self._tmp_census_localities, self._ctx)
 
         census_locality = self._ctx.session.query(census_localities).get(
             '70091060')
-        self.assertEqual(census_locality.municipio_id, '700091')
+        self.assertEqual(census_locality.gobierno_local_id, '700091')
 
     def test_administrative_function(self):
         """La capital de la provincia debería tener funcion ==

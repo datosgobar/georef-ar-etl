@@ -1,6 +1,6 @@
-from georef_ar_etl.models import Municipality
+from georef_ar_etl.models import LocalGovernment
 from georef_ar_etl.exceptions import ValidationException
-from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
+from georef_ar_etl.local_governments import MunicipalitiesExtractionStep
 from . import ETLTestCase
 
 SAN_JUAN_MUNI_COUNT = 19
@@ -14,11 +14,11 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
 
     def setUp(self):
         super().setUp()
-        self._tmp_municipalities = self.create_test_municipalities()
+        self._tmp_municipalities = self.create_test_local_governments()
 
     def tearDown(self):
         self._ctx.session.commit()
-        self._ctx.session.query(Municipality).delete()
+        self._ctx.session.query(LocalGovernment).delete()
         self._ctx.session.query(self._tmp_municipalities).delete()
         super().tearDown()
 

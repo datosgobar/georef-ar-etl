@@ -30,9 +30,9 @@ provincias:
 departamentos:
 	$(ETL_COMMAND) -p departamentos
 
-# Ejecuta el proceso de municipios
-municipios:
-	$(ETL_COMMAND) -p municipios
+# Ejecuta el proceso de gobiernos_locales
+gobiernos_locales:
+	$(ETL_COMMAND) -p gobiernos_locales
 
 # Ejecuta el proceso de localidades_censales
 localidades_censales:
@@ -46,7 +46,7 @@ calles:
 files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail
 	$(ETL_COMMAND) -p departamentos --start 9 --no-mail
-	$(ETL_COMMAND) -p municipios --start 9 --no-mail
+	$(ETL_COMMAND) -p gobiernos_locales --start 9 --no-mail
 	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
 	$(ETL_COMMAND) -p asentamientos --start 8 --no-mail
 	$(ETL_COMMAND) -p localidades --start 6 --no-mail
@@ -111,7 +111,7 @@ TEST_PROVINCE = 70
 create_test_files:
 	$(ETL_COMMAND) -p provincias --end 3
 	$(ETL_COMMAND) -p departamentos --end 4
-	$(ETL_COMMAND) -p municipios --end 4
+	$(ETL_COMMAND) -p gobiernos_locales --end 4
 	$(ETL_COMMAND) -p localidades_censales --end 4
 	$(ETL_COMMAND) -p asentamientos --end 4
 	$(ETL_COMMAND) -p calles --end 3
@@ -133,10 +133,10 @@ create_test_files:
 		-overwrite
 
 	ogr2ogr -f "ESRI Shapefile" \
-		tests/test_files/test_municipios \
+		tests/test_files/test_gobiernos_locales \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
-		-sql "select * from tmp_municipios where in1 like '$(TEST_PROVINCE)%'" \
-		-nln "test_municipios" \
+		-sql "select * from tmp_gobiernos_locales where in1 like '$(TEST_PROVINCE)%'" \
+		-nln "test_gobiernos_locales" \
 		-lco "ENCODING=utf-8" \
 		-overwrite
 

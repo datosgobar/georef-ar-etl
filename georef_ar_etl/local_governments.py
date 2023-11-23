@@ -1,23 +1,23 @@
 from .exceptions import ValidationException
 from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep, StepSequence
-from .models import Province, Municipality
+from .models import Province, LocalGovernment
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
 
 def create_process(config):
 
-    return Process(constants.MUNICIPALITIES, [
+    return Process(constants.LOCAL_GOVERNMENTS, [
         utils.CheckDependenciesStep([Province]),
         CompositeStep([
             StepSequence([
-                extractors.DownloadURLStep(constants.MUNICIPALITIES + '.zip',
-                                           config.get('etl', 'municipalities_url'), constants.MUNICIPALITIES),
+                extractors.DownloadURLStep(constants.LOCAL_GOVERNMENTS + '.zip',
+                                           config.get('etl', 'local_governments_bahra_url'), constants.LOCAL_GOVERNMENTS),
                 transformers.ExtractZipStep(
                     internal_path=""
                 ),
-                loaders.Ogr2ogrStep(table_name=constants.MUNICIPALITIES_TMP_TABLE,
+                loaders.Ogr2ogrStep(table_name=constants.LOCAL_GOVERNMENTS_BAHRA_TMP_TABLE,
                                     geom_type='MultiPolygon',
                                     env={'SHAPE_ENCODING': 'utf-8'}),
                 utils.ValidateTableSchemaStep({
@@ -31,10 +31,10 @@ def create_process(config):
                     'in1': 'varchar',
                     'geom': 'geometry'
                 }),
-            ], name='load_tmp_municipalities'),
+            ], name='load_tmp_local_governments_bahra'),
             StepSequence([
                 extractors.DownloadURLStep(constants.LOCAL_GOVERNMENTS + '.csv',
-                                           config.get('etl', 'local_government_url'), constants.LOCAL_GOVERNMENTS),
+                                           config.get('etl', 'local_governments_url'), constants.LOCAL_GOVERNMENTS),
                 loaders.Ogr2ogrStep(table_name=constants.LOCAL_GOVERNMENTS_TMP_TABLE,
                                     geom_type='Geometry'),
                 utils.ValidateTableSchemaStep({
@@ -82,10 +82,10 @@ def create_process(config):
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(
-            target_size=config.getint('etl', 'municipalities_target_size'),
+            target_size=config.getint('etl', 'local_governments_target_size'),
             op='ge'),
         CompositeStepCreateFile(
-            Municipality, 'local_governments', config,
+            LocalGovernment, 'local_governments', config,
             tolerance=config.getfloat("etl", "geojson_tolerance"),
             caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
         ),
@@ -96,12 +96,12 @@ def create_process(config):
 class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
 
     def __init__(self):
-        super().__init__('municipalities_extraction', Municipality,
+        super().__init__('local_governments_extraction', LocalGovernment,
                          entity_class_pkey='id', tmp_entity_class_pkey='cod_gl_res144_indec')
 
     def _patch_tmp_entities(self, tmp_entities, ctx):
         # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
-        # de algunos municipios, lanza un error "Self-intersection at or near point..."
+        # de algunos gobiernos locales, lanza un error "Self-intersection at or near point..."
         # Validar la geometría utilizando ST_MakeValid().
         def make_valid_geom(mun):
             sql_str = """
@@ -124,15 +124,15 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
             lg.cod_gl_res144_indec = str(lg.cod_gl_res144_indec).rjust(6, '0')
         ctx.session.commit()
 
-    def _merge_tmp_municipalities(self, tmp_municipalities, tmp_local_governments, ctx):
-        ctx.report.info('Combinando municipios...')
+    def _merge_tmp_local_governments(self, tmp_local_governments_bahra, tmp_local_governments, ctx):
+        ctx.report.info('Combinando gobiernos locales...')
 
         for local_government in ctx.session.query(tmp_local_governments):
-            municipality = ctx.session.query(tmp_municipalities).filter_by(
+            local_governments_bahra = ctx.session.query(tmp_local_governments_bahra).filter_by(
                 in1=local_government.cod_gl_res144_indec
             ).first()
-            if municipality:
-                local_government.geom = municipality.geom
+            if local_governments_bahra:
+                local_government.geom = local_governments_bahra.geom
         ctx.session.commit()
 
     def _complete_geom(self, tmp_local_governments, ctx):
@@ -147,12 +147,12 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
         ctx.session.commit()
 
     def _run_internal(self, tmp_entities, ctx):
-        tmp_municipalities, tmp_local_governments = tmp_entities
+        tmp_local_governments_bahra, tmp_local_governments = tmp_entities
 
         self._fix_tmp_local_government_id(tmp_local_governments, ctx)
 
-        if tmp_municipalities:
-            self._merge_tmp_municipalities(tmp_municipalities, tmp_local_governments, ctx)
+        if tmp_local_governments_bahra:
+            self._merge_tmp_local_governments(tmp_local_governments_bahra, tmp_local_governments, ctx)
 
         self._complete_geom(tmp_local_governments, ctx)
 
@@ -162,8 +162,8 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
         lon = tmp_local_government.latitud
         lat = tmp_local_government.longitud
 
-        muni_id = tmp_local_government.cod_gl_res144_indec
-        prov_id = muni_id[:constants.PROVINCE_ID_LEN]
+        lg_id = tmp_local_government.cod_gl_res144_indec
+        prov_id = lg_id[:constants.PROVINCE_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
         if not province:
@@ -180,8 +180,8 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
         nombre = tmp_local_government.nombre_del_gobierno_local
         nombre_completo = "{} {}".format(categoria, nombre)
 
-        return Municipality(
-            id=muni_id,
+        return LocalGovernment(
+            id=lg_id,
             nombre=utils.clean_string(nombre),
             nombre_completo=utils.clean_string(nombre_completo),
             categoria=utils.clean_string(categoria),

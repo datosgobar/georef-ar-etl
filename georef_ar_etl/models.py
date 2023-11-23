@@ -233,26 +233,26 @@ class InDepartmentMixin:
         return session.query(Department).get(self.departamento_id).nombre
 
 
-class InNullableMunicipalityMixin:
+class InNullableLocalGovernmentMixin:
     """Define atributos y funciones de entidades que están opcionalmente
-    contenidas dentro de un municipio, o pertenecen a uno (o no).
+    contenidas dentro de un gobierno local, o pertenecen a uno (o no).
 
     Attributes:
-        municipio_id (str): ID del municipio referenciado, o 'None'.
+        gobierno_local_id (str): ID del gobierno local referenciado, o 'None'.
 
     """
 
     @declared_attr
-    def municipio_id(cls):
+    def gobierno_local_id(cls):
         return Column(
             String,
-            ForeignKey(constants.MUNICIPALITIES_ETL_TABLE + '.id',
+            ForeignKey(constants.LOCAL_GOVERNMENTS_ETL_TABLE + '.id',
                        ondelete='cascade'),
             nullable=True
         )
 
-    def municipio_nombre(self, session):
-        """Retorna el nombre del municipio a la cual pertenece la entidad. El
+    def gobierno_local_nombre(self, session):
+        """Retorna el nombre del gobierno locals al cual pertenece la entidad. El
         nombre de método está en castellano para mantener consistencia con los
         demás campos de los modelos.
 
@@ -260,13 +260,13 @@ class InNullableMunicipalityMixin:
             session (sqlalchemy.orm.session.Session): Sesión de base de datos.
 
         Returns:
-            str: Nombre del municipio.
+            str: Nombre del gobierno local.
 
         """
-        if not self.municipio_id:
+        if not self.gobierno_local_id:
             return None
 
-        return session.query(Municipality).get(self.municipio_id).nombre
+        return session.query(LocalGovernment).get(self.gobierno_local_id).nombre
 
 
 class InCensusLocalityMixin:
@@ -386,7 +386,7 @@ class Province(Base, EntityMixin):
     geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
 
     departamentos = get_relationship('Department')
-    municipios = get_relationship('Municipality')
+    local_governments = get_relationship('LocalGovernment')
     localidades_censales = get_relationship('CensusLocality')
     asentamientos = get_relationship('Settlement')
     localidades = get_relationship('Locality')
@@ -486,24 +486,24 @@ class Department(Base, EntityMixin, InProvinceMixin):
         }
 
 
-class Municipality(Base, EntityMixin, InProvinceMixin):
-    """Modelo utilizado para representar departamentos.
+class LocalGovernment(Base, EntityMixin, InProvinceMixin):
+    """Modelo utilizado para representar gobiernos locales.
 
     Attributes:
         __tablename__ (str): Nombre de la tabla.
         _id_len (int): Longitud de los IDs.
-        nombre_completo (str): Nombre completo del municipio, es decir, la
-            categoría del municipio junto a su nombre: 'Comuna Salto Grande'.
+        nombre_completo (str): Nombre completo del gobierno local, es decir, la
+            categoría del gobierno local junto a su nombre: 'Comuna Salto Grande'.
         provincia_interseccion (float): Porcentaje del área de la provincia que
-            ocupa el municipio (entre 0 y 1).
-        lon (float): Longitud del centroide del municipio.
-        lat (float): Latitud del centroide del municipio.
-        geometría (geoalchemy2.Geometry): Geometría del municipio.
+            ocupa el gobierno local (entre 0 y 1).
+        lon (float): Longitud del centro del gobierno local.
+        lat (float): Latitud del centro del gobierno local.
+        geometría (geoalchemy2.Geometry): Geometría del gobierno local (Punto o polígono).
 
     """
 
-    __tablename__ = constants.MUNICIPALITIES_ETL_TABLE
-    _id_len = constants.MUNICIPALITY_ID_LEN
+    __tablename__ = constants.LOCAL_GOVERNMENTS_ETL_TABLE
+    _id_len = constants.LOCAL_GOVERNMENT_ID_LEN
 
     nombre_completo = Column(String, nullable=False)
     provincia_interseccion = Column(Float, nullable=False)
@@ -549,7 +549,7 @@ class Municipality(Base, EntityMixin, InProvinceMixin):
 
 
 class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
-                      InNullableMunicipalityMixin):
+                      InNullableLocalGovernmentMixin):
     """Define atributos y métodos para modelos de entidades tomadas de la base
     BAHRA.
 
@@ -589,9 +589,9 @@ class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
                 'id': self.departamento_id,
                 'nombre': self.departamento_nombre(session)
             },
-            'municipio': {
-                'id': self.municipio_id,
-                'nombre': self.municipio_nombre(session)
+            'gobierno_local': {
+                'id': self.gobierno_local_id,
+                'nombre': self.gobierno_local_nombre(session)
             },
             'localidad_censal': {
                 'id': self.localidad_censal_id,
@@ -681,7 +681,7 @@ class Locality(Base, SettlementMixin, InCensusLocalityMixin):
 
 
 class CensusLocality(Base, EntityMixin, InProvinceMixin,
-                     InNullableDepartmentMixin, InNullableMunicipalityMixin):
+                     InNullableDepartmentMixin, InNullableLocalGovernmentMixin):
     """Modelo utilizado para representar localidades censales.
 
     Notar que las localidades censales no son lo mismo que las localidades
@@ -772,9 +772,9 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
                 'id': self.departamento_id,
                 'nombre': self.departamento_nombre(session)
             },
-            'municipio': {
-                'id': self.municipio_id,
-                'nombre': self.municipio_nombre(session)
+            'gobierno_local': {
+                'id': self.gobierno_local_id,
+                'nombre': self.gobierno_local_nombre(session)
             },
             'categoria': constants.BAHRA_TYPES[self.categoria],
             'funcion': self.funcion,

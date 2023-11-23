@@ -1,7 +1,7 @@
 from .exceptions import ValidationException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
-from .models import Province, Department, Municipality, CensusLocality
+from .models import Province, Department, LocalGovernment, CensusLocality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
@@ -13,7 +13,7 @@ def create_process(config):
     file_basename = constants.CENSUS_LOCALITIES.replace('_', '-')
 
     return Process(constants.CENSUS_LOCALITIES, [
-        utils.CheckDependenciesStep([Province, Department, Municipality]),
+        utils.CheckDependenciesStep([Province, Department, LocalGovernment]),
         extractors.DownloadURLStep(constants.CENSUS_LOCALITIES + '.zip',
                                    config.get('etl', 'census_localities_url'), constants.CENSUS_LOCALITIES),
         transformers.ExtractZipStep(''),
@@ -87,7 +87,7 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        municipality = geometry.get_entity_at_point(Municipality,
+        local_government = geometry.get_entity_at_point(LocalGovernment,
                                                     tmp_census_locality.geom,
                                                     ctx)
 
@@ -104,7 +104,7 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
-            municipio_id=municipality.id if municipality else None,
+            gobierno_local_id=local_government.id if local_government else None,
             fuente=constants.CENSUS_LOCALITIES_SOURCE,
             geometria=tmp_census_locality.geom
         )
