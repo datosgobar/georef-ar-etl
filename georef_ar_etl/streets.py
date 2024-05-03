@@ -184,6 +184,43 @@ def create_process(config):
     ])
 
 
+def report_street_block_number_state(tmp_blocks, ctx, name):
+    total = ctx.session.query(func.count()).filter(tmp_blocks.tipo == 'CALLE').all()
+    # Informe de cuadras sin numeración
+    sb_no_num_by_loc = ctx.session.query(tmp_blocks.codloc20, func.count()).filter(
+        (tmp_blocks.tipo == 'CALLE') &
+        (tmp_blocks.desdei == 0) & (tmp_blocks.hastai == 0) & (tmp_blocks.desded == 0) & (tmp_blocks.hastad == 0)
+    ).group_by(tmp_blocks.codloc20).all()
+
+    sb_no_num_count = 0
+    sb_no_num_warning = []
+    for loc in sb_no_num_by_loc:
+        sb_no_num_warning.append((loc[0], "Hay {} cuadras de calles sin numeración".format(loc[1])))
+        sb_no_num_count += loc[1]
+
+    if sb_no_num_warning:
+        message = 'Existen {} cuadras de calles sin numeración de un total de {}'.format(sb_no_num_count, total)
+        ctx.report.warn(message)
+        ctx.report.get_data(name)['warning'] = sb_no_num_warning
+
+    # informe de cuadras con numeración errónea
+    sb_wrong_num_by_loc = ctx.session.query(tmp_blocks.codloc20, func.count()).filter(
+        (tmp_blocks.tipo == 'CALLE') &
+        ((tmp_blocks.desdei > tmp_blocks.hastai) | (tmp_blocks.desded > tmp_blocks.hastad))
+    ).group_by(tmp_blocks.codloc20).all()
+
+    sb_wrong_num_count = 0
+    sb_wrong_num_warning = []
+    for loc in sb_wrong_num_by_loc:
+        sb_wrong_num_warning.append((loc[0], "Hay {} cuadras de calles con numeración errónea".format(loc[1])))
+        sb_wrong_num_count += loc[1]
+
+    if sb_wrong_num_warning:
+        message = 'Existen {} cuadras de calles sin numeración de un total de {}'.format(sb_wrong_num_count, total)
+        ctx.report.warn(message)
+        ctx.report.get_data(name)['warning'] = sb_wrong_num_warning
+
+
 class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
         super().__init__('streets_extraction', Street,
@@ -272,6 +309,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
     def _run_internal(self, data, ctx):
         tmp_blocks, tmp_streets = data
+        report_street_block_number_state(tmp_blocks, ctx, self.name)
 
         if tmp_streets:
             for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:
