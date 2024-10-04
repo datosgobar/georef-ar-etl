@@ -216,9 +216,27 @@ def report_street_block_number_state(tmp_blocks, ctx, name):
         sb_wrong_num_count += loc[1]
 
     if sb_wrong_num_warning:
-        message = 'Existen {} cuadras de calles sin numeración de un total de {}'.format(sb_wrong_num_count, total)
+        message = 'Existen {} cuadras de calles con numeración errónea de un total de {}'.format(sb_wrong_num_count, total)
         ctx.report.warn(message)
         ctx.report.get_data(name)['warning'] = sb_wrong_num_warning
+
+
+def report_streets_no_name(tmp_blocks, tmp_streets, ctx):
+    total = ctx.session.query(func.count()).filter(tmp_blocks.tipo == 'CALLE').all()
+
+    # Informe de calles sin nombre
+    streets_no_name = ctx.session.query(func.count()).filter(
+        (tmp_streets.tipo == 'CALLE') & (tmp_streets.nombre == None)
+    ).all()[0][0]
+    message = 'Existen {} calles sin nombre de un total de {}'.format(streets_no_name, total)
+    ctx.report.warn(message)
+
+    # Informe de cuadras sin nombre
+    sb_no_name = ctx.session.query(func.count()).filter(
+        (tmp_blocks.tipo == 'CALLE') & (tmp_blocks.nombre == None)
+    ).all()[0][0]
+    message = 'Existen {} cuadras de calles sin nombre de un total de {}'.format(sb_no_name, total)
+    ctx.report.warn(message)
 
 
 class StreetsExtractionStep(transformers.EntitiesExtractionStep):
@@ -310,6 +328,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
     def _run_internal(self, data, ctx):
         tmp_blocks, tmp_streets = data
         report_street_block_number_state(tmp_blocks, ctx, self.name)
+        report_streets_no_name(tmp_blocks, tmp_streets, ctx)
 
         if tmp_streets:
             for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:
