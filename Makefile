@@ -38,9 +38,25 @@ gobiernos_locales:
 localidades_censales:
 	$(ETL_COMMAND) -p localidades_censales
 
+# Ejecuta el proceso de asentamientos
+asentamientos:
+	$(ETL_COMMAND) -p asentamientos
+
+# Ejecuta el proceso de localidades
+localidades:
+	$(ETL_COMMAND) -p localidades
+
 # Ejecuta el proceso de calles
 calles:
 	$(ETL_COMMAND) -p calles
+
+# Ejecuta el proceso de intersecciones
+intersecciones:
+	$(ETL_COMMAND) -p intersecciones
+
+# Ejecuta el proceso de cuadras
+cuadras:
+	$(ETL_COMMAND) -p cuadras
 
 # Ejecuta todos los procesos, pero solo la parte de generación de archivos
 files:
