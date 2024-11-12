@@ -6,7 +6,7 @@ from . import extractors, transformers, loaders, geometry, utils, constants, pat
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
+
     return Process(constants.PROVINCES, [
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
                                    config.get('etl', 'provinces_url'), constants.PROVINCES),

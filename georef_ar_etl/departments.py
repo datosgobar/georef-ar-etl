@@ -7,7 +7,6 @@ from . import patch
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     return Process(constants.DEPARTMENTS, [
         utils.CheckDependenciesStep([Province]),

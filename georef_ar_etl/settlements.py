@@ -11,7 +11,6 @@ from . import patch
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     return Process(constants.SETTLEMENTS, [
         utils.CheckDependenciesStep([Province, Department, LocalGovernment,

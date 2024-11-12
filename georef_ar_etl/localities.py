@@ -9,7 +9,6 @@ from . import loaders, geometry, utils, constants
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     def fetch_tmp_settlements_table(_, ctx):
         return utils.automap_table(constants.SETTLEMENTS_TMP_TABLE, ctx)

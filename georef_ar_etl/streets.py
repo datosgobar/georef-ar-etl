@@ -94,7 +94,6 @@ INVALID_BLOCKS_CLC = {
 
 def create_process(config):
     url_template = config.get('etl', 'street_blocks_url_template')
-    output_path = config.get('etl', 'output_dest_path')
 
     download_cstep = CompositeStep([
         extractors.DownloadURLStep(

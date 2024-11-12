@@ -5,7 +5,6 @@ from . import utils, constants, loaders
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     def fetch_tmp_blocks_table(_, ctx):
         return utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
