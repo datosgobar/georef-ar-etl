@@ -1,25 +1,25 @@
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep
 from .models import Province
 from .exceptions import ValidationException
-from . import extractors, transformers, loaders, geometry, utils, constants
+from . import extractors, transformers, loaders, geometry, utils, constants, patch
 
 
 def create_process(config):
     output_path = config.get('etl', 'output_dest_path')
     return Process(constants.PROVINCES, [
         extractors.DownloadURLStep(constants.PROVINCES + '.zip',
-                                   config.get('etl', 'provinces_url')),
+                                   config.get('etl', 'provinces_url'), constants.PROVINCES),
         transformers.ExtractZipStep(
             internal_path=""
         ),
         loaders.Ogr2ogrStep(table_name=constants.PROVINCES_TMP_TABLE,
                             geom_type='MultiPolygon',
-                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
+                            env={'SHAPE_ENCODING': 'UTF-8'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
             'gid': 'numeric',
             'entidad': 'numeric',
-            'objeto': 'varchar',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
@@ -35,28 +35,12 @@ def create_process(config):
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'provinces_target_size')),
-
-        CompositeStep([
-            loaders.CreateJSONFileStep(Province, constants.ETL_VERSION,
-                                       constants.PROVINCES + '.json'),
-            loaders.CreateGeoJSONFileStep(
-                Province,
-                constants.ETL_VERSION,
-                constants.PROVINCES + '.geojson',
-                tolerance=config.getfloat("etl", "geojson_tolerance"),
-                caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
-            ),
-            loaders.CreateCSVFileStep(Province, constants.ETL_VERSION,
-                                      constants.PROVINCES + '.csv'),
-            loaders.CreateNDJSONFileStep(Province, constants.ETL_VERSION,
-                                         constants.PROVINCES + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.json'),
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.geojson'),
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.csv'),
-            utils.CopyFileStep(output_path, constants.PROVINCES + '.ndjson')
-        ])
+        CompositeStepCreateFile(
+            Province, 'provinces', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('provinces', config),
     ])
 
 
@@ -67,6 +51,25 @@ class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
                          entity_class_pkey='id', tmp_entity_class_pkey='in1')
         iso_csv = utils.load_data_csv('iso-3166-provincias-arg.csv')
         self._iso_data = {row['id']: row for row in iso_csv}
+
+    def _patch_tmp_entities(self, tmp_provinces, ctx):
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos gobiernos locales, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(prov):
+            sql_str = """
+                                    select ST_MakeValid(geom)
+                                    from {}
+                                    where in1=:in1
+                                    limit 1
+                                    """.format(prov.__table__.name)
+
+            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
+            # SQL manualmente (como excepción).
+            prov.geom = ctx.session.scalar(sql_str, {'in1': prov.in1})
+
+        patch.apply_fn(tmp_provinces, make_valid_geom, ctx, in1='94')
+
 
     def _process_entity(self, tmp_province, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_province.geom, ctx)

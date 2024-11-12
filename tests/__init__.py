@@ -10,7 +10,7 @@ from georef_ar_etl.context import Context, Report
 from georef_ar_etl.loaders import Ogr2ogrStep
 from georef_ar_etl.provinces import ProvincesExtractionStep
 from georef_ar_etl.departments import DepartmentsExtractionStep
-from georef_ar_etl.municipalities import MunicipalitiesExtractionStep
+from georef_ar_etl.local_governments import LocalGovernmentsExtractionStep
 from georef_ar_etl.census_localities import CensusLocalitiesExtractionStep
 from georef_ar_etl.streets import StreetsExtractionStep
 from georef_ar_etl.utils import CopyFileStep
@@ -26,7 +26,7 @@ class ETLTestCase(TestCase):
         super().__init__(*args, **kwargs)
         self._tmp_provinces = None
         self._tmp_departments = None
-        self._tmp_municipalities = None
+        self._tmp_local_governments = None
         self._tmp_settlements = None
         self._tmp_census_localities = None
         self._tmp_blocks = None
@@ -123,26 +123,26 @@ class ETLTestCase(TestCase):
         return cls._tmp_departments
 
     @classmethod
-    def create_test_municipalities(cls, extract=False):
-        # Cargar los municipios de la provincia de prueba
-        cls.copy_test_file('test_municipios/test_municipios.dbf')
-        cls.copy_test_file('test_municipios/test_municipios.shp')
-        cls.copy_test_file('test_municipios/test_municipios.shx')
-        cls.copy_test_file('test_municipios/test_municipios.prj')
+    def create_test_local_governments(cls, extract=False):
+        # Cargar los gobiernos locales de la provincia de prueba
+        cls.copy_test_file('test_gobiernos_locales/test_gobiernos_locales.dbf')
+        cls.copy_test_file('test_gobiernos_locales/test_gobiernos_locales.shp')
+        cls.copy_test_file('test_gobiernos_locales/test_gobiernos_locales.shx')
+        cls.copy_test_file('test_gobiernos_locales/test_gobiernos_locales.prj')
 
-        loader = Ogr2ogrStep(table_name='tmp_municipios',
+        loader = Ogr2ogrStep(table_name='tmp_gobiernos_locales',
                              geom_type='MultiPolygon',
                              env={'SHAPE_ENCODING': 'utf-8'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
-        cls._tmp_municipalities = loader.run('test_municipios', cls._ctx)
+        cls._tmp_local_governments = loader.run('test_gobiernos_locales', cls._ctx)
 
         if extract:
-            step = MunicipalitiesExtractionStep()
-            step.run(cls._tmp_municipalities, cls._ctx)
+            step = LocalGovernmentsExtractionStep()
+            step.run(cls._tmp_local_governments, cls._ctx)
 
-        return cls._tmp_municipalities
+        return cls._tmp_local_governments
 
     @classmethod
     def create_test_settlements(cls):

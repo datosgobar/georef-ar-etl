@@ -6,7 +6,7 @@ Define valores constantes utilizados en distintas partes del ETL.
 
 from enum import Enum
 
-ETL_VERSION = '12.1.0'
+ETL_VERSION = '12.2.0'
 DATA_DIR = 'data'
 CONFIG_PATH = 'config/georef.cfg'
 DIR_PERMS = 0o700
@@ -19,6 +19,8 @@ class BAHRAType(Enum):
     ST = 'Sitio edificado'
     LSE = 'Localidad simple con entidad'
     LCE = 'Componente de localidad compuesta con entidad'
+    P = 'Paraje'
+    BA = 'Base Antártica'
 
 
 # Todos los tipos BAHRA
@@ -30,20 +32,24 @@ BAHRA_TYPES = {
 
 # Subconjunto de tipos BAHRA seleccionados para crear el dataset de localidades
 LOCALITY_TYPES = {
-    member.name
+    member.value
     for member in [
         BAHRAType.E,
         BAHRAType.LC,
         BAHRAType.LS,
         BAHRAType.LCE,
-        BAHRAType.LSE
+        BAHRAType.LSE,
+        BAHRAType.P,
+        BAHRAType.BA
     ]
 }
 
 # Las localidades censales son LC o LC, en todos los casos (campo tiploc)
 CENSUS_LOCALITY_TYPES = {
     '1': BAHRAType.LS.name,
-    '2': BAHRAType.LC.name
+    '2': BAHRAType.LC.name,
+    'Localidad simple': BAHRAType.LS.name,
+    'Componente de localidad compuesta': BAHRAType.LC.name
 }
 
 # Valores posible para campo func_loc
@@ -89,7 +95,8 @@ CABA_CENSUS_LOCALITY = '02000010'
 
 PROVINCES = 'provincias'
 DEPARTMENTS = 'departamentos'
-MUNICIPALITIES = 'municipios'
+LOCAL_GOVERNMENTS_BAHRA = 'gobiernos_locales_bahra'
+LOCAL_GOVERNMENTS = 'gobiernos_locales'
 SETTLEMENTS = 'asentamientos'
 LOCALITIES = 'localidades'
 CENSUS_LOCALITIES = 'localidades_censales'
@@ -104,7 +111,7 @@ ETL_TABLE_NAME = 'georef_{}'
 
 PROVINCES_ETL_TABLE = ETL_TABLE_NAME.format(PROVINCES)
 DEPARTMENTS_ETL_TABLE = ETL_TABLE_NAME.format(DEPARTMENTS)
-MUNICIPALITIES_ETL_TABLE = ETL_TABLE_NAME.format(MUNICIPALITIES)
+LOCAL_GOVERNMENTS_ETL_TABLE = ETL_TABLE_NAME.format(LOCAL_GOVERNMENTS)
 SETTLEMENTS_ETL_TABLE = ETL_TABLE_NAME.format(SETTLEMENTS)
 LOCALITIES_ETL_TABLE = ETL_TABLE_NAME.format(LOCALITIES)
 CENSUS_LOCALITIES_ETL_TABLE = ETL_TABLE_NAME.format(CENSUS_LOCALITIES)
@@ -114,7 +121,8 @@ STREET_BLOCKS_ETL_TABLE = ETL_TABLE_NAME.format(STREET_BLOCKS)
 
 PROVINCES_TMP_TABLE = TMP_TABLE_NAME.format(PROVINCES)
 DEPARTMENTS_TMP_TABLE = TMP_TABLE_NAME.format(DEPARTMENTS)
-MUNICIPALITIES_TMP_TABLE = TMP_TABLE_NAME.format(MUNICIPALITIES)
+LOCAL_GOVERNMENTS_BAHRA_TMP_TABLE = TMP_TABLE_NAME.format(LOCAL_GOVERNMENTS_BAHRA)
+LOCAL_GOVERNMENTS_TMP_TABLE = TMP_TABLE_NAME.format(LOCAL_GOVERNMENTS)
 SETTLEMENTS_TMP_TABLE = TMP_TABLE_NAME.format(SETTLEMENTS)
 CENSUS_LOCALITIES_TMP_TABLE = TMP_TABLE_NAME.format(CENSUS_LOCALITIES)
 STREETS_TMP_TABLE = TMP_TABLE_NAME.format(STREETS)
@@ -122,8 +130,8 @@ STREET_BLOCKS_TMP_TABLE = TMP_TABLE_NAME.format(STREET_BLOCKS)
 
 PROVINCE_ID_LEN = 2
 DEPARTMENT_ID_LEN = 5
-MUNICIPALITY_ID_LEN = 6
-SETTLEMENT_ID_LEN = 8
+LOCAL_GOVERNMENT_ID_LEN = 6
+SETTLEMENT_ID_LEN = 11
 LOCALITY_ID_LEN = SETTLEMENT_ID_LEN
 CENSUS_LOCALITY_ID_LEN = 8
 STREET_ID_LEN = 13
@@ -131,3 +139,7 @@ STREET_BLOCK_ID_LEN = 18
 
 STREETS_SOURCE = 'INDEC'
 CENSUS_LOCALITIES_SOURCE = 'INDEC'
+
+RECIPIENTS_PREFIX = 'recipients_'
+
+EXPORT_FORMATS = ['csv', 'json', 'geojson', 'ndjson']

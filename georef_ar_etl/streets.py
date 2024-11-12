@@ -1,19 +1,95 @@
 from sqlalchemy.sql import select, func
 from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep, StepSequence
 from .models import Province, Department, CensusLocality, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 
 INVALID_BLOCKS_CENSUS_LOCALITIES = [
-    '62042450',
-    '74056100',
-    '74056150',
-    '14098230',
-    '14098170',
-    '58042010',
-    '06778020'
+    # '62042450',
+    # '74056100',
+    # '74056150',
+    # '14098230',
+    # '14098170',
+    # '58042010',
+    # '06778020',
+    # '42133050'
 ]
+
+INVALID_BLOCKS_CLC = {
+    # '06028028': '06028010',
+    # '06035035': '06035010',
+    # '06091091': '06091010',
+    # '06098098': '06098010',
+    # '06105030': '06105040',
+    # '06105040': '06105050',
+    # '06105050': '06105060',
+    # '06105060': '06105070',
+    # '06105070': '06105080',
+    # '06245245': '06245010',
+    # '06252252': '06252010',
+    # '06260260': '06260010',
+    # '06266020': '06266100',
+    # '06270270': '06270010',
+    # '06274274': '06274010',
+    # '06364364': '06364030',
+    # '06371371': '06371010',
+    # '06408408': '06408010',
+    # '06410410': '06410010',
+    # '06412412': '06412010',
+    # '06427427': '06427010',
+    # '06434434': '06434010',
+    # '06441441': '06441030',
+    # '06490490': '06490010',
+    # '06515515': '06515010',
+    # '06525525': '06525020',
+    # '06539539': '06539010',
+    # '06560560': '06560010',
+    # '06568568': '06568010',
+    # '06638638': '06638040',
+    # '06648648': '06648010',
+    # '06658658': '06658010',
+    # '06749749': '06749010',
+    # '06756756': '06756010',
+    # '06760760': '06760010',
+    # '06763070': '06763060',
+    # '06778778': '06778020',
+    # '06805805': '06805010',
+    # '06833040': '06833050',
+    # '06833050': '06833060',
+    # '06833060': '06833070',
+    # '06833070': '06833080',
+    # '06833080': '06833090',
+    # '06833090': '06833100',
+    # '06833100': '06833110',
+    # '06840840': '06840010',
+    # '06847030': '06847020',
+    # '06861861': '06861010',
+    # '14175103': '14049112',
+    # '30021140': '30021125',
+    # '30021140': '30021128',
+    # '38007093': '38007092',
+    # '66105010': '38084055',
+    # '42133020': '42133050',
+    # '50049250': '50049015',
+    # '50063090': '50063070',
+    # '50070090': '50070100',
+    # '54007010': '54007025',
+    # '38084055': '66105010',
+    # '70098010': '70063010',
+    # '82105240': '82105250',
+    # '82119020': '82119150',
+    # '86049010': '86049015',
+    # '86049120': '86049040',
+    # '86049050': '86049060',
+    # '86049050': '86049120',
+    # '86147050': '86091040',
+    # '86091050': '86091060',
+    # '86147060': '86147095',
+    # '86147130': '86147123',
+    # '90098040': '90098035',
+}
 
 
 def create_process(config):
@@ -22,11 +98,9 @@ def create_process(config):
 
     download_cstep = CompositeStep([
         extractors.DownloadURLStep(
-            '{}_{}.csv'.format(constants.STREET_BLOCKS, province_id),
+            '{}_{}.geojson'.format(constants.STREET_BLOCKS, province_id),
             url_template.format(province_id),
-            params={
-                'CQL_FILTER': 'nomencla like \'{}%\''.format(province_id)
-            }
+            constants.STREET_BLOCKS
         ) for province_id in constants.PROVINCE_IDS
     ], name='download_cstep')
 
@@ -40,6 +114,25 @@ def create_process(config):
                             source_epsg='EPSG:4326')
     ] * (len(download_cstep) - 1), name='ogr2ogr_cstep')
 
+    url_template_street = config.get('etl', 'streets_url_template')
+    download_cstep_streets = CompositeStep([
+        extractors.DownloadURLStep(
+            '{}_{}.geojson'.format(constants.STREETS, province_id),
+            url_template_street.format(province_id),
+            constants.STREETS
+        ) for province_id in constants.PROVINCE_IDS
+    ], name='download_cstep_streets')
+
+    ogr2ogr_cstep_streets = CompositeStep([
+      loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                          geom_type='MultiLineString',
+                          source_epsg='EPSG:4326')
+    ] + [
+      loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                          geom_type='MultiLineString', overwrite=False,
+                          source_epsg='EPSG:4326')
+    ] * (len(download_cstep) - 1), name='ogr2ogr_cstep_streets')
+
     return Process(constants.STREETS, [
         utils.CheckDependenciesStep([Province, Department, CensusLocality]),
         CompositeStep([
@@ -48,55 +141,32 @@ def create_process(config):
                 ogr2ogr_cstep,
                 utils.FirstResultStep,
                 utils.ValidateTableSchemaStep({
-                    'ogc_fid': 'integer',
-                    'fid': 'varchar',
-                    'fnode_': 'varchar',
-                    'tnode_': 'varchar',
-                    'lpoly_': 'varchar',
-                    'rpoly_': 'varchar',
-                    'length': 'varchar',
-                    'codigo10': 'varchar',
+                    'id': 'integer',
                     'nomencla': 'varchar',
-                    'codigo20': 'varchar',
-                    'ancho': 'varchar',
-                    'anchomed': 'varchar',
                     'tipo': 'varchar',
                     'nombre': 'varchar',
-                    'ladoi': 'varchar',
-                    'ladod': 'varchar',
-                    'desdei': 'varchar',
-                    'desded': 'varchar',
-                    'hastad': 'varchar',
-                    'hastai': 'varchar',
-                    'mzai': 'varchar',
-                    'mzad': 'varchar',
+                    'desdei': 'integer',
+                    'desded': 'integer',
+                    'hastad': 'integer',
+                    'hastai': 'integer',
                     'codloc20': 'varchar',
-                    'nomencla10': 'varchar',
-                    'nomenclai': 'varchar',
-                    'nomenclad': 'varchar',
                     'geom': 'geometry'
                 })
             ], name='load_tmp_street_blocks'),
             StepSequence([
-                extractors.DownloadURLStep(constants.STREETS + '.zip',
-                                           config.get('etl', 'streets_url')),
-                transformers.ExtractZipStep(),
-                loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
-                                    geom_type='MultiLineString',
-                                    env={'SHAPE_ENCODING': 'latin1'}),
+                download_cstep_streets,
+                ogr2ogr_cstep_streets,
+                utils.FirstResultStep,
                 utils.ValidateTableSchemaStep({
-                    'ogc_fid': 'integer',
+                    'id': 'integer',
                     'nomencla': 'varchar',
-                    'codigo': 'double',
                     'tipo': 'varchar',
                     'nombre': 'varchar',
-                    'desdei': 'double',
-                    'desded': 'double',
-                    'hastai': 'double',
-                    'hastad': 'double',
+                    'desdei': 'varchar',
+                    'desded': 'varchar',
+                    'hastai': 'varchar',
+                    'hastad': 'varchar',
                     'codloc': 'varchar',
-                    'codaglo': 'varchar',
-                    'link': 'varchar',
                     'geom': 'geometry'
                 })
             ], name='load_tmp_streets')
@@ -105,20 +175,50 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'streets_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(Street, constants.ETL_VERSION,
-                                       constants.STREETS + '.json'),
-            loaders.CreateCSVFileStep(Street, constants.ETL_VERSION,
-                                      constants.STREETS + '.csv'),
-            loaders.CreateNDJSONFileStep(Street, constants.ETL_VERSION,
-                                         constants.STREETS + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.STREETS + '.json'),
-            utils.CopyFileStep(output_path, constants.STREETS + '.csv'),
-            utils.CopyFileStep(output_path, constants.STREETS + '.ndjson')
-        ])
+        CompositeStepCreateFile(
+            Street, 'streets', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('streets', config),
     ])
+
+
+def report_street_block_number_state(tmp_blocks, ctx, name):
+    total = ctx.session.query(func.count()).filter(tmp_blocks.tipo == 'CALLE').all()
+    # Informe de cuadras sin numeración
+    sb_no_num_by_loc = ctx.session.query(tmp_blocks.codloc20, func.count()).filter(
+        (tmp_blocks.tipo == 'CALLE') &
+        (tmp_blocks.desdei == 0) & (tmp_blocks.hastai == 0) & (tmp_blocks.desded == 0) & (tmp_blocks.hastad == 0)
+    ).group_by(tmp_blocks.codloc20).all()
+
+    sb_no_num_count = 0
+    sb_no_num_warning = []
+    for loc in sb_no_num_by_loc:
+        sb_no_num_warning.append((loc[0], "Hay {} cuadras de calles sin numeración".format(loc[1])))
+        sb_no_num_count += loc[1]
+
+    if sb_no_num_warning:
+        message = 'Existen {} cuadras de calles sin numeración de un total de {}'.format(sb_no_num_count, total)
+        ctx.report.warn(message)
+        ctx.report.get_data(name)['warning'] = sb_no_num_warning
+
+    # informe de cuadras con numeración errónea
+    sb_wrong_num_by_loc = ctx.session.query(tmp_blocks.codloc20, func.count()).filter(
+        (tmp_blocks.tipo == 'CALLE') &
+        ((tmp_blocks.desdei > tmp_blocks.hastai) | (tmp_blocks.desded > tmp_blocks.hastad))
+    ).group_by(tmp_blocks.codloc20).all()
+
+    sb_wrong_num_count = 0
+    sb_wrong_num_warning = []
+    for loc in sb_wrong_num_by_loc:
+        sb_wrong_num_warning.append((loc[0], "Hay {} cuadras de calles con numeración errónea".format(loc[1])))
+        sb_wrong_num_count += loc[1]
+
+    if sb_wrong_num_warning:
+        message = 'Existen {} cuadras de calles sin numeración de un total de {}'.format(sb_wrong_num_count, total)
+        ctx.report.warn(message)
+        ctx.report.get_data(name)['warning'] = sb_wrong_num_warning
 
 
 class StreetsExtractionStep(transformers.EntitiesExtractionStep):
@@ -128,28 +228,26 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='nomencla')
 
     def _patch_tmp_entities(self, tmp_blocks, ctx):
-        def update_marcos_paz(row):
-            row.nomencla = '06525020' + row.nomencla[
-                constants.CENSUS_LOCALITY_ID_LEN:]
 
-        # Asignar localidad censal a las calles de Marcos Paz que no
-        # la tienen asignada.
-        patch.apply_fn(tmp_blocks, update_marcos_paz, ctx,
-                       tmp_blocks.nomencla.like('06525999%'))
+        patch.delete(tmp_blocks, ctx, tipo='')
 
-        def update_ushuaia(row):
-            row.nomencla = '94015' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
+        patch.delete(tmp_blocks, ctx, nombre='')
 
-        # Actualizar calles de Ushuaia (agregado en ETL2)
-        patch.apply_fn(tmp_blocks, update_ushuaia, ctx,
-                       tmp_blocks.nomencla.like('94014%'))
+        # Una cuadra de la calle "064414417007012" no contiene geometría
+        patch.delete(tmp_blocks, ctx, geom=None)
 
-        def update_rio_grande(row):
-            row.nomencla = '94008' + row.nomencla[constants.DEPARTMENT_ID_LEN:]
+        patch.delete(tmp_blocks, ctx, nomencla='4213305000025')
+        patch.delete(tmp_blocks, ctx, nomencla='4213305000030')
+        patch.delete(tmp_blocks, ctx, nomencla='4213305000075')
 
-        # Actualizar calles de Río Grande (agregado en ETL2)
-        patch.apply_fn(tmp_blocks, update_rio_grande, ctx,
-                       tmp_blocks.nomencla.like('94007%'))
+        def update_clc(row):
+            old_clc = row.nomencla[:constants.CENSUS_LOCALITY_ID_LEN]
+            new_clc = INVALID_BLOCKS_CLC.get(old_clc)
+            row.nomencla = new_clc + row.nomencla[constants.CENSUS_LOCALITY_ID_LEN:]
+            row.codloc20 = new_clc
+
+        for clc in INVALID_BLOCKS_CLC.keys():
+            patch.apply_fn(tmp_blocks, update_clc, ctx, tmp_blocks.nomencla.like('{}%'.format(clc)))
 
         ctx.session.commit()
 
@@ -161,7 +259,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
     def _build_entities_query(self, tmp_blocks, ctx):
         fields = [
-            func.min(tmp_blocks.ogc_fid).label('ogc_fid'),
+            func.min(tmp_blocks.id).label('id'),
             tmp_blocks.nomencla,
             func.min(tmp_blocks.nombre).label('nombre'),
             func.min(tmp_blocks.tipo).label('tipo'),
@@ -211,6 +309,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
     def _run_internal(self, data, ctx):
         tmp_blocks, tmp_streets = data
+        report_street_block_number_state(tmp_blocks, ctx, self.name)
 
         if tmp_streets:
             for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:

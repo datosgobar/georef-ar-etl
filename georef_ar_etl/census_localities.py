@@ -1,6 +1,7 @@
 from .exceptions import ValidationException
+from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
-from .models import Province, Department, Municipality, CensusLocality
+from .models import Province, Department, LocalGovernment, CensusLocality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
@@ -12,35 +13,28 @@ def create_process(config):
     file_basename = constants.CENSUS_LOCALITIES.replace('_', '-')
 
     return Process(constants.CENSUS_LOCALITIES, [
-        utils.CheckDependenciesStep([Province, Department, Municipality]),
+        utils.CheckDependenciesStep([Province, Department, LocalGovernment]),
         extractors.DownloadURLStep(constants.CENSUS_LOCALITIES + '.zip',
-                                   config.get('etl', 'census_localities_url')),
-        transformers.ExtractZipStep('Codgeo_Pais_x_loc_con_datos'),
+                                   config.get('etl', 'census_localities_url'), constants.CENSUS_LOCALITIES),
+        transformers.ExtractZipStep(''),
         loaders.Ogr2ogrStep(table_name=constants.CENSUS_LOCALITIES_TMP_TABLE,
                             geom_type='Point',
-                            env={'SHAPE_ENCODING': 'utf-8'}),
+                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
-            'link': 'varchar',
-            'codpcia': 'varchar',
-            'coddpto': 'varchar',
-            'codloc': 'varchar',
-            'provincia': 'varchar',
-            'departamen': 'varchar',
-            'localidad': 'varchar',
-            'func_loc': 'varchar',
-            'tiploc': 'varchar',
-            'tip2loc': 'varchar',
-            'latitud': 'varchar',
-            'longitud': 'varchar',
-            'xgk': 'numeric',
-            'ygk': 'numeric',
-            'varones': 'numeric',
-            'mujeres': 'numeric',
-            'personas': 'numeric',
-            'hogares': 'numeric',
-            'viv_part_h': 'numeric',
-            'viv_part': 'numeric',
+            'fid_1': 'numeric',
+            'fid': 'numeric',
+            'id': 'numeric',
+            'depto': 'varchar',
+            'jurisdic': 'varchar',
+            'cde': 'varchar',
+            'fna': 'varchar',
+            'clc': 'varchar',
+            'nam': 'varchar',
+            'gna': 'varchar',
+            'cpr': 'varchar',
+            'tlc': 'varchar',
+            'sag': 'varchar',
             'geom': 'geometry'
         }),
         CompositeStep([
@@ -51,23 +45,8 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'census_localities_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(CensusLocality, constants.ETL_VERSION,
-                                       file_basename + '.json'),
-            loaders.CreateGeoJSONFileStep(CensusLocality,
-                                          constants.ETL_VERSION,
-                                          file_basename + '.geojson'),
-            loaders.CreateCSVFileStep(CensusLocality, constants.ETL_VERSION,
-                                      file_basename + '.csv'),
-            loaders.CreateNDJSONFileStep(CensusLocality, constants.ETL_VERSION,
-                                         file_basename + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, file_basename + '.json'),
-            utils.CopyFileStep(output_path, file_basename + '.geojson'),
-            utils.CopyFileStep(output_path, file_basename + '.csv'),
-            utils.CopyFileStep(output_path, file_basename + '.ndjson')
-        ])
+        CompositeStepCreateFile(CensusLocality, 'census_localities', config),
+        CompositeStepCopyFile('census_localities', config),
     ])
 
 
@@ -75,27 +54,19 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self):
         super().__init__('census_localities_extraction', CensusLocality,
                          entity_class_pkey='id',
-                         tmp_entity_class_pkey='link')
+                         tmp_entity_class_pkey='clc')
 
     def _patch_tmp_entities(self, tmp_census_localities, ctx):
-        def update_ushuaia(row):
-            row.link = '94015' + row.link[constants.DEPARTMENT_ID_LEN:]
 
-        # Actualizar localidades censales de Ushuaia (agregado en ETL2)
-        patch.apply_fn(tmp_census_localities, update_ushuaia, ctx,
-                       tmp_census_localities.link.like('94014%'))
-
-        def update_rio_grande(row):
-            row.link = '94008' + row.link[constants.DEPARTMENT_ID_LEN:]
-
-        # Actualizar localidades censales de Río Grande (agregado en ETL2)
-        patch.apply_fn(tmp_census_localities, update_rio_grande, ctx,
-                       tmp_census_localities.link.like('94007%'))
+        # TODO: Averiguar por qué aparecen distintas localidad con el mismo 'clc'
+        patch.delete(tmp_census_localities, ctx, clc='06007110')
+        patch.delete(tmp_census_localities, ctx, clc='50070090')
+        patch.delete(tmp_census_localities, ctx, clc='34021050')
 
     def _process_entity(self, tmp_census_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_census_locality.geom,
                                                      ctx)
-        loc_id = tmp_census_locality.link
+        loc_id = tmp_census_locality.clc
         prov_id = loc_id[:constants.PROVINCE_ID_LEN]
         dept_id = loc_id[:constants.DEPARTMENT_ID_LEN]
 
@@ -111,23 +82,24 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        municipality = geometry.get_entity_at_point(Municipality,
+        local_government = geometry.get_entity_at_point(LocalGovernment,
                                                     tmp_census_locality.geom,
                                                     ctx)
 
-        category = constants.CENSUS_LOCALITY_TYPES[tmp_census_locality.tiploc]
-        function = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[
-            tmp_census_locality.func_loc]
+        category = constants.CENSUS_LOCALITY_TYPES[tmp_census_locality.tlc]
+        # TODO: Pendiente de incorporación
+        # function = constants.CENSUS_LOCALITY_ADMIN_FUNCTIONS[tmp_census_locality.func_loc]
+        function = None
 
         return CensusLocality(
             id=loc_id,
-            nombre=utils.clean_string(tmp_census_locality.localidad),
+            nombre=utils.clean_string(tmp_census_locality.fna),
             categoria=category,
             funcion=function,
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
-            municipio_id=municipality.id if municipality else None,
+            gobierno_local_id=local_government.id if local_government else None,
             fuente=constants.CENSUS_LOCALITIES_SOURCE,
             geometria=tmp_census_locality.geom
         )

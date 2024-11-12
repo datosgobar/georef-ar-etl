@@ -1,6 +1,8 @@
+from .constants import BAHRAType
 from .exceptions import ValidationException
+from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
-from .models import Province, Department, Municipality, CensusLocality,\
+from .models import Province, Department, LocalGovernment, CensusLocality,\
     Locality
 from .settlements import SettlementsExtractionStep
 from . import loaders, geometry, utils, constants
@@ -25,22 +27,8 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'localities_target_size'),
             op='ge'),
-        CompositeStep([
-            loaders.CreateJSONFileStep(Locality, constants.ETL_VERSION,
-                                       constants.LOCALITIES + '.json'),
-            loaders.CreateGeoJSONFileStep(Locality, constants.ETL_VERSION,
-                                          constants.LOCALITIES + '.geojson'),
-            loaders.CreateCSVFileStep(Locality, constants.ETL_VERSION,
-                                      constants.LOCALITIES + '.csv'),
-            loaders.CreateNDJSONFileStep(Locality, constants.ETL_VERSION,
-                                         constants.LOCALITIES + '.ndjson')
-        ]),
-        CompositeStep([
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.json'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.geojson'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.csv'),
-            utils.CopyFileStep(output_path, constants.LOCALITIES + '.ndjson')
-        ])
+        CompositeStepCreateFile(Locality, 'localities', config),
+        CompositeStepCopyFile('localities', config),
     ])
 
 
@@ -78,7 +66,7 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        municipality = geometry.get_entity_at_point(Municipality,
+        local_government = geometry.get_entity_at_point(LocalGovernment,
                                                     tmp_locality.geom, ctx)
 
         if prov_id == constants.CABA_PROV_ID:
@@ -100,8 +88,8 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
-            municipio_id=municipality.id if municipality else None,
+            gobierno_local_id=local_government.id if local_government else None,
             localidad_censal_id=census_loc.id if census_loc else None,
-            fuente=utils.clean_string(tmp_locality.fuente_ubi),
+            fuente=utils.clean_string(tmp_locality.fuente_de_),
             geometria=tmp_locality.geom
         )

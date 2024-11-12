@@ -1,3 +1,4 @@
+from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, Step, CompositeStep
 from .models import Street, StreetBlock
 from . import utils, constants, loaders
@@ -23,9 +24,12 @@ def create_process(config):
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'street_blocks_target_size'),
             op='ge'),
-        loaders.CreateNDJSONFileStep(StreetBlock, constants.ETL_VERSION,
-                                     constants.STREET_BLOCKS + '.ndjson'),
-        utils.CopyFileStep(output_path, constants.STREET_BLOCKS + '.ndjson')
+        CompositeStepCreateFile(
+            StreetBlock, 'street_blocks', config,
+            tolerance=config.getfloat("etl", "geojson_tolerance"),
+            caba_tolerance=config.getfloat("etl", "geojson_caba_tolerance")
+        ),
+        CompositeStepCopyFile('street_blocks', config),
     ])
 
 
@@ -54,8 +58,9 @@ class StreetBlocksExtractionStep(Step):
         return StreetBlock
 
     def _process_block(self, tmp_block, street):
-        ogc_fid = str(tmp_block.ogc_fid).rjust(5, '0')
-        block_id = tmp_block.nomencla + ogc_fid[-5:]
+        # TODO: Revisar la forma de generar el valor block_id para garantizar la unicidad
+        ogc_fid = str(tmp_block.id).rjust(7, '0')
+        block_id = tmp_block.nomencla + ogc_fid[-7:]
 
         return StreetBlock(
             id=block_id,
