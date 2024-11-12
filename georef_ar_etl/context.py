@@ -400,7 +400,7 @@ class Report:  # pylint: disable=attribute-defined-outside-init
         processes_map = {
             constants.PROVINCES: 'provinces_extraction',
             constants.DEPARTMENTS: 'departments_extraction',
-            constants.MUNICIPALITIES: 'municipalities_extraction',
+            constants.LOCAL_GOVERNMENTS: 'local_governments_extraction',
             constants.CENSUS_LOCALITIES: 'census_localities_extraction',
             constants.SETTLEMENTS: 'settlements_extraction',
             constants.LOCALITIES: 'localities_extraction',

@@ -15,7 +15,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         super().setUpClass()
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
-        cls.create_test_municipalities(extract=True)
+        cls.create_test_local_governments(extract=True)
         cls.create_test_census_localities(extract=True)
 
     def setUp(self):
@@ -179,7 +179,7 @@ class TestLocalitiesExtractionStep(ETLTestCase):
             lon=0, lat=0,
             provincia_id='02',
             departamento_id='02000',
-            municipio_id=None,
+            gobierno_local_id=None,
             fuente='test',
             geometria=TEST_POINT
         )
@@ -202,11 +202,11 @@ class TestLocalitiesExtractionStep(ETLTestCase):
         loc = self._ctx.session.query(localities).get('02000010000')
         self.assertTrue(loc.departamento_id is None)
 
-    def test_municipality(self):
-        """Si una localidad está geográficamente contenida por un municipio, se
-        debería establecer ese municipio como su propiedad 'municipio_id'."""
+    def test_local_government(self):
+        """Si una localidad está geográficamente contenida por un gobierno local, se
+        debería establecer ese gobierno local como su propiedad 'gobierno_local_id'."""
         step = LocalitiesExtractionStep()
         localities = step.run(self._tmp_settlements, self._ctx)
 
         locality = self._ctx.session.query(localities).get('70070050002')
-        self.assertEqual(locality.municipio_id, '700070')
+        self.assertEqual(locality.gobierno_local_id, '700070')

@@ -54,7 +54,7 @@ class ProvincesExtractionStep(transformers.EntitiesExtractionStep):
 
     def _patch_tmp_entities(self, tmp_provinces, ctx):
         # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
-        # de algunos municipios, lanza un error "Self-intersection at or near point..."
+        # de algunos gobiernos locales, lanza un error "Self-intersection at or near point..."
         # Validar la geometría utilizando ST_MakeValid().
         def make_valid_geom(prov):
             sql_str = """

@@ -1,7 +1,7 @@
 from .exceptions import ValidationException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
-from .models import Province, Department, Municipality, CensusLocality
+from .models import Province, Department, LocalGovernment, CensusLocality
 from . import extractors, transformers, loaders, geometry, utils, constants
 from . import patch
 
@@ -13,7 +13,7 @@ def create_process(config):
     file_basename = constants.CENSUS_LOCALITIES.replace('_', '-')
 
     return Process(constants.CENSUS_LOCALITIES, [
-        utils.CheckDependenciesStep([Province, Department, Municipality]),
+        utils.CheckDependenciesStep([Province, Department, LocalGovernment]),
         extractors.DownloadURLStep(constants.CENSUS_LOCALITIES + '.zip',
                                    config.get('etl', 'census_localities_url'), constants.CENSUS_LOCALITIES),
         transformers.ExtractZipStep(''),
@@ -22,18 +22,18 @@ def create_process(config):
                             env={'SHAPE_ENCODING': 'ISO-8859-1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
+            'fid_1': 'numeric',
             'fid': 'numeric',
-            'provincia': 'varchar',
-            'departamen': 'varchar',
-            'cpr': 'varchar',
+            'id': 'numeric',
+            'depto': 'varchar',
+            'jurisdic': 'varchar',
             'cde': 'varchar',
             'fna': 'varchar',
             'clc': 'varchar',
+            'nam': 'varchar',
+            'gna': 'varchar',
+            'cpr': 'varchar',
             'tlc': 'varchar',
-            'nomenv': 'varchar',
-            'ceu': 'varchar',
-            'nomgl': 'varchar',
-            'codgl': 'varchar',
             'sag': 'varchar',
             'geom': 'geometry'
         }),
@@ -60,13 +60,8 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
 
         # TODO: Averiguar por qué aparecen distintas localidad con el mismo 'clc'
         patch.delete(tmp_census_localities, ctx, clc='06007110')
-        patch.delete(tmp_census_localities, ctx, clc='38007010')
-
-        # Se toma como válida la localidad censal con fid=3059
-        patch.delete(tmp_census_localities, ctx, clc='70077010', fid='3058')
-
-        # Se toma como válida la localidad censal con fid=3067
-        patch.delete(tmp_census_localities, ctx, clc='70098010', fid='3066')
+        patch.delete(tmp_census_localities, ctx, clc='50070090')
+        patch.delete(tmp_census_localities, ctx, clc='34021050')
 
     def _process_entity(self, tmp_census_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_census_locality.geom,
@@ -87,7 +82,7 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
 
-        municipality = geometry.get_entity_at_point(Municipality,
+        local_government = geometry.get_entity_at_point(LocalGovernment,
                                                     tmp_census_locality.geom,
                                                     ctx)
 
@@ -104,7 +99,7 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
             lon=lon, lat=lat,
             provincia_id=prov_id,
             departamento_id=dept_id,
-            municipio_id=municipality.id if municipality else None,
+            gobierno_local_id=local_government.id if local_government else None,
             fuente=constants.CENSUS_LOCALITIES_SOURCE,
             geometria=tmp_census_locality.geom
         )

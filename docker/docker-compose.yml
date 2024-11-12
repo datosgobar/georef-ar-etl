@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile_db
     image: datosgobar/georef-etl_db
-    container_name: georef_etl_db
+    container_name: georef-etl_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -37,7 +37,7 @@ services:
       context: ..
       dockerfile: ./docker/Dockerfile_app
     image: datosgobar/georef-etl_app
-    container_name: georef_etl_app
+    container_name: georef-etl_app
     depends_on:
       db:
         condition: service_healthy

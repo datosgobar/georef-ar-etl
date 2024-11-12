@@ -14,7 +14,7 @@ class TestSettlementsExtractionStep(ETLTestCase):
         super().setUpClass()
         cls.create_test_provinces(extract=True)
         cls.create_test_departments(extract=True)
-        cls.create_test_municipalities(extract=True)
+        cls.create_test_local_governments(extract=True)
         cls.create_test_census_localities(extract=True)
 
     def setUp(self):
@@ -176,15 +176,15 @@ class TestSettlementsExtractionStep(ETLTestCase):
         loc = self._ctx.session.query(settlements).get('02000010000')
         self.assertTrue(loc.departamento_id is None)
 
-    def test_municipality(self):
-        """Si un asentamiento está geográficamente contenido por un municipio,
-        se debería establecer ese municipio como su propiedad
-        'municipio_id'."""
+    def test_local_government(self):
+        """Si un asentamiento está geográficamente contenido por un gobierno local,
+        se debería establecer ese gobierno local como su propiedad
+        'gobierno_local_id'."""
         step = SettlementsExtractionStep()
         settlements = step.run(self._tmp_settlements, self._ctx)
 
         settlement = self._ctx.session.query(settlements).get('70056000081')
-        self.assertEqual(settlement.municipio_id, '700056')
+        self.assertEqual(settlement.gobierno_local_id, '700056')
 
     def test_invalid_commune(self):
         """Si un asentamiento de CABA tiene un ID de departamento mayor a 15,

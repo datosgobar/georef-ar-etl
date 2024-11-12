@@ -126,7 +126,7 @@ def get_intersection_percentage(geom_a, geom_b, ctx):
 
 def get_entity_at_point(entity_type, point, ctx, geom_field='geometria'):
     # TODO: Sería mejor utilizar .one_or_none() en lugar de .first(), pero la
-    # capa de municipios tiene dos municipios que ocupan el *mismo lugar
+    # capa de gobiernos locales tiene dos gobiernos locales que ocupan el *mismo lugar
     # físico* (625035 y 620224). Cambiar cuando se resuelva ese problema.
     return ctx.session.query(entity_type).filter(
         getattr(entity_type, geom_field).ST_Contains(point)
