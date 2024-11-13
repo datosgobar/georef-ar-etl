@@ -659,6 +659,7 @@ class Locality(Base, SettlementMixin, InCensusLocalityMixin):
 
     __tablename__ = constants.LOCALITIES_ETL_TABLE
     _id_len = constants.LOCALITY_ID_LEN
+    geometria = Column(Geometry(geometry_type='GEOMETRY', srid=4326))
 
     @validates('categoria')
     def validate_category(self, _key, category):
