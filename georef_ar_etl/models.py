@@ -917,6 +917,9 @@ class StreetBlock(Base, DoorNumberedMixin):
     calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                          ondelete='cascade'),
                       nullable=False)
+    loc_id = Column(String, ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
+                                         ondelete='cascade'),
+                      nullable=True)
     geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     def to_dict(self, session):
