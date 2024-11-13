@@ -19,7 +19,7 @@ def create_process(config):
                                    config.get('etl', 'settlements_url'), constants.SETTLEMENTS),
         ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.SETTLEMENTS_TMP_TABLE,
-                            geom_type='MultiPoint', precision=False,
+                            geom_type='Geometry', precision=False,
                             env={'SHAPE_ENCODING': 'latin1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
