@@ -7,7 +7,6 @@ from . import patch
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     # Utilizar kebab-case en lugar de snake_case para nombres de archivos
     file_basename = constants.CENSUS_LOCALITIES.replace('_', '-')

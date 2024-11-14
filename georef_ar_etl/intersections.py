@@ -9,7 +9,6 @@ MAX_POINTS_PER_INTERSECTION = 99
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     return Process(constants.INTERSECTIONS, [
         utils.CheckDependenciesStep([Province, Department, Street]),

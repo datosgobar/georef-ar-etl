@@ -11,7 +11,6 @@ from . import patch
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     return Process(constants.SETTLEMENTS, [
         utils.CheckDependenciesStep([Province, Department, LocalGovernment,
@@ -20,7 +19,7 @@ def create_process(config):
                                    config.get('etl', 'settlements_url'), constants.SETTLEMENTS),
         ExtractZipStep(),
         loaders.Ogr2ogrStep(table_name=constants.SETTLEMENTS_TMP_TABLE,
-                            geom_type='MultiPoint', precision=False,
+                            geom_type='Geometry', precision=False,
                             env={'SHAPE_ENCODING': 'latin1'}),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',

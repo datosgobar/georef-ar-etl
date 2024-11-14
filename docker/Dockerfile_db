@@ -1,9 +1,8 @@
-FROM postgres:11-buster
+FROM postgres:12-bookworm
 
 RUN localedef -i es_AR -c -f UTF-8 -A /usr/share/locale/locale.alias es_AR.UTF-8
 ENV LANG es_AR.utf8
 
-RUN apt-get update
-RUN apt-get install -y postgresql-11-postgis-2.5
+RUN apt-get update && apt-get install -y postgresql-12-postgis-3 && rm -rf /var/lib/apt/lists/*
 
 COPY init-user-db.sh /docker-entrypoint-initdb.d/init-user-db.sh

@@ -1,11 +1,10 @@
 from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, Step, CompositeStep
-from .models import Street, StreetBlock
-from . import utils, constants, loaders
+from .models import Street, StreetBlock, Locality
+from . import utils, constants, loaders, geometry
 
 
 def create_process(config):
-    output_path = config.get('etl', 'output_dest_path')
 
     def fetch_tmp_blocks_table(_, ctx):
         return utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
@@ -51,16 +50,24 @@ class StreetBlocksExtractionStep(Step):
         ctx.report.info('Procesando cuadras...')
 
         for tmp_block, street in utils.pbar(query, ctx, total=count):
-            block = self._process_block(tmp_block, street)
+            block = self._process_block(tmp_block, street, ctx)
             utils.add_maybe_flush(block, ctx, bulk_size)
 
         ctx.report.info('Cuadras procesadas.')
         return StreetBlock
 
-    def _process_block(self, tmp_block, street):
+    def _process_block(self, tmp_block, street, ctx):
         # TODO: Revisar la forma de generar el valor block_id para garantizar la unicidad
         ogc_fid = str(tmp_block.id).rjust(7, '0')
         block_id = tmp_block.nomencla + ogc_fid[-7:]
+
+        localities = ctx.session.query(Locality).filter(
+            getattr(Locality, 'geometria').ST_Contains(tmp_block.geom)
+        )
+        if localities.count() == 1:
+            loc_id = localities[0].id
+        else:
+            loc_id = None
 
         return StreetBlock(
             id=block_id,
@@ -69,5 +76,6 @@ class StreetBlocksExtractionStep(Step):
             fin_derecha=tmp_block.hastad or 0,
             inicio_izquierda=tmp_block.desdei or 0,
             fin_izquierda=tmp_block.hastai or 0,
+            loc_id=loc_id,
             geometria=tmp_block.geom
         )

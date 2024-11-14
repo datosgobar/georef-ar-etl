@@ -659,6 +659,7 @@ class Locality(Base, SettlementMixin, InCensusLocalityMixin):
 
     __tablename__ = constants.LOCALITIES_ETL_TABLE
     _id_len = constants.LOCALITY_ID_LEN
+    geometria = Column(Geometry(geometry_type='GEOMETRY', srid=4326))
 
     @validates('categoria')
     def validate_category(self, _key, category):
@@ -679,6 +680,18 @@ class Locality(Base, SettlementMixin, InCensusLocalityMixin):
 
         return category
 
+    def to_dict_simple(self):
+        """Retorna una representación parcial de la entidad como diccionario
+        'dict'.
+
+        Returns:
+            dict: Datos de la entidad en forma de diccionario.
+
+        """
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+        }
 
 class CensusLocality(Base, EntityMixin, InProvinceMixin,
                      InNullableDepartmentMixin, InNullableLocalGovernmentMixin):
@@ -916,6 +929,9 @@ class StreetBlock(Base, DoorNumberedMixin):
     calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                          ondelete='cascade'),
                       nullable=False)
+    loc_id = Column(String, ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
+                                         ondelete='cascade'),
+                      nullable=True)
     geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     def to_dict(self, session):
@@ -932,11 +948,21 @@ class StreetBlock(Base, DoorNumberedMixin):
 
         """
         street = session.query(Street).get(self.calle_id)
+        if self.loc_id:
+            locality = session.query(Locality).get(self.loc_id)
+        else:
+            locality = None
+
+        if locality:
+            locality_dict = locality.to_dict_simple()
+        else:
+            locality_dict = {"id": None, "nombre": None}
 
         return {
             'id': self.id,
             'calle': street.to_dict_simple(session),
             'altura': self.door_numbers_dict(),
+            'localidad': locality_dict,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }

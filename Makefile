@@ -62,8 +62,8 @@ cuadras:
 files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail
 	$(ETL_COMMAND) -p departamentos --start 9 --no-mail
-	$(ETL_COMMAND) -p gobiernos_locales --start 9 --no-mail
-	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
+	$(ETL_COMMAND) -p gobiernos_locales --start 7 --no-mail
+	$(ETL_COMMAND) -p localidades_censales --start 7 --no-mail
 	$(ETL_COMMAND) -p asentamientos --start 8 --no-mail
 	$(ETL_COMMAND) -p localidades --start 6 --no-mail
 	$(ETL_COMMAND) -p calles --start 5 --no-mail
