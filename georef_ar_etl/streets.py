@@ -3,7 +3,7 @@ from sqlalchemy.sql.sqltypes import Integer
 from .exceptions import ValidationException
 from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep, StepSequence
-from .models import Province, Department, CensusLocality, Street
+from .models import Province, Department, CensusLocality, Street, Locality
 from . import extractors, loaders, utils, constants, patch, transformers
 
 INVALID_BLOCKS_CENSUS_LOCALITIES = [
@@ -318,8 +318,8 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         return super()._run_internal(tmp_blocks, ctx)
 
-    def _process_entity(self, block, cached_session, ctx):
-        street_id = block.nomencla
+    def _process_entity(self, street, cached_session, ctx):
+        street_id = street.nomencla
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
         census_loc_id = street_id[:constants.CENSUS_LOCALITY_ID_LEN]
@@ -346,17 +346,31 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                 'No existe la localidad censal con ID {}'.format(
                     census_loc_id))
 
+        # Se busca entre los registros de las localidades pertenecientes a la localidad censal de la calle
+        # aquellos que posean un polígono definido que pudiera contener la calle.
+        loc_id = None
+        # Porcentaje mínimo requerido de intersección para considerar la calle perteneciente a la localidad
+        required_percentage = 0.8  # 80%
+        localities = (ctx.session.query(Locality)
+        .filter(Locality.localidad_censal_id == census_loc_id)
+        .filter(
+            (func.ST_Length(func.ST_Intersection(Locality.geometria, street.geom)) / func.ST_Length(street.geom)) >= required_percentage
+        ))
+        if localities.count() == 1:
+            loc_id = localities[0].id
+
         return Street(
             id=street_id,
-            nombre=utils.clean_string(block.nombre),
-            categoria=utils.clean_string(block.tipo),
+            nombre=utils.clean_string(street.nombre),
+            categoria=utils.clean_string(street.tipo),
             fuente=constants.STREETS_SOURCE,
-            inicio_derecha=block.desded or 0,
-            fin_derecha=block.hastad or 0,
-            inicio_izquierda=block.desdei or 0,
-            fin_izquierda=block.hastai or 0,
-            geometria=block.geom,
+            inicio_derecha=street.desded or 0,
+            fin_derecha=street.hastad or 0,
+            inicio_izquierda=street.desdei or 0,
+            fin_izquierda=street.hastai or 0,
+            geometria=street.geom,
             provincia_id=prov_id,
             departamento_id=dept_id,
-            localidad_censal_id=census_loc_id
+            localidad_censal_id=census_loc_id,
+            loc_id=loc_id,
         )
