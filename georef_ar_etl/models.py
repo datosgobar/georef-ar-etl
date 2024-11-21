@@ -539,7 +539,7 @@ class LocalGovernment(Base, EntityMixin, InProvinceMixin):
             },
             'fuente': self.fuente,
             'categoria': self.categoria,
-            'ubicacion': {
+            'centroide': {
                 'lon': self.lon,
                 'lat': self.lat
             },
