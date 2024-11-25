@@ -27,27 +27,9 @@ def create_process(config):
                 ),
                 utils.ValidateTableSchemaStep({
                     'ogc_fid': 'integer',
-                    'field_1': 'varchar',
-                    'id': 'varchar',
-                    'cod_pcia': 'varchar',
-                    'nom_pcia': 'varchar',
-                    'cod_depto': 'varchar',
-                    'nom_depto': 'varchar',
                     'cod_ase': 'varchar',
                     'nombre': 'varchar',
-                    'tipo': 'varchar',
-                    'cod_aglo': 'varchar',
-                    'nom_aglo': 'varchar',
-                    'cod_agl': 'varchar',
-                    'nom_agl': 'varchar',
-                    'lat_gd': 'varchar',
-                    'long_gd': 'varchar',
-                    'lat_gs': 'varchar',
-                    'long_gs': 'varchar',
-                    'fuente': 'varchar',
-                    'centroid': 'varchar',
                     'geom': 'geometry',
-                    'is_within': 'varchar'
                 })
             ], name='load_tmp_localities')
         ]),
