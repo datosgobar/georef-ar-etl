@@ -1,11 +1,10 @@
-from .constants import BAHRAType
 from .exceptions import ValidationException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
-from .process import Process, CompositeStep, StepSequence
+from .process import Process, CompositeStep
 from .models import Province, Department, LocalGovernment, CensusLocality,\
     Locality
 from .settlements import SettlementsExtractionStep
-from . import loaders, geometry, utils, constants, extractors
+from . import geometry, utils, constants
 
 
 def create_process(config):
@@ -15,34 +14,12 @@ def create_process(config):
 
     return Process(constants.LOCALITIES, [
         utils.CheckDependenciesStep([constants.SETTLEMENTS_TMP_TABLE]),
+        utils.FunctionStep(ctx_fn=fetch_tmp_settlements_table,
+                           name='fetch_tmp_settlements_table',
+                           reads_input=False),
         CompositeStep([
-            utils.FunctionStep(ctx_fn=fetch_tmp_settlements_table,
-                               name='fetch_tmp_settlements_table',
-                               reads_input=False),
-            StepSequence([
-                extractors.DownloadURLStep('localidades.csv',
-                                           config.get('etl', 'localities_url'), constants.LOCALITIES),
-                loaders.Ogr2ogrStep(
-                    table_name=constants.LOCALITIES_TMP_TABLE, geom_type='Geometry', source_epsg='EPSG:4326'
-                ),
-                utils.ValidateTableSchemaStep({
-                    'ogc_fid': 'integer',
-                    'cod_ase': 'varchar',
-                    'nombre': 'varchar',
-                    'geom': 'geometry',
-                })
-            ], name='load_tmp_localities')
-        ]),
-        utils.FunctionStep(fn=lambda results: tuple(results)),
-        CompositeStep([
-            StepSequence([
-                utils.FunctionStep(fn=lambda results: list(results)),
-                LocalitiesExtractionStep(),
-            ]),
-            StepSequence([
-                utils.FunctionStep(fn=lambda results: list(results)),
-                CompositeStep([utils.DropTableStep()] * 2),
-            ]),
+            LocalitiesExtractionStep(),
+            utils.DropTableStep(),
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(
@@ -66,22 +43,6 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
         return ctx.session.query(tmp_entities).\
             filter(tmp_entities.tipo_asent.in_(constants.LOCALITY_TYPES)).\
             yield_per(bulk_size)
-
-    def _change_geom(self, tmp_settlements, tmp_localities, ctx):
-        for locality in ctx.session.query(tmp_localities):
-            settlement = ctx.session.query(tmp_settlements).filter_by(
-                codigo_ase=locality.cod_ase
-            ).first()
-            if settlement:
-                settlement.geom = locality.geom
-        ctx.session.commit()
-
-    def _run_internal(self, tmp_entities, ctx):
-        tmp_settlements, tmp_localities = tmp_entities
-
-        self._change_geom(tmp_settlements, tmp_localities, ctx)
-
-        return super()._run_internal(tmp_settlements, ctx)
 
     def _process_entity(self, tmp_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_locality.geom,
