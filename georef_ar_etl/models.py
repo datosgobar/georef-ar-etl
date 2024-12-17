@@ -913,8 +913,10 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
             self.geometria.ST_AsGeoJSON()))
 
         locality_dict = {"id": None, "nombre": None}
-        if self.loc_id and (locality := session.query(Locality).get(self.loc_id)):
-            locality_dict = locality.to_dict_simple()
+        if self.loc_id:
+            locality = session.query(Locality).get(self.loc_id)
+            if locality:
+                locality_dict = locality.to_dict_simple()
         base['localidad'] = locality_dict
 
         return base
