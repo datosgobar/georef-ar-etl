@@ -22,6 +22,7 @@ from . import constants
 _SQL_TYPES = {
     'varchar': sqltypes.VARCHAR,
     'integer': sqltypes.INTEGER,
+    'bigint': sqltypes.BIGINT,
     'numeric': sqltypes.NUMERIC,
     'double': pgtypes.DOUBLE_PRECISION,
     'date': sqltypes.Date,
