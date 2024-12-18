@@ -184,7 +184,7 @@ def create_process(config):
 
 
 def report_street_block_number_state(tmp_blocks, ctx, name):
-    total = ctx.session.query(func.count()).filter(tmp_blocks.tipo == 'CALLE').all()
+    total = ctx.session.query(func.count()).filter(tmp_blocks.tipo == 'CALLE').all()[0][0]
     # Informe de cuadras sin numeración
     sb_no_num_by_loc = ctx.session.query(tmp_blocks.codloc20, func.count()).filter(
         (tmp_blocks.tipo == 'CALLE') &
@@ -215,7 +215,7 @@ def report_street_block_number_state(tmp_blocks, ctx, name):
         sb_wrong_num_count += loc[1]
 
     if sb_wrong_num_warning:
-        message = 'Existen {} cuadras de calles sin numeración de un total de {}'.format(sb_wrong_num_count, total)
+        message = 'Existen {} cuadras de calles con numeración errónea de un total de {}'.format(sb_wrong_num_count, total)
         ctx.report.warn(message)
         ctx.report.get_data(name)['warning'] = sb_wrong_num_warning
 
