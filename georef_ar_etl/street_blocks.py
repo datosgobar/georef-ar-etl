@@ -61,13 +61,8 @@ class StreetBlocksExtractionStep(Step):
         ogc_fid = str(tmp_block.id).rjust(7, '0')
         block_id = tmp_block.nomencla + ogc_fid[-7:]
 
-        localities = ctx.session.query(Locality).filter(
-            getattr(Locality, 'geometria').ST_Contains(tmp_block.geom)
-        )
-        if localities.count() == 1:
-            loc_id = localities[0].id
-        else:
-            loc_id = None
+        street = ctx.session.query(Street).get(tmp_block.nomencla)
+        loc_id = street.loc_id
 
         return StreetBlock(
             id=block_id,
