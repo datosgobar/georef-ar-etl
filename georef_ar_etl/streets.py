@@ -5,6 +5,7 @@ from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
 from .process import Process, CompositeStep, StepSequence
 from .models import Province, Department, CensusLocality, Street, Locality
 from . import extractors, loaders, utils, constants, patch, transformers
+from .utils import FunctionStep, DropTableStep
 
 INVALID_BLOCKS_CENSUS_LOCALITIES = [
     # '62042450',
@@ -91,6 +92,8 @@ INVALID_BLOCKS_CLC = {
     # '90098040': '90098035',
 }
 
+ThirdResultStep = FunctionStep(fn=lambda results: results[2],
+                               name='third_result')
 
 def create_process(config):
     url_template = config.get('etl', 'street_blocks_url_template')
@@ -132,6 +135,48 @@ def create_process(config):
                           source_epsg='EPSG:4326')
     ] * (len(download_cstep) - 1), name='ogr2ogr_cstep_streets')
 
+    # Pasos para la incorporación de localidades a las calles provisoriamente desde una fuente parcial
+    url_template_localities = config.get('etl', 'localities_url')
+    download_sstep_localities = StepSequence([
+                extractors.DownloadURLStep('entidades_RMBA.zip',
+                                           url_template_localities, constants.LOCALITIES),
+                transformers.ExtractZipStep(
+                    internal_path=""
+                ),
+            ], name='download_tmp_localities')
+    ogr2ogr_sstep_localities = StepSequence([
+                loaders.Ogr2ogrStep(
+                    table_name=constants.LOCALITIES_TMP_TABLE, geom_type='Geometry', source_epsg='EPSG:3857',
+                    precision=False
+                ),
+            ], name='ogr2ogr_sstep_localities')
+    sstep_localities = StepSequence([
+                download_sstep_localities,
+                ogr2ogr_sstep_localities,
+                utils.ValidateTableSchemaStep({
+                    'ogc_fid': 'integer',
+                    'fid_1': 'bigint',
+                    'id': 'varchar',
+                    'cpr': 'varchar',
+                    'jurisdic': 'varchar',
+                    'cde': 'varchar',
+                    'depto': 'varchar',
+                    'clc': 'varchar',
+                    'localidad': 'varchar',
+                    'cen': 'varchar',
+                    'entidad': 'varchar',
+                    'fna': 'varchar',
+                    'gna': 'varchar',
+                    'nam': 'varchar',
+                    'ceu': 'varchar',
+                    'link': 'varchar',
+                    'shape_leng': 'double',
+                    'shape_area': 'double',
+                    'nombre': 'varchar',
+                    'geom': 'geometry',
+                })
+            ], name='load_tmp_localities')
+
     return Process(constants.STREETS, [
         utils.CheckDependenciesStep([Province, Department, CensusLocality]),
         CompositeStep([
@@ -168,9 +213,17 @@ def create_process(config):
                     'codloc': 'varchar',
                     'geom': 'geometry'
                 })
-            ], name='load_tmp_streets')
+            ], name='load_tmp_streets'),
+            sstep_localities,
         ]),
-        StreetsExtractionStep(),
+        CompositeStep([
+            StreetsExtractionStep(),
+            StepSequence([ # Obtienen la tercer tabla (tmp_localidades) y la elimina
+                ThirdResultStep,
+                DropTableStep()
+            ])
+        ]),
+        utils.FirstResultStep,
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'streets_target_size'),
             op='ge'),
@@ -220,7 +273,60 @@ def report_street_block_number_state(tmp_blocks, ctx, name):
         ctx.report.get_data(name)['warning'] = sb_wrong_num_warning
 
 
-class StreetsExtractionStep(transformers.EntitiesExtractionStep):
+class LocalitiesWithPolygonsMixin:
+
+    def _patch_tmp_localities(self, tmp_localities, ctx):
+
+        self._deleted_tmp_localities = []
+
+        all_tmp_localities = ctx.session.query(tmp_localities).all()
+        total = len(all_tmp_localities)
+
+        for tmp_locality in all_tmp_localities:
+            cen = tmp_locality.cen
+            try:
+                locality = ctx.session.query(Locality).get(cen)
+                if not locality:
+                    raise Exception
+            except:
+                ctx.session.query(tmp_localities).filter(tmp_localities.cen == cen).delete()
+                self._deleted_tmp_localities.append([
+                    "id=%s" % tmp_locality.id,
+                    'No se pudo vincular una localidad para el polígono con cen=%s' % cen
+                ])
+
+        ctx.session.commit()
+
+        ctx.report.info('Se eliminaron %d de %d localidades con polígonos' % (len(self._deleted_tmp_localities), total))
+
+    def _get_loc_id(self, street, census_loc_id, cached_session, ctx):
+        """
+        Busca entre los registros de las localidades pertenecientes a la localidad censal de la calle
+        aquellos que posean un polígono definido que pudiera contener la calle.
+        Devuelve el ID de la localidad que contiene la calle.
+        """
+        # Porcentaje mínimo requerido de intersección para considerar la calle perteneciente a la localidad
+        required_percentage = 0.8  # 80%
+
+        tmp_localities = utils.automap_table(constants.LOCALITIES_TMP_TABLE, ctx)
+
+        # Filtra los polígonos que pertenecen a la localidad censal de la calle
+        filtered_localities = cached_session.query(tmp_localities).filter(tmp_localities.clc == census_loc_id)
+        if filtered_localities.count() == 0:
+            return None
+
+        # Busca el polígono de la localidad que contiene a la calle
+        tmp_locality = filtered_localities.filter(
+            (func.ST_Length(func.ST_Intersection(tmp_localities.geom, street.geom)) / func.ST_Length(
+                street.geom)) >= required_percentage
+        )
+        if tmp_locality.count() == 1:
+            return tmp_locality[0].cen
+
+        return None
+
+
+class StreetsExtractionStep(transformers.EntitiesExtractionStep, LocalitiesWithPolygonsMixin):
     def __init__(self):
         super().__init__('streets_extraction', Street,
                          entity_class_pkey='id',
@@ -307,7 +413,8 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         ctx.report.info('Terminado.\n')
 
     def _run_internal(self, data, ctx):
-        tmp_blocks, tmp_streets = data
+        tmp_blocks, tmp_streets, tmp_localities = data
+        self._patch_tmp_localities(tmp_localities, ctx)
         report_street_block_number_state(tmp_blocks, ctx, self.name)
 
         if tmp_streets:
@@ -316,7 +423,12 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
             self._copy_tmp_streets(tmp_blocks, tmp_streets, ctx)
 
-        return super()._run_internal(tmp_blocks, ctx)
+        response = super()._run_internal(tmp_blocks, ctx)
+
+        report_data = ctx.report.get_data(self.name)
+        report_data['errors'].extend(self._deleted_tmp_localities)
+
+        return response
 
     def _process_entity(self, street, cached_session, ctx):
         street_id = street.nomencla
@@ -346,18 +458,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                 'No existe la localidad censal con ID {}'.format(
                     census_loc_id))
 
-        # Se busca entre los registros de las localidades pertenecientes a la localidad censal de la calle
-        # aquellos que posean un polígono definido que pudiera contener la calle.
-        loc_id = None
-        # Porcentaje mínimo requerido de intersección para considerar la calle perteneciente a la localidad
-        required_percentage = 0.8  # 80%
-        localities = (ctx.session.query(Locality)
-        .filter(Locality.localidad_censal_id == census_loc_id)
-        .filter(
-            (func.ST_Length(func.ST_Intersection(Locality.geometria, street.geom)) / func.ST_Length(street.geom)) >= required_percentage
-        ))
-        if localities.count() == 1:
-            loc_id = localities[0].id
+        loc_id = self._get_loc_id(street, census_loc_id, cached_session, ctx)
 
         return Street(
             id=street_id,
