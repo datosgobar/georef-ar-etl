@@ -292,7 +292,7 @@ class LocalitiesWithPolygonsMixin:
 
         ctx.report.info('Se eliminaron %d de %d localidades con polígonos' % (len(self._deleted_tmp_localities), total))
 
-    def _get_loc_id(self, street, census_loc_id, cached_session, ctx):
+    def _get_loc_id(self, tmp_localities, street, census_loc_id, cached_session, ctx):
         """
         Busca entre los registros de las localidades pertenecientes a la localidad censal de la calle
         aquellos que posean un polígono definido que pudiera contener la calle.
@@ -301,20 +301,17 @@ class LocalitiesWithPolygonsMixin:
         # Porcentaje mínimo requerido de intersección para considerar la calle perteneciente a la localidad
         required_percentage = 0.8  # 80%
 
-        tmp_localities = utils.automap_table(constants.LOCALITIES_TMP_TABLE, ctx)
-
-        # Filtra los polígonos que pertenecen a la localidad censal de la calle
-        filtered_localities = cached_session.query(tmp_localities).filter(tmp_localities.clc == census_loc_id)
-        if filtered_localities.count() == 0:
-            return None
-
         # Busca el polígono de la localidad que contiene a la calle
-        tmp_locality = filtered_localities.filter(
-            (func.ST_Length(func.ST_Intersection(tmp_localities.geom, street.geom)) / func.ST_Length(
-                street.geom)) >= required_percentage
-        )
-        if tmp_locality.count() == 1:
-            return tmp_locality[0].cen
+        tmp_locality = cached_session.query(tmp_localities.cen).\
+            filter(tmp_localities.clc == census_loc_id). \
+            filter(func.ST_Intersects(tmp_localities.geom, street.geom)). \
+            filter(
+            (
+                    func.ST_Length(func.ST_Intersection(tmp_localities.geom, street.geom)) / func.ST_Length(street.geom)
+            ) >= required_percentage
+        ).first()
+        if tmp_locality:
+            return tmp_locality.cen
 
         return None
 
@@ -324,6 +321,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep, LocalitiesWithP
         super().__init__('streets_extraction', Street,
                          entity_class_pkey='id',
                          tmp_entity_class_pkey='nomencla')
+        self._tmp_localities = None
 
     def _patch_tmp_entities(self, tmp_blocks, ctx):
 
@@ -406,8 +404,8 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep, LocalitiesWithP
         ctx.report.info('Terminado.\n')
 
     def _run_internal(self, data, ctx):
-        tmp_blocks, tmp_streets, tmp_localities = data
-        self._patch_tmp_localities(tmp_localities, ctx)
+        tmp_blocks, tmp_streets, self._tmp_localities = data
+        self._patch_tmp_localities(self._tmp_localities, ctx)
         report_street_block_number_state(tmp_blocks, ctx, self.name)
 
         if tmp_streets:
@@ -451,7 +449,9 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep, LocalitiesWithP
                 'No existe la localidad censal con ID {}'.format(
                     census_loc_id))
 
-        loc_id = self._get_loc_id(street, census_loc_id, cached_session, ctx)
+        loc_id = None
+        if prov_id in ['02', '06']:
+            loc_id = self._get_loc_id(self._tmp_localities, street, census_loc_id, cached_session, ctx)
 
         return Street(
             id=street_id,
