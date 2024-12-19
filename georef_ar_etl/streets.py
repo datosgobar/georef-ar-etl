@@ -216,14 +216,7 @@ def create_process(config):
             ], name='load_tmp_streets'),
             sstep_localities,
         ]),
-        CompositeStep([
-            StreetsExtractionStep(),
-            StepSequence([ # Obtienen la tercer tabla (tmp_localidades) y la elimina
-                ThirdResultStep,
-                DropTableStep()
-            ])
-        ]),
-        utils.FirstResultStep,
+        StreetsExtractionStep(),
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'streets_target_size'),
             op='ge'),
