@@ -1,4 +1,4 @@
-"""empty message
+"""Add loc_id to cuadras
 
 Revision ID: fe67a4fa0a75
 Revises: 7bf4811afc85
@@ -7,7 +7,6 @@ Create Date: 2024-11-13 14:44:33.125164
 """
 from alembic import op
 import sqlalchemy as sa
-import geoalchemy2
 
 
 # revision identifiers, used by Alembic.

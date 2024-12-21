@@ -1,4 +1,4 @@
-"""empty message
+"""Rename municipios to gobiernos_locales
 
 Revision ID: c9fcf57e8627
 Revises: 473fefa4c4b0
