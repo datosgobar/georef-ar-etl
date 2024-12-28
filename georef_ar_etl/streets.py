@@ -372,5 +372,4 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             provincia_id=prov_id,
             departamento_id=dept_id,
             localidad_censal_id=census_loc_id,
-            loc_id=loc_id,
         )

@@ -859,10 +859,6 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
                                         foreign_keys='Intersection.calle_b_id')
     cuadras = get_relationship('StreetBlock')
 
-    loc_id = Column(String, ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
-                                       ondelete='cascade'),
-                    nullable=True)
-
     def to_dict_simple(self, session):
         """Retorna una representación parcial de la entidad como diccionario
         'dict'. No se incluyen las alturas y la geometría.
@@ -912,13 +908,6 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
         base['geometria'] = json.loads(session.scalar(
             self.geometria.ST_AsGeoJSON()))
 
-        locality_dict = {"id": None, "nombre": None}
-        if self.loc_id:
-            locality = session.query(Locality).get(self.loc_id)
-            if locality:
-                locality_dict = locality.to_dict_simple()
-        base['localidad'] = locality_dict
-
         return base
 
 
@@ -940,9 +929,6 @@ class StreetBlock(Base, DoorNumberedMixin):
     calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                          ondelete='cascade'),
                       nullable=False)
-    loc_id = Column(String, ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
-                                         ondelete='cascade'),
-                      nullable=True)
     geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     def to_dict(self, session):
@@ -959,21 +945,11 @@ class StreetBlock(Base, DoorNumberedMixin):
 
         """
         street = session.query(Street).get(self.calle_id)
-        if self.loc_id:
-            locality = session.query(Locality).get(self.loc_id)
-        else:
-            locality = None
-
-        if locality:
-            locality_dict = locality.to_dict_simple()
-        else:
-            locality_dict = {"id": None, "nombre": None}
 
         return {
             'id': self.id,
             'calle': street.to_dict_simple(session),
             'altura': self.door_numbers_dict(),
-            'localidad': locality_dict,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
