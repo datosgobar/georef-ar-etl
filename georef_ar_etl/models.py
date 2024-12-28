@@ -717,7 +717,7 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     funcion = Column(String, nullable=True)
-    geometria = Column(Geometry('POINT', srid=SRID), nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
 
     asentamientos = get_relationship('Settlement')
     localidades = get_relationship('Locality')
