@@ -20,6 +20,8 @@ def create_process(config):
         CompositeStep([
             LocalitiesExtractionStep(),
             utils.DropTableStep(),
+            LocalitiesExtractionStep(),
+            utils.DropTableStep()
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(

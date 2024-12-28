@@ -71,6 +71,5 @@ class StreetBlocksExtractionStep(Step):
             fin_derecha=tmp_block.hastad or 0,
             inicio_izquierda=tmp_block.desdei or 0,
             fin_izquierda=tmp_block.hastai or 0,
-            loc_id=loc_id,
             geometria=tmp_block.geom
         )

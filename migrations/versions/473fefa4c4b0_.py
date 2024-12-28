@@ -1,4 +1,4 @@
-"""empty message
+"""Change geometry type to municipios
 
 Revision ID: 473fefa4c4b0
 Revises: 7cedddd7547a

@@ -1,4 +1,4 @@
-"""empty message
+"""Change geometry type to localidades
 
 Revision ID: 7bf4811afc85
 Revises: c9fcf57e8627

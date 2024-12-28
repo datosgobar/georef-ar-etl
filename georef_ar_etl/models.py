@@ -717,7 +717,7 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     funcion = Column(String, nullable=True)
-    geometria = Column(Geometry('POINT', srid=SRID), nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
 
     asentamientos = get_relationship('Settlement')
     localidades = get_relationship('Locality')
@@ -933,9 +933,6 @@ class StreetBlock(Base, DoorNumberedMixin):
     calle_id = Column(String, ForeignKey(constants.STREETS_ETL_TABLE + '.id',
                                          ondelete='cascade'),
                       nullable=False)
-    loc_id = Column(String, ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
-                                         ondelete='cascade'),
-                      nullable=True)
     geometria = Column(Geometry('MULTILINESTRING', srid=SRID), nullable=False)
 
     def to_dict(self, session):
@@ -952,21 +949,11 @@ class StreetBlock(Base, DoorNumberedMixin):
 
         """
         street = session.query(Street).get(self.calle_id)
-        if self.loc_id:
-            locality = session.query(Locality).get(self.loc_id)
-        else:
-            locality = None
-
-        if locality:
-            locality_dict = locality.to_dict_simple()
-        else:
-            locality_dict = {"id": None, "nombre": None}
 
         return {
             'id': self.id,
             'calle': street.to_dict_simple(session),
             'altura': self.door_numbers_dict(),
-            'localidad': locality_dict,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
