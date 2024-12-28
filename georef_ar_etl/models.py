@@ -859,9 +859,8 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
                                         foreign_keys='Intersection.calle_b_id')
     cuadras = get_relationship('StreetBlock')
 
-    loc_id = Column(String, ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
-                                       ondelete='cascade'),
-                    nullable=True)
+    loc_id = Column(String, nullable=True)
+    loc_nombre = Column(String, nullable=True)
 
     def to_dict_simple(self, session):
         """Retorna una representación parcial de la entidad como diccionario
@@ -911,13 +910,7 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
         base['altura'] = self.door_numbers_dict()
         base['geometria'] = json.loads(session.scalar(
             self.geometria.ST_AsGeoJSON()))
-
-        locality_dict = {"id": None, "nombre": None}
-        if self.loc_id:
-            locality = session.query(Locality).get(self.loc_id)
-            if locality:
-                locality_dict = locality.to_dict_simple()
-        base['localidad'] = locality_dict
+        base['localidad'] = {"id": self.loc_id, "nombre": self.loc_nombre}
 
         return base
 
