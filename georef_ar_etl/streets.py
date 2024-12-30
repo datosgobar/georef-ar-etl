@@ -307,19 +307,27 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         # Agregar columnas loc_link y loc_nombre a la tabla si no existen
         with ctx.engine.begin() as connection:
-            table_name = tmp_blocks.__table__.name
-            connection.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS loc_link TEXT")
-            connection.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS loc_nombre TEXT")
+            table_name = constants.STREET_BLOCKS_TMP_TABLE
+            connection.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS loc_link VARCHAR")
+            connection.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS loc_nombre VARCHAR")
+
+        # Modificar el modelo `tmp_blocks` original para reflejar las nuevas columnas
+        from sqlalchemy import Column, String
+        if not hasattr(tmp_blocks, 'loc_link'):
+            tmp_blocks.__table__.append_column(Column('loc_link', String))
+            setattr(tmp_blocks, 'loc_link', Column('loc_link', String))
+        if not hasattr(tmp_blocks, 'loc_nombre'):
+            tmp_blocks.__table__.append_column(Column('loc_nombre', String))
+            setattr(tmp_blocks, 'loc_nombre', Column('loc_nombre', String))
 
         Cuadras = utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
         Localidades = utils.automap_table(constants.LOCALITIES_TMP_TABLE, ctx)
         required_percentage = 0.8  # 80%
 
         for prov in PROVINCES_WITH_POLYGONS:
-            print(f"Consultando cuadras de {prov}...")
+            provincia = ctx.session.query(Province).filter(Province.id == prov).first()
             street_blocks = ctx.session.query(Cuadras).filter(Cuadras.nomencla.like('{}%'.format(prov))).all()
-            print("Buscando localidades de cuadras...")
-            for street_block in tqdm(street_blocks):
+            for street_block in tqdm(street_blocks, desc="Cuadras de {}".format(provincia.nombre)):
                 locality = ctx.session.query(Localidades). \
                     filter(func.ST_Intersects(Localidades.geom, street_block.geom)). \
                     filter(
@@ -329,7 +337,8 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                 ).first()
 
                 if locality:
-                    street_block.nomencla = locality.link + street_block.nomencla[-5:]
+                    if len(locality.link) == 10:
+                        street_block.nomencla = street_block.nomencla[:8] + locality.link[-2:] + street_block.nomencla[-5:]
                     street_block.loc_link = locality.link
                     street_block.loc_nombre = locality.nombre
 
@@ -420,11 +429,6 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         if not department:
             raise ValidationException(
                 'No existe el departamento con ID {}'.format(dept_id))
-
-        if prov_id == constants.CABA_PROV_ID:
-            # Las calles de CABA pertenecen a la localidad censal 02000010,
-            # pero sus IDs *no* comienzan con ese código.
-            census_loc_id = constants.CABA_CENSUS_LOCALITY
 
         census_locality = cached_session.query(CensusLocality).get(
             census_loc_id)

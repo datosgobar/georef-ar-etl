@@ -862,6 +862,14 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     loc_id = Column(String, nullable=True)
     loc_nombre = Column(String, nullable=True)
 
+    @validates('id')
+    def validate_id(self, _key, value):
+        if len(value) not in [13, 15]:
+            raise ValidationException(
+                'La longitud del ID debe ser {}.'.format(self._id_len))
+
+        return value
+
     def to_dict_simple(self, session):
         """Retorna una representación parcial de la entidad como diccionario
         'dict'. No se incluyen las alturas y la geometría.
