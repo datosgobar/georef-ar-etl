@@ -19,8 +19,6 @@ def create_process(config):
                            reads_input=False),
         CompositeStep([
             LocalitiesExtractionStep(),
-            utils.DropTableStep(),
-            LocalitiesExtractionStep(),
             utils.DropTableStep()
         ]),
         utils.FirstResultStep,
