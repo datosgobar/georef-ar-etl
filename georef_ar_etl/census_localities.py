@@ -58,10 +58,7 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
 
     def _patch_tmp_entities(self, tmp_census_localities, ctx):
 
-        # TODO: Averiguar por qué aparecen distintas localidad con el mismo 'clc'
-        patch.delete(tmp_census_localities, ctx, clc='06007110')
-        patch.delete(tmp_census_localities, ctx, clc='50070090')
-        patch.delete(tmp_census_localities, ctx, clc='34021050')
+        pass
 
     def _process_entity(self, tmp_census_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_census_locality.geom,

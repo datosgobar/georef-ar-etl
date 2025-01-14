@@ -7,6 +7,7 @@ distintas entidades geográficas.
 
 # pylint: disable=no-self-argument
 import json
+from shapely import wkt, geometry as shg
 from sqlalchemy import Column, String, Float, Integer, ForeignKey
 from sqlalchemy.orm import validates, relationship
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -795,8 +796,8 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
                 'lon': self.lon,
                 'lat': self.lat
             },
-            'geometria': json.loads(session.scalar(
-                self.geometria.ST_AsGeoJSON()))
+            'geometria': shg.mapping(wkt.loads(session.scalar(
+                self.geometria.ST_AsText(18))))
         }
 
 
