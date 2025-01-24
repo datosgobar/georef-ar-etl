@@ -437,6 +437,13 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                 'No existe la localidad censal con ID {}'.format(
                     census_loc_id))
 
+        if street.loc_link:
+            loc_id = street.loc_link
+            loc_nombre = street.nombre
+        else:
+            loc_id = census_loc_id
+            loc_nombre = census_locality.nombre
+
         return Street(
             id=street_id,
             nombre=utils.clean_string(street.nombre),
@@ -450,6 +457,6 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             provincia_id=prov_id,
             departamento_id=dept_id,
             localidad_censal_id=census_loc_id,
-            loc_id=street.loc_link,
-            loc_nombre=street.loc_nombre
+            loc_id=loc_id,
+            loc_nombre=loc_nombre
         )
