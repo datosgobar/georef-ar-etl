@@ -439,7 +439,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         if street.loc_link:
             loc_id = street.loc_link
-            loc_nombre = street.nombre
+            loc_nombre = street.loc_nombre
         else:
             loc_id = census_loc_id
             loc_nombre = census_locality.nombre
