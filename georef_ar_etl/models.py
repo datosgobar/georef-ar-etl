@@ -958,10 +958,12 @@ class StreetBlock(Base, DoorNumberedMixin):
 
         """
         street = session.query(Street).get(self.calle_id)
+        street_dict = street.to_dict_simple(session)
+        street_dict['localidad'] = {"id": street.loc_id, "nombre": street.loc_nombre}
 
         return {
             'id': self.id,
-            'calle': street.to_dict_simple(session),
+            'calle': street_dict,
             'altura': self.door_numbers_dict(),
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
