@@ -1,3 +1,5 @@
+import re
+
 from .exceptions import ValidationException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
@@ -58,7 +60,17 @@ class CensusLocalitiesExtractionStep(transformers.EntitiesExtractionStep):
 
     def _patch_tmp_entities(self, tmp_census_localities, ctx):
 
-        pass
+        prefix = "Localidad"
+
+        def remove_prefix(row):
+            row.fna = row.fna[len(prefix):]
+
+        patch.apply_fn(
+            tmp_census_localities, remove_prefix, ctx,
+            tmp_census_localities.fna.like(f"{prefix}%")
+        )
+
+        ctx.session.commit()
 
     def _process_entity(self, tmp_census_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_census_locality.geom,
