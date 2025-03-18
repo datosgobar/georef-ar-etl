@@ -1007,12 +1007,17 @@ class Intersection(Base):
 
         """
         street_a = session.query(Street).get(self.calle_a_id)
+        street_a_dict = street_a.to_dict_simple(session)
+        street_a_dict['localidad'] = {"id": street_a.loc_id, "nombre": street_a.loc_nombre}
+
         street_b = session.query(Street).get(self.calle_b_id)
+        street_b_dict = street_b.to_dict_simple(session)
+        street_b_dict['localidad'] = {"id": street_b.loc_id, "nombre": street_b.loc_nombre}
 
         return {
             'id': self.id,
-            'calle_a': street_a.to_dict_simple(session),
-            'calle_b': street_b.to_dict_simple(session),
+            'calle_a': street_a_dict,
+            'calle_b': street_b_dict,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
