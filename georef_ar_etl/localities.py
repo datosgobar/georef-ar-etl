@@ -70,7 +70,9 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
         if prov_id == constants.CABA_PROV_ID:
             # Las calles de CABA pertenecen a la localidad censal 02000010,
             # pero sus IDs *no* comienzan con ese código.
-            census_loc_id = constants.CABA_CENSUS_LOCALITY
+            pass
+            # TODO: Revisar la eliminación de esta modificación
+            # census_loc_id = constants.CABA_CENSUS_LOCALITY
 
         census_loc = cached_session.query(CensusLocality).get(
             census_loc_id)
