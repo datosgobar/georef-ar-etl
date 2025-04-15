@@ -10,75 +10,33 @@ def create_process(config):
 
     return Process(constants.LOCAL_GOVERNMENTS, [
         utils.CheckDependenciesStep([Province]),
+        extractors.DownloadURLStep(constants.LOCAL_GOVERNMENTS + '.zip',
+                                   config.get('etl', 'local_governments_indec_url'), constants.LOCAL_GOVERNMENTS),
+        transformers.ExtractZipStep(
+            internal_path=""
+        ),
+        loaders.Ogr2ogrStep(table_name=constants.LOCAL_GOVERNMENTS_TMP_TABLE,
+                            geom_type='MultiPolygon',
+                            env={'SHAPE_ENCODING': 'ISO-8859-1'}),
+        utils.ValidateTableSchemaStep({
+            'ogc_fid': 'integer',
+            'fna': 'varchar',
+            'gna': 'varchar',
+            'nam': 'varchar',
+            'sag': 'varchar',
+            'fdc': 'varchar',
+            'fid': 'numeric',
+            'id': 'varchar',
+            'cpr': 'varchar',
+            'jur': 'varchar',
+            'cmu': 'varchar',
+            'cat_gl': 'varchar',
+            'legisla': 'varchar',
+            'geom': 'geometry'
+        }),
         CompositeStep([
-            StepSequence([
-                extractors.DownloadURLStep(constants.LOCAL_GOVERNMENTS + '.zip',
-                                           config.get('etl', 'local_governments_bahra_url'), constants.LOCAL_GOVERNMENTS),
-                transformers.ExtractZipStep(
-                    internal_path=""
-                ),
-                loaders.Ogr2ogrStep(table_name=constants.LOCAL_GOVERNMENTS_BAHRA_TMP_TABLE,
-                                    geom_type='MultiPolygon',
-                                    env={'SHAPE_ENCODING': 'utf-8'}),
-                utils.ValidateTableSchemaStep({
-                    'gid': 'numeric',
-                    'ogc_fid': 'integer',
-                    'fna': 'varchar',
-                    'gna': 'varchar',
-                    'nam': 'varchar',
-                    'sag': 'varchar',
-                    'fdc': 'varchar',
-                    'in1': 'varchar',
-                    'geom': 'geometry'
-                }),
-            ], name='load_tmp_local_governments_bahra'),
-            StepSequence([
-                extractors.DownloadURLStep(constants.LOCAL_GOVERNMENTS + '.csv',
-                                           config.get('etl', 'local_governments_url'), constants.LOCAL_GOVERNMENTS),
-                loaders.Ogr2ogrStep(table_name=constants.LOCAL_GOVERNMENTS_TMP_TABLE,
-                                    geom_type='Geometry'),
-                utils.ValidateTableSchemaStep({
-                    'ogc_fid': 'integer',
-                    'cod_gl_res144_indec': 'varchar',
-                    'nombre_del_gobierno_local': 'varchar',
-                    'categoria_de_gobierno': 'varchar',
-                    'gobierno_local_con_paso_o_centro_fronterizo': 'varchar',
-                    'gobierno_local_que_pertenece_a_un_aglomerado_urbano': 'varchar',
-                    'poblacion_censo_2010': 'varchar',
-                    'localidades_administradas_por_el_gobierno_local': 'varchar',
-                    'distancia_a_la_capital_provincial': 'varchar',
-
-                    'distancia_a_la_capital_alterna': 'varchar',
-                    'perfil_economico_de_la_region': 'varchar',
-                    'cantidad_de_parques_industriales_renpi': 'varchar',
-                    'incendios_reportados_en_el_periodo_1999_2022': 'varchar',
-
-                    'provincia': 'varchar',
-                    'departamento': 'varchar',
-                    'inundaciones_reportadas_en_el_periodo_1999_2022': 'varchar',
-                    'fiestas_locales': 'varchar',
-
-                    'sitio_web': 'varchar',
-                    'direccion_postal_de_la_sede_de_gobierno': 'varchar',
-                    'telefonos_sede_de_gobierno': 'varchar',
-                    'apellido_y_nombre_de_la_maxima_autoridad.': 'varchar',
-
-                    'latitud': 'varchar',
-                    'longitud': 'varchar',
-                    'geom': 'geometry',
-                }),
-            ], name='load_tmp_local_governments'),
-        ]),
-        utils.FunctionStep(fn=lambda results: tuple(results)),
-        CompositeStep([
-            StepSequence([
-                utils.FunctionStep(fn=lambda results: list(results)),
-                LocalGovernmentsExtractionStep(),
-            ]),
-            StepSequence([
-                utils.FunctionStep(fn=lambda results: list(results)),
-                CompositeStep([utils.DropTableStep()] * 2),
-            ]),
+            LocalGovernmentsExtractionStep(),
+            utils.DropTableStep()
         ]),
         utils.FirstResultStep,
         utils.ValidateTableSizeStep(
@@ -97,72 +55,16 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
 
     def __init__(self):
         super().__init__('local_governments_extraction', LocalGovernment,
-                         entity_class_pkey='id', tmp_entity_class_pkey='cod_gl_res144_indec')
+                         entity_class_pkey='id', tmp_entity_class_pkey='cmu')
 
     def _patch_tmp_entities(self, tmp_entities, ctx):
-        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
-        # de algunos gobiernos locales, lanza un error "Self-intersection at or near point..."
-        # Validar la geometría utilizando ST_MakeValid().
-        def make_valid_geom(mun):
-            sql_str = """
-                            select ST_MakeValid(geom)
-                            from {}
-                            where cod_gl_res144_indec=:cod_gl
-                            limit 1
-                            """.format(mun.__table__.name)
-
-            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
-            # SQL manualmente (como excepción).
-            mun.geom = ctx.session.scalar(sql_str, {'cod_gl': mun.cod_gl_res144_indec})
-
-        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_gl_res144_indec='180224')
-        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_gl_res144_indec='180455')
-        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_gl_res144_indec='060056')
-
-    def _fix_tmp_local_government_id(self, tmp_local_governments, ctx):
-        for lg in ctx.session.query(tmp_local_governments):
-            lg.cod_gl_res144_indec = str(lg.cod_gl_res144_indec).rjust(6, '0')
-        ctx.session.commit()
-
-    def _merge_tmp_local_governments(self, tmp_local_governments_bahra, tmp_local_governments, ctx):
-        ctx.report.info('Combinando gobiernos locales...')
-
-        for local_government in ctx.session.query(tmp_local_governments):
-            local_governments_bahra = ctx.session.query(tmp_local_governments_bahra).filter_by(
-                in1=local_government.cod_gl_res144_indec
-            ).first()
-            if local_governments_bahra:
-                local_government.geom = local_governments_bahra.geom
-        ctx.session.commit()
-
-    def _complete_geom(self, tmp_local_governments, ctx):
-        for local_government in ctx.session.query(tmp_local_governments).filter_by(geom=None):
-            lat = local_government.longitud
-            lon = local_government.latitud
-            point = tmp_local_governments.geom.ST_MakePoint(lon, lat)
-            local_government.geom = tmp_local_governments.geom.ST_SetSRID(
-                point,
-                4326
-            )
-        ctx.session.commit()
-
-    def _run_internal(self, tmp_entities, ctx):
-        tmp_local_governments_bahra, tmp_local_governments = tmp_entities
-
-        self._fix_tmp_local_government_id(tmp_local_governments, ctx)
-
-        if tmp_local_governments_bahra:
-            self._merge_tmp_local_governments(tmp_local_governments_bahra, tmp_local_governments, ctx)
-
-        self._complete_geom(tmp_local_governments, ctx)
-
-        return super()._run_internal(tmp_local_governments, ctx)
+        patch.delete(tmp_entities, ctx, nam=None)
+        patch.delete(tmp_entities, ctx, fna=None)
 
     def _process_entity(self, tmp_local_government, cached_session, ctx):
-        lon = tmp_local_government.latitud
-        lat = tmp_local_government.longitud
+        lon, lat = geometry.get_centroid_coordinates(tmp_local_government.geom, ctx)
 
-        lg_id = tmp_local_government.cod_gl_res144_indec
+        lg_id = tmp_local_government.cmu
         prov_id = lg_id[:constants.PROVINCE_ID_LEN]
 
         province = cached_session.query(Province).get(prov_id)
@@ -176,9 +78,9 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
         else:
             province_isct = 0  # Saltear operaciones costosas en testing
 
-        categoria = tmp_local_government.categoria_de_gobierno
-        nombre = tmp_local_government.nombre_del_gobierno_local
-        nombre_completo = "{} {}".format(categoria, nombre)
+        categoria = tmp_local_government.gna
+        nombre = tmp_local_government.nam
+        nombre_completo = tmp_local_government.fna
 
         return LocalGovernment(
             id=lg_id,
@@ -188,6 +90,6 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
             lon=lon, lat=lat,
             provincia_interseccion=province_isct,
             provincia_id=prov_id,
-            fuente='REFEGLO',
+            fuente=tmp_local_government.sag or "",
             geometria=tmp_local_government.geom
         )
