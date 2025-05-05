@@ -5,6 +5,7 @@ from .models import Province, Department, LocalGovernment, CensusLocality,\
     Locality
 from .settlements import SettlementsExtractionStep
 from . import geometry, utils, constants
+from .transformers import EntitiesExtractionStep
 
 
 def create_process(config):
@@ -43,6 +44,9 @@ class LocalitiesExtractionStep(SettlementsExtractionStep):
         return ctx.session.query(tmp_entities).\
             filter(tmp_entities.tipo_asent.in_(constants.LOCALITY_TYPES)).\
             yield_per(bulk_size)
+
+    def _run_internal(self, tmp_settlements, ctx):
+        return EntitiesExtractionStep._run_internal(self, tmp_settlements, ctx)
 
     def _process_entity(self, tmp_locality, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_locality.geom,
