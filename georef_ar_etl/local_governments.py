@@ -61,6 +61,23 @@ class LocalGovernmentsExtractionStep(transformers.EntitiesExtractionStep):
         patch.delete(tmp_entities, ctx, nam=None)
         patch.delete(tmp_entities, ctx, fna=None)
 
+        def make_valid_geom(lg):
+            sql_str = """
+                                    SELECT ST_Multi(ST_CollectionExtract(ST_MakeValid(geom), 3))
+                                    from {}
+                                    where cmu=:cmu
+                                    limit 1
+                                    """.format(lg.__table__.name)
+
+            # GeoAlchemy2 no disponibiliza la función ST_MakeValid, utilizar
+            # SQL manualmente (como excepción).
+            lg.geom = ctx.session.scalar(sql_str, {'cmu': lg.cmu})
+
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cmu='140742')
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cmu='309957')
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cmu='908595')
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cmu='908455')
+
     def _process_entity(self, tmp_local_government, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_local_government.geom, ctx)
 
