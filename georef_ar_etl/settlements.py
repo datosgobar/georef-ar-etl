@@ -7,7 +7,7 @@ from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, StepSequence, CompositeStep
 from .models import Province, Department, LocalGovernment, CensusLocality,\
     Settlement
-from . import extractors, transformers, loaders, geometry, utils, constants
+from . import extractors, transformers, loaders, geometry, utils, constants, patch
 
 
 def create_process(config):
@@ -231,6 +231,33 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         ctx.session.commit()
 
         return utils.automap_table(constants.SETTLEMENTS_TMP_TABLE, ctx)
+
+    def _patch_tmp_entities(self, tmp_entities, ctx):
+
+        def remove(row):
+            ctx.session.query(tmp_entities).filter_by(codigo_ase=row.codigo_ase).delete()
+
+        def remove_entity_in_department(dep):
+            patch.apply_fn(
+                tmp_entities, remove, ctx,
+                tmp_entities.codigo_ase.like(f"{dep}%")
+            )
+
+        remove_entity_in_department('94007')
+        remove_entity_in_department('94014')
+        remove_entity_in_department('02001')
+        remove_entity_in_department('02002')
+        remove_entity_in_department('02003')
+        remove_entity_in_department('02004')
+        remove_entity_in_department('02005')
+        remove_entity_in_department('02006')
+        remove_entity_in_department('02008')
+        remove_entity_in_department('02009')
+        remove_entity_in_department('02010')
+        remove_entity_in_department('02011')
+        remove_entity_in_department('02012')
+        remove_entity_in_department('02013')
+        remove_entity_in_department('02015')
 
     def _run_internal(self, tmp_settlements, ctx):
         tmp_settlements_merged = self._merge_tmp_settlements(tmp_settlements, ctx)
