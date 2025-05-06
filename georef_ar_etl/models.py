@@ -544,8 +544,8 @@ class LocalGovernment(Base, EntityMixin, InProvinceMixin):
                 'lon': self.lon,
                 'lat': self.lat
             },
-            'geometria': json.loads(session.scalar(
-                self.geometria.ST_AsGeoJSON()))
+            'geometria': shg.mapping(wkt.loads(session.scalar(
+                self.geometria.ST_AsText(18))))
         }
 
 
