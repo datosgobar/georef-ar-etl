@@ -1,6 +1,7 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import to_shape
-from sqlalchemy import insert, MetaData, Table, Column, String, text, inspect
+from shapely.geometry import Point
+from sqlalchemy import insert, MetaData, Table, Column, String, inspect
 
 from .exceptions import ValidationException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
@@ -207,12 +208,14 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         values = []
         for tmp_table in [antarctic_bases, hamlets, localities]:
             for row in tmp_table:
+                raw_geom = to_shape(getattr(row, "geom"))  # geometria mal definida: (lat, lon)
+                corrected_geom = Point(raw_geom.y, raw_geom.x)  # corregimos a (lon, lat)
                 values.append({
                     'codigo_ase': getattr(row, 'cod_ase'),
                     'nombre_geo': getattr(row, 'fna'),
                     'tipo_asent': getattr(row, 'tipo_asent'),
                     'fuente_de_': getattr(row, 'fdc'),
-                    'geom': f'SRID=4326;{to_shape(getattr(row, "geom")).wkt}'
+                    'geom': f'SRID=4326;{corrected_geom.wkt}',
                 })
 
         for tmp_table in [entities]:
