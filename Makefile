@@ -30,9 +30,17 @@ provincias:
 departamentos:
 	$(ETL_COMMAND) -p departamentos
 
-# Ejecuta el proceso de gobiernos_locales
-gobiernos_locales:
-	$(ETL_COMMAND) -p gobiernos_locales
+# Ejecuta el proceso de aglomerados
+aglomerados:
+	$(ETL_COMMAND) -p aglomerados
+
+# Ejecuta el proceso de radios censales
+fracciones_censales:
+	$(ETL_COMMAND) -p fracciones_censales
+
+# Ejecuta el proceso de radios censales
+radios_censales:
+	$(ETL_COMMAND) -p radios_censales
 
 # Ejecuta el proceso de localidades_censales
 localidades_censales:

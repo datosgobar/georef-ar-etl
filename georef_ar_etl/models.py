@@ -118,6 +118,56 @@ class EntityMixin:
         raise NotImplementedError()
 
 
+class NamelessEntityMixin:
+    """Modelo base para los modelos utilizados en el ETL que no poseen nombres ni categoría.
+
+    Attributes:
+        _id_len (int): Longitud que deberían tener los IDs utilizados por esta
+            entidad. Los IDs en sí son de tipo 'str'.
+        id (str): ID de la entidad.
+        fuente (str): Fuente de datos de la entidad.
+
+    """
+
+    _id_len = None
+
+    id = Column(String, primary_key=True)
+    fuente = Column(String, nullable=False)
+
+    @validates('id')
+    def validate_id(self, _key, value):
+        """Valida la longitud del valor a utilizar como ID de la entidad.
+
+        Args:
+            _key (str): Campo de ID ('id').
+            value (str): Valor a establecer como ID.
+
+        Returns:
+            str: Valor del campo validado.
+
+        """
+        if len(value) != self._id_len:
+            raise ValidationException(
+                'La longitud del ID debe ser {}.'.format(self._id_len))
+
+        return value
+
+    def to_dict(self, session):
+        """Retorna una representación de la entidad como diccionario 'dict'.
+        Los campos compuestos (que contienen varios valores) se representan
+        también como diccionarios de varios valores. El resultado puede ser
+        utilizado para serializar fácilmente la entidad a formatos como JSON.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            dict: Entidad en forma de diccionario.
+
+        """
+        raise NotImplementedError()
+
+
 class InProvinceMixin:
     """Define atributos y funciones de entidades que están contenidas dentro de
     una provincia, o pertenecen a una.
@@ -321,6 +371,90 @@ class InCensusLocalityMixin:
         """
         return session.query(CensusLocality).get(
             self.localidad_censal_id).nombre
+
+
+class InNullableAgglomerationsMixin:
+    """Define atributos y funciones de entidades que están opcionalmente
+    contenidas dentro de un aglomerado, o pertenecen a uno (o no).
+
+    Attributes:
+        aglomerado_id (str): ID del aglomerado referenciado, o 'None'.
+
+    """
+
+    @declared_attr
+    def aglomerado_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.AGGLOMERATIONS_ETL_TABLE + '.id',
+                       ondelete='cascade')
+        )
+
+    @validates('aglomerado_id')
+    def validate_aglomerado_id(self, _key, value):
+        """Valida el valor a utilizar como ID de departamento.
+
+        Args:
+            _key (str): Campo de nombre ('aglomerado_id').
+            value (str): Valor a establecer como ID.
+
+        Returns:
+            str: Valor del campo validado.
+
+        """
+        # Si se epecificó el departamento 02000, almacenar NULL (ver comentario
+        # en constants.py).
+        return value if value != constants.CABA_VIRTUAL_DEPARTMENT_ID else None
+
+    def aglomerado_nombre(self, session):
+        """Retorna el nombre del aglomerado al cual pertenece la entidad.
+        El nombre de método está en castellano para mantener consistencia con
+        los demás campos de los modelos.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            str: Nombre del aglomerado.
+
+        """
+        if not self.aglomerado_id:
+            return None
+
+        return session.query(Agglomerations).get(self.aglomerado_id).nombre
+
+
+class InCensusTractsMixin:
+    """Define atributos y funciones de entidades que están contenidas dentro de
+    una fracción censal, o pertenecen a uno.
+
+    Attributes:
+        fraccion_censal_id (str): ID de la fracción censal referenciada.
+
+    """
+
+    @declared_attr
+    def fraccion_censal_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.CENSUS_TRACTS_ETL_TABLE + '.id',
+                       ondelete='cascade'),
+            nullable=False
+        )
+
+    def fraccion_censal_nombre(self, session):
+        """Retorna el nombre de la fracción censal a la cual pertenece la entidad.
+        El nombre de método está en castellano para mantener consistencia con
+        los demás campos de los modelos.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            str: Nombre de la fracción censal.
+
+        """
+        return session.query(CensusTracts).get(self.fraccion_censal_id).nombre
 
 
 class InNullableCensusLocalityMixin:
@@ -798,6 +932,188 @@ class CensusLocality(Base, EntityMixin, InProvinceMixin,
             },
             'geometria': shg.mapping(wkt.loads(session.scalar(
                 self.geometria.ST_AsText(18))))
+        }
+
+
+class Agglomerations(Base, EntityMixin):
+    """Modelo utilizado para representar aglomerados.
+
+    Attributes:
+        __tablename__ (str): Nombre de la tabla.
+        _id_len (int): Longitud de los IDs.
+        lon (float): Longitud del centroide del aglomerado.
+        lat (float): Latitud del centroide del aglomerado.
+        geometría (geoalchemy2.Geometry): Geometría del aglomerado.
+
+    """
+
+    __tablename__ = constants.AGGLOMERATIONS_ETL_TABLE
+    _id_len = constants.AGGLOMERATIONS_ID_LEN
+
+    nombre_completo = Column(String, nullable=False)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
+
+    def to_dict(self, session):
+        """Retorna una representación de la entidad como diccionario 'dict'.
+        Los campos compuestos (que contienen varios valores) se representan
+        también como diccionarios de varios valores. El resultado puede ser
+        utilizado para serializar fácilmente la entidad a formatos como JSON.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            dict: Entidad en forma de diccionario.
+
+        """
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
+
+
+class CensusTracts(Base, NamelessEntityMixin, InProvinceMixin, InDepartmentMixin):
+    """Modelo utilizado para representar fracciones censales.
+
+    Attributes:
+        __tablename__ (str): Nombre de la tabla.
+        _id_len (int): Longitud de los IDs.
+        provincia_interseccion (float): Porcentaje del área de la provincia que
+            ocupa la fracción censal (entre 0 y 1).
+        lon (float): Longitud del centroide de la fracción censal.
+        lat (float): Latitud del centroide de la fracción censal.
+        geometría (geoalchemy2.Geometry): Geometría de la fracción censal.
+
+    """
+
+    __tablename__ = constants.CENSUS_TRACTS_ETL_TABLE
+    _id_len = constants.CENSUS_TRACTS_ID_LEN
+
+    provincia_interseccion = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
+
+    def to_dict(self, session):
+        """Retorna una representación de la entidad como diccionario 'dict'.
+        Los campos compuestos (que contienen varios valores) se representan
+        también como diccionarios de varios valores. El resultado puede ser
+        utilizado para serializar fácilmente la entidad a formatos como JSON.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            dict: Entidad en forma de diccionario.
+
+        """
+        return {
+            'id': self.id,
+            'fuente': self.fuente,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session),
+                'interseccion': self.provincia_interseccion,
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
+        }
+
+
+class CensusBlocks(Base, NamelessEntityMixin, InProvinceMixin, InDepartmentMixin, InCensusTractsMixin):
+    """Modelo utilizado para representar radios censales.
+
+    Attributes:
+        __tablename__ (str): Nombre de la tabla.
+        _id_len (int): Longitud de los IDs.
+        provincia_interseccion (float): Porcentaje del área de la provincia que
+            ocupa el radio censal (entre 0 y 1).
+        lon (float): Longitud del centroide del radio censal.
+        lat (float): Latitud del centroide del radio censal.
+        geometría (geoalchemy2.Geometry): Geometría del radio censal.
+
+    """
+
+    __tablename__ = constants.CENSUS_BLOCKS_ETL_TABLE
+    _id_len = constants.CENSUS_BLOCKS_ID_LEN
+
+    fraccion_censal_interseccion = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    categoria = Column(String, nullable=False)
+    geometria = Column(Geometry('MULTIPOLYGON', srid=SRID), nullable=False)
+
+    @validates('categoria')
+    def validate_category(self, _key, category):
+        """Valida el valor a utilizar como categoría del asentamiento.
+
+        Args:
+            _key (str): Campo de nombre ('categoria').
+            value (str): Valor a establecer como categoría.
+
+        Returns:
+            str: Valor del campo validado.
+
+        """
+        if category not in list(constants.CENSUS_BLOCK_INDEC_TYPES.values()):
+            raise ValidationException(
+                'El valor "{}" no es un tipo de radio censal válido.'.format(
+                    category))
+
+        return category
+
+    def to_dict(self, session):
+        """Retorna una representación de la entidad como diccionario 'dict'.
+        Los campos compuestos (que contienen varios valores) se representan
+        también como diccionarios de varios valores. El resultado puede ser
+        utilizado para serializar fácilmente la entidad a formatos como JSON.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            dict: Entidad en forma de diccionario.
+
+        """
+        return {
+            'id': self.id,
+            'fuente': self.fuente,
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session),
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+            'fraccion_censal': {
+                'id': self.fraccion_censal_id,
+                'interseccion': self.fraccion_censal_interseccion,
+            },
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
+            'categoria': self.categoria,
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON()))
         }
 
 
