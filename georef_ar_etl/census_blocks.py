@@ -54,7 +54,34 @@ class CensusBlocksExtractionStep(transformers.EntitiesExtractionStep):
     def _patch_tmp_entities(self, tmp_entities, ctx):
         patch.update_field(tmp_entities, 'tro', constants.CensusBlockINDECType.N.name, ctx, tro="")
         patch.update_field(tmp_entities, 'tro', constants.CensusBlockINDECType.N.name, ctx, tro=None)
-        ctx.session.commit()
+
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos gobiernos locales, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(cb):
+            sql_str = f"""
+                SELECT ST_Multi(
+                           ST_CollectionExtract(
+                               ST_MakeValid(
+                                   ST_RemoveRepeatedPoints(geom)
+                               ),
+                               3
+                           )
+                       )
+                FROM {cb.__table__.name}
+                WHERE cod_indec = :cod_indec
+                LIMIT 1
+            """
+
+            result = ctx.session.execute(sql_str, {'cod_indec': cb.cod_indec}).scalar()
+
+            cb.geom = result
+
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_indec='221402104')
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_indec='221402811')
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_indec='221470304')
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_indec='221402201')
+
 
     def _process_entity(self, tmp_entity, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_entity.geom,

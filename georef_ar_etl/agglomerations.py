@@ -1,7 +1,8 @@
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, CompositeStep
 from .models import Agglomerations
-from . import extractors, transformers, loaders, geometry, utils, constants
+from . import extractors, transformers, loaders, geometry, utils, constants, patch
+
 
 def create_process(config):
 
@@ -41,6 +42,28 @@ class AgglomerationsExtractionStep(transformers.EntitiesExtractionStep):
         super().__init__('agglomerations_extraction', Agglomerations,
                          entity_class_pkey='id',
                          tmp_entity_class_pkey='codaglo')
+
+    def _patch_tmp_entities(self, tmp_entities, ctx):
+        # Elasticsearch (georef-ar-api) no procesa correctamente la geometría
+        # de algunos gobiernos locales, lanza un error "Self-intersection at or near point..."
+        # Validar la geometría utilizando ST_MakeValid().
+        def make_valid_geom(agglo):
+            sql_str = f"""
+                SELECT 
+                    ST_MakeValid(
+                        ST_RemoveRepeatedPoints(geom)
+                    )
+                
+                FROM {agglo.__table__.name}
+                WHERE codaglo = :codaglo
+                LIMIT 1
+            """
+
+            result = ctx.session.execute(sql_str, {'codaglo': agglo.codaglo}).scalar()
+
+            agglo.geom = result
+
+        patch.apply_fn(tmp_entities, make_valid_geom, ctx, codaglo='1495')
 
     def _process_entity(self, tmp_entity, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_entity.geom,
