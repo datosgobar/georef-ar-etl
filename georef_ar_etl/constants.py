@@ -52,8 +52,8 @@ LOCALITY_TYPES = {
         BAHRAType.LS,
         BAHRAType.LCE,
         BAHRAType.LSE,
-        BAHRAType.P,
-        BAHRAType.BA
+        # BAHRAType.P,
+        # BAHRAType.BA
     ]
 }
 
