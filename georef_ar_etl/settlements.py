@@ -1,9 +1,9 @@
 from geoalchemy2 import Geometry
 from geoalchemy2.shape import to_shape
 from shapely.geometry import Point
-from sqlalchemy import insert, MetaData, Table, Column, String, inspect
+from sqlalchemy import insert, MetaData, Table, Column, String, inspect, func
 
-from .exceptions import ValidationException
+from .exceptions import ValidationException, ProcessException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
 from .process import Process, StepSequence, CompositeStep
 from .models import Province, Department, LocalGovernment, CensusLocality,\
@@ -161,6 +161,25 @@ def create_process(config):
     ])
 
 
+def update_commune_id(row):
+    # Multiplicar por 7 los últimos tres dígitos del ID del departamento
+    # Ver comentario en constants.py para más detalles.
+    prov_id_part = row.codigo_ase[:constants.PROVINCE_ID_LEN]
+    dept_id_part = row.codigo_ase[
+        constants.PROVINCE_ID_LEN:constants.DEPARTMENT_ID_LEN]
+    id_rest = row.codigo_ase[constants.DEPARTMENT_ID_LEN:]
+
+    dept_id_int = int(dept_id_part)
+    if dept_id_int > 15:
+        # Alguno de los IDs no cumple con la numeración antigua
+        raise ProcessException('El ID de comuna {} no es válido.'.format(
+            dept_id_part))
+
+    dept_new_id_int = dept_id_int * constants.CABA_MULT_FACTOR
+    row.codigo_ase = prov_id_part + str(dept_new_id_int).rjust(
+        len(dept_id_part), '0') + id_rest
+
+
 class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
 
     def __init__(self, name='settlements_extraction', entity_class=Settlement):
@@ -237,30 +256,22 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
 
     def _patch_tmp_entities(self, tmp_entities, ctx):
 
-        def remove(row):
-            ctx.session.query(tmp_entities).filter_by(codigo_ase=row.codigo_ase).delete()
+        # Se modifican los códigos de CABA.
+        def build_prefixes(codigos):
+            return ['02' + str(cod).rjust(3, '0') for cod in codigos]
 
-        def remove_entity_in_department(dep):
-            patch.apply_fn(
-                tmp_entities, remove, ctx,
-                tmp_entities.codigo_ase.like(f"{dep}%")
-            )
+        expressions = [
+            # Primer paso: Liberamos dos llaves para evitar colisiones,
+            # ya que 02001 y 02002 pasarán a ser 02007 y 02014 respectivamente.
+            func.substr(tmp_entities.codigo_ase, 1, 5).in_(build_prefixes([7, 14])),
 
-        remove_entity_in_department('94007')
-        remove_entity_in_department('94014')
-        remove_entity_in_department('02001')
-        remove_entity_in_department('02002')
-        remove_entity_in_department('02003')
-        remove_entity_in_department('02004')
-        remove_entity_in_department('02005')
-        remove_entity_in_department('02006')
-        remove_entity_in_department('02008')
-        remove_entity_in_department('02009')
-        remove_entity_in_department('02010')
-        remove_entity_in_department('02011')
-        remove_entity_in_department('02012')
-        remove_entity_in_department('02013')
-        remove_entity_in_department('02015')
+            # Segundo paso: Aplicar transformación completa.
+            # En este momento 02007 y 02014 mutaron a 02049 y 02098 respectivamente.
+            func.substr(tmp_entities.codigo_ase, 1, 5).in_(build_prefixes(list(range(1, 16))))
+        ]
+
+        for expression in expressions:
+            patch.apply_fn(tmp_entities, update_commune_id, ctx, expression)
 
     def _run_internal(self, tmp_settlements, ctx):
         tmp_settlements_merged = self._merge_tmp_settlements(tmp_settlements, ctx)
