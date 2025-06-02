@@ -1,3 +1,6 @@
+import re
+import unicodedata
+
 from sqlalchemy import select
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import Integer
@@ -95,11 +98,19 @@ INVALID_BLOCKS_CLC = {
     # '90098040': '90098035',
 }
 
-PROVINCES_WITH_POLYGONS = [
-    '02', '06'
-]
 ThirdResultStep = FunctionStep(fn=lambda results: results[2],
                                name='third_result')
+
+locality_names = {
+    "Villa Otuzar": "Villa Ortúzar",
+    "El Carmen": "Barrio El Carmen Este",
+    "Manuel Belgrano": "Barrio Belgrano",
+    "Barrio Santa Rosa": "Santa Rosa",
+    "Billinghurts": "Billinghurst",
+    "Villa María Irene de Los Remedios de Escalada": "Va.María Irene de los Remedios Escalada",
+    "Villa Marques Alejandro María de Aguado": "Va.Marqués Alejandro María de Aguado",
+    "Villa Gobernador Udaondo": "Villa Gobernador Udadondo",
+}
 
 def create_process(config):
 
@@ -281,18 +292,102 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                          tmp_entity_class_pkey='nomencla')
         self._tmp_localities = None
 
-    def _patch_tmp_entities(self, tmp_blocks, ctx):
+    def _mix_street_blocks_and_localities(self, ctx):
 
-        patch.delete(tmp_blocks, ctx, tipo='')
+        Cuadras = utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
+        Localidades_tmp = utils.automap_table(constants.LOCALITIES_TMP_TABLE, ctx)
+        Localidades = utils.automap_table(constants.LOCALITIES_ETL_TABLE, ctx)
 
-        patch.delete(tmp_blocks, ctx, nombre='')
+        required_percentage = 0.8  # 80%
+
+        def normalize(text):
+            if not text:
+                return ""
+            text = text.lower()
+            text = unicodedata.normalize("NFD", text)
+            text = "".join(c for c in text if unicodedata.category(c) != "Mn")  # remove accents
+            text = re.sub(r"[^\w\s]", "", text)  # remove punctuation
+            text = re.sub(r"\s+", " ", text).strip()  # normalize whitespace
+            return text
+
+        clc_list = [
+            row[0] for row in ctx.session.query(Localidades_tmp.clc).distinct().order_by(Localidades_tmp.clc).all()
+        ]
+        loc_wrong_cod = []
+        for clc in tqdm(clc_list, desc="Procesando localidades censales..."):
+
+            # Obtenemos todas las localidades que pertenecen a la localidad censal
+            localities = ctx.session.query(Localidades).filter(Localidades.localidad_censal_id == clc).all()
+
+            # Obtenemos los polígonos de localidades suministrados por otra fuente
+            localities_tmp = ctx.session.query(Localidades_tmp).filter(Localidades_tmp.clc == clc).all()
+
+            for loc_tmp in localities_tmp:
+
+                locality = None
+                names = []
+                for loc in localities:
+                    name = locality_names.get(loc_tmp.nam, None)
+
+                    if name:
+                        loc_wrong_cod.append(
+                            (loc_tmp.link,
+                             "Se reemplazó '{}' por '{}'".format(loc_tmp.nam, name)))
+
+                    if name and name == loc.nombre or normalize(loc_tmp.nam) == normalize(loc.nombre):
+                        locality = loc
+                        break
+
+                    names.append(loc.nombre)
+
+                if not locality:
+                    loc_wrong_cod.append(
+                        (loc_tmp.link, "La localidad '{}' no se encuentra entre las siguientes: {}".format(loc_tmp.nam, names)))
+                    continue
+
+                street_blocks = (
+                    ctx.session.query(Cuadras)
+                    .filter(Cuadras.codloc20 == clc)
+                    .filter(func.ST_Intersects(Cuadras.geom, loc_tmp.geom))
+                    .filter((func.ST_Length(func.ST_Intersection(loc_tmp.geom, Cuadras.geom)) / func.ST_Length(
+                        Cuadras.geom)) >= required_percentage)
+                    .all()
+                )
+
+                for street_block in street_blocks:
+                    street_block.loc_link = locality.id
+                    street_block.loc_nombre = locality.nombre
+
+        ctx.session.commit()
+
+        for street_block in tqdm(ctx.session.query(Cuadras).all(), desc="Cambiando identificador de calles..."):
+            subfix = street_block.nomencla[8:]
+            if street_block.loc_link:
+                prefix = str(street_block.loc_link).ljust(10, '0')
+            else:
+                prefix = str(street_block.codloc20).ljust(10, '0')
+            street_block.nomencla = prefix + subfix
+
+        ctx.session.commit()
+
+        if loc_wrong_cod:
+            message = 'Existen {} localidades sin identificar'.format(
+                len(loc_wrong_cod))
+            ctx.report.warn(message)
+            ctx.report.get_data(self.name)['warning'] = loc_wrong_cod
+
+    def _patch_tmp_entities(self, tmp_street_blocks, ctx):
+
+        patch.delete(tmp_street_blocks, ctx, tipo='')
+
+        patch.delete(tmp_street_blocks, ctx, nombre='')
 
         # Una cuadra de la calle "064414417007012" no contiene geometría
-        patch.delete(tmp_blocks, ctx, geom=None)
+        patch.delete(tmp_street_blocks, ctx, geom=None)
 
-        patch.delete(tmp_blocks, ctx, nomencla='4213305000025')
-        patch.delete(tmp_blocks, ctx, nomencla='4213305000030')
-        patch.delete(tmp_blocks, ctx, nomencla='4213305000075')
+        # patch.delete(tmp_street_blocks, ctx, nomencla='4213305000025')
+        # patch.delete(tmp_street_blocks, ctx, nomencla='4213305000030')
+        # patch.delete(tmp_street_blocks, ctx, nomencla='4213305000075')
 
         def update_clc(row):
             old_clc = row.nomencla[:constants.CENSUS_LOCALITY_ID_LEN]
@@ -301,48 +396,11 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             row.codloc20 = new_clc
 
         for clc in INVALID_BLOCKS_CLC.keys():
-            patch.apply_fn(tmp_blocks, update_clc, ctx, tmp_blocks.nomencla.like('{}%'.format(clc)))
+            patch.apply_fn(tmp_street_blocks, update_clc, ctx, tmp_street_blocks.nomencla.like('{}%'.format(clc)))
 
         ctx.session.commit()
 
-        # Agregar columnas loc_link y loc_nombre a la tabla si no existen
-        with ctx.engine.begin() as connection:
-            table_name = constants.STREET_BLOCKS_TMP_TABLE
-            connection.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS loc_link VARCHAR")
-            connection.execute(f"ALTER TABLE {table_name} ADD COLUMN IF NOT EXISTS loc_nombre VARCHAR")
-
-        # Modificar el modelo `tmp_blocks` original para reflejar las nuevas columnas
-        from sqlalchemy import Column, String
-        if not hasattr(tmp_blocks, 'loc_link'):
-            tmp_blocks.__table__.append_column(Column('loc_link', String))
-            setattr(tmp_blocks, 'loc_link', Column('loc_link', String))
-        if not hasattr(tmp_blocks, 'loc_nombre'):
-            tmp_blocks.__table__.append_column(Column('loc_nombre', String))
-            setattr(tmp_blocks, 'loc_nombre', Column('loc_nombre', String))
-
-        Cuadras = utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
-        Localidades = utils.automap_table(constants.LOCALITIES_TMP_TABLE, ctx)
-        required_percentage = 0.8  # 80%
-
-        for prov in PROVINCES_WITH_POLYGONS:
-            provincia = ctx.session.query(Province).filter(Province.id == prov).first()
-            street_blocks = ctx.session.query(Cuadras).filter(Cuadras.nomencla.like('{}%'.format(prov))).all()
-            for street_block in tqdm(street_blocks, desc="Cuadras de {}".format(provincia.nombre)):
-                locality = ctx.session.query(Localidades). \
-                    filter(func.ST_Intersects(Localidades.geom, street_block.geom)). \
-                    filter(
-                    (
-                            func.ST_Length(func.ST_Intersection(Localidades.geom, street_block.geom)) / func.ST_Length(street_block.geom)
-                    ) >= required_percentage
-                ).first()
-
-                if locality:
-                    if len(locality.link) == 10:
-                        street_block.nomencla = street_block.nomencla[:8] + locality.link[-2:] + street_block.nomencla[-5:]
-                    street_block.loc_link = locality.link
-                    street_block.loc_nombre = locality.nombre
-
-            ctx.session.commit()
+        self._mix_street_blocks_and_localities(ctx)
 
     def _entities_query_count(self, tmp_blocks, ctx):
         return ctx.session.query(tmp_blocks).\
@@ -404,6 +462,14 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
     def _run_internal(self, data, ctx):
         tmp_blocks, tmp_streets, self._tmp_localities = data
+
+        # Agregar columnas loc_link y loc_nombre a la tabla si no existen
+        with ctx.engine.begin() as connection:
+            table_name = tmp_blocks.__table__.name
+            connection.execute(f'ALTER TABLE "{table_name}" ADD COLUMN IF NOT EXISTS loc_link VARCHAR')
+            connection.execute(f'ALTER TABLE "{table_name}" ADD COLUMN IF NOT EXISTS loc_nombre VARCHAR')
+        tmp_blocks = utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx)
+
         report_street_block_number_state(tmp_blocks, ctx, self.name)
 
         if tmp_streets:
@@ -419,6 +485,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         prov_id = street_id[:constants.PROVINCE_ID_LEN]
         dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
         census_loc_id = street_id[:constants.CENSUS_LOCALITY_ID_LEN]
+        loc_id = street.loc_link
 
         province = cached_session.query(Province).get(prov_id)
         if not province:
@@ -437,13 +504,6 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                 'No existe la localidad censal con ID {}'.format(
                     census_loc_id))
 
-        if street.loc_link:
-            loc_id = street.loc_link
-            loc_nombre = street.loc_nombre
-        else:
-            loc_id = census_loc_id
-            loc_nombre = census_locality.nombre
-
         return Street(
             id=street_id,
             nombre=utils.clean_string(street.nombre),
@@ -457,6 +517,5 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
             provincia_id=prov_id,
             departamento_id=dept_id,
             localidad_censal_id=census_loc_id,
-            loc_id=loc_id,
-            loc_nombre=loc_nombre
+            localidad_id=loc_id
         )

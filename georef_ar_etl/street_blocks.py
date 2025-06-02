@@ -62,7 +62,6 @@ class StreetBlocksExtractionStep(Step):
         block_id = tmp_block.nomencla + ogc_fid[-7:]
 
         street = ctx.session.query(Street).get(tmp_block.nomencla)
-        loc_id = street.loc_id
 
         return StreetBlock(
             id=block_id,

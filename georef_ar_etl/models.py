@@ -459,7 +459,7 @@ class InCensusTractsMixin:
 
 class InNullableCensusLocalityMixin:
     """Define atributos y funciones de entidades que pertececen opcionalmente a
-    una localidal censal.
+    una localida censal.
 
     Attributes:
         localidad_censal_id (str): ID de la localidad referenciada, o 'None'.
@@ -492,6 +492,43 @@ class InNullableCensusLocalityMixin:
 
         return session.query(CensusLocality).get(
             self.localidad_censal_id).nombre
+
+
+class InNullableLocalityMixin:
+    """Define atributos y funciones de entidades que pertececen opcionalmente a
+    una localidad.
+
+    Attributes:
+        localidad_id (str): ID de la localidad referenciada, o 'None'.
+
+    """
+
+    @declared_attr
+    def localidad_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.LOCALITIES_ETL_TABLE + '.id',
+                       ondelete='cascade'),
+            nullable=True
+        )
+
+    def localidad_nombre(self, session):
+        """Retorna el nombre de la localidad a la cual pertenece la
+        entidad. El nombre de método está en castellano para mantener
+        consistencia con los demás campos de los modelos.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            str: Nombre de la localidad.
+
+        """
+        if not self.localidad_id:
+            return None
+
+        return session.query(Locality).get(
+            self.localidad_id).nombre
 
 
 class Province(Base, EntityMixin):
@@ -1155,7 +1192,7 @@ class DoorNumberedMixin:
 
 
 class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
-             InCensusLocalityMixin, DoorNumberedMixin):
+             InCensusLocalityMixin, InNullableLocalityMixin, DoorNumberedMixin):
     """Modelo utilizado para representar calles.
 
     Attributes:
@@ -1175,17 +1212,6 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
     intersecciones_b = get_relationship('Intersection',
                                         foreign_keys='Intersection.calle_b_id')
     cuadras = get_relationship('StreetBlock')
-
-    loc_id = Column(String, nullable=True)
-    loc_nombre = Column(String, nullable=True)
-
-    @validates('id')
-    def validate_id(self, _key, value):
-        if len(value) not in [13, 15]:
-            raise ValidationException(
-                'La longitud del ID debe ser {}.'.format(self._id_len))
-
-        return value
 
     def to_dict_simple(self, session):
         """Retorna una representación parcial de la entidad como diccionario
@@ -1214,6 +1240,10 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
                 'id': self.localidad_censal_id,
                 'nombre': self.localidad_censal_nombre(session)
             },
+            'localidad': {
+                "id": self.localidad_id,
+                'nombre': self.localidad_nombre(session)
+            },
             'categoria': self.categoria
         }
 
@@ -1235,7 +1265,6 @@ class Street(Base, EntityMixin, InProvinceMixin, InDepartmentMixin,
         base['altura'] = self.door_numbers_dict()
         base['geometria'] = json.loads(session.scalar(
             self.geometria.ST_AsGeoJSON()))
-        base['localidad'] = {"id": self.loc_id, "nombre": self.loc_nombre}
 
         return base
 
@@ -1274,12 +1303,10 @@ class StreetBlock(Base, DoorNumberedMixin):
 
         """
         street = session.query(Street).get(self.calle_id)
-        street_dict = street.to_dict_simple(session)
-        street_dict['localidad'] = {"id": street.loc_id, "nombre": street.loc_nombre}
 
         return {
             'id': self.id,
-            'calle': street_dict,
+            'calle': street.to_dict_simple(session),
             'altura': self.door_numbers_dict(),
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
@@ -1324,11 +1351,9 @@ class Intersection(Base):
         """
         street_a = session.query(Street).get(self.calle_a_id)
         street_a_dict = street_a.to_dict_simple(session)
-        street_a_dict['localidad'] = {"id": street_a.loc_id, "nombre": street_a.loc_nombre}
 
         street_b = session.query(Street).get(self.calle_b_id)
         street_b_dict = street_b.to_dict_simple(session)
-        street_b_dict['localidad'] = {"id": street_b.loc_id, "nombre": street_b.loc_nombre}
 
         return {
             'id': self.id,
