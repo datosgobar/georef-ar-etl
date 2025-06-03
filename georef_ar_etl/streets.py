@@ -291,6 +291,7 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
                          entity_class_pkey='id',
                          tmp_entity_class_pkey='nomencla')
         self._tmp_localities = None
+        self._polygons_errors = []
 
     def _mix_street_blocks_and_localities(self, ctx):
 
@@ -313,43 +314,77 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         clc_list = [
             row[0] for row in ctx.session.query(Localidades_tmp.clc).distinct().order_by(Localidades_tmp.clc).all()
         ]
-        loc_wrong_cod = []
-        for clc in tqdm(clc_list, desc="Procesando localidades censales..."):
+        loc_warning_msg = []
+        loc_error_msg = []
+        total_polygons = 0
+        from shapely.wkb import loads as load_wkb
+        for clc in tqdm(clc_list, desc="Procesando localidades censales con polígonos de localidades..."):
 
             # Obtenemos todas las localidades que pertenecen a la localidad censal
             localities = ctx.session.query(Localidades).filter(Localidades.localidad_censal_id == clc).all()
+            names = [locality.nombre for locality in localities]
 
             # Obtenemos los polígonos de localidades suministrados por otra fuente
             localities_tmp = ctx.session.query(Localidades_tmp).filter(Localidades_tmp.clc == clc).all()
+            total_polygons += len(localities_tmp)
 
-            for loc_tmp in localities_tmp:
+            for locality_tmp in localities_tmp:
 
-                locality = None
-                names = []
-                for loc in localities:
-                    name = locality_names.get(loc_tmp.nam, None)
+                # Buscamos los puntos contenidos en el polígono
+                poly = load_wkb(bytes(locality_tmp.geom.data))
+                localities_in_polygon = [
+                    loc for loc in localities
+                    if poly.contains(load_wkb(bytes(loc.geometria.data)))
+                ]
 
-                    if name:
-                        loc_wrong_cod.append(
-                            (loc_tmp.link,
-                             "Se reemplazó '{}' por '{}'".format(loc_tmp.nam, name)))
-
-                    if name and name == loc.nombre or normalize(loc_tmp.nam) == normalize(loc.nombre):
-                        locality = loc
-                        break
-
-                    names.append(loc.nombre)
-
-                if not locality:
-                    loc_wrong_cod.append(
-                        (loc_tmp.link, "La localidad '{}' no se encuentra entre las siguientes: {}".format(loc_tmp.nam, names)))
+                # Si no hay puntos dentro del polígono se excluye la localidad
+                if not localities_in_polygon:
+                    loc_error_msg.append(
+                        (locality_tmp.link,
+                         "No se encontraron localidades dentro del polígono de '{}'. Localidades en {}: {}"
+                         .format(locality_tmp.nam, clc, names)))
                     continue
+
+                # Si hay un solo punto dentro del polígono se considera a la localidad como válida independientemente del nombre
+                if len(localities_in_polygon) == 1:
+                    locality = localities_in_polygon[0]
+                    if locality.nombre != locality_tmp.nam or locality.id != locality_tmp.link:
+                        loc_warning_msg.append(
+                            (locality_tmp.link,
+                             "Se vinculó el polígono de '{}' a la localidad '{}' (id={})".format(locality_tmp.nam, locality.nombre, locality.id))
+                        )
+
+                # Si hay más de un punto...
+                else:
+                    fixed_name = locality_names.get(locality_tmp.nam, locality_tmp.nam)
+                    loc_to_consider = [l for l in localities_in_polygon if normalize(fixed_name) == normalize(l.nombre)]
+
+                    if len(loc_to_consider) == 0:
+                        loc_error_msg.append(
+                            (locality_tmp.link,
+                             "El polígono de '{}' no se pudo vincular a ninguna localidad. Localidades en {}: {}"
+                             .format(locality_tmp.nam, clc, names)))
+                        continue
+
+                    if len(loc_to_consider) > 1:
+                        loc_error_msg.append(
+                            (locality_tmp.link,
+                             "El polígono de '{}' no se pudo vincular unívocamente a alguna de las siguientes localidades: {}. Localidades en {}: {}"
+                             .format(locality_tmp.nam, [l.nombre for l in loc_to_consider], clc, names)))
+                        continue
+
+                    locality = loc_to_consider[0]
+                    if locality.nombre != locality_tmp.nam or locality.id != locality_tmp.link:
+                        loc_warning_msg.append(
+                            (locality_tmp.link,
+                             "Se viculó el polígono de '{}' a la localidad '{}' (id={})".format(locality_tmp.nam, locality.nombre, locality.id))
+                        )
 
                 street_blocks = (
                     ctx.session.query(Cuadras)
                     .filter(Cuadras.codloc20 == clc)
-                    .filter(func.ST_Intersects(Cuadras.geom, loc_tmp.geom))
-                    .filter((func.ST_Length(func.ST_Intersection(loc_tmp.geom, Cuadras.geom)) / func.ST_Length(
+                    .filter(func.ST_Intersects(Cuadras.geom, locality_tmp.geom))
+                    .filter((func.ST_Length(func.ST_Intersection(locality_tmp.geom, Cuadras.geom)) / func.ST_Length(
                         Cuadras.geom)) >= required_percentage)
                     .all()
                 )
@@ -370,11 +405,14 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         ctx.session.commit()
 
-        if loc_wrong_cod:
-            message = 'Existen {} localidades sin identificar'.format(
-                len(loc_wrong_cod))
-            ctx.report.warn(message)
-            ctx.report.get_data(self.name)['warning'] = loc_wrong_cod
+        if loc_error_msg:
+            message = 'Existen {}/{} polígonos sin identificar.'.format(
+                len(loc_error_msg), total_polygons)
+            ctx.report.error(message)
+            self._polygons_errors = loc_error_msg
+
+        if loc_warning_msg:
+            ctx.report.get_data(self.name)['warning'] = loc_warning_msg
 
     def _patch_tmp_entities(self, tmp_street_blocks, ctx):
 
@@ -478,7 +516,9 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
             self._copy_tmp_streets(tmp_blocks, tmp_streets, ctx)
 
-        return super()._run_internal(tmp_blocks, ctx)
+        result = super()._run_internal(tmp_blocks, ctx)
+        ctx.report.get_data(self.name)['errors'].extend(self._polygons_errors)
+        return result
 
     def _process_entity(self, street, cached_session, ctx):
         street_id = street.nomencla
