@@ -395,15 +395,28 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         ctx.session.commit()
 
-        for street_block in tqdm(ctx.session.query(Cuadras).all(), desc="Cambiando identificador de calles..."):
-            subfix = street_block.nomencla[8:]
-            if street_block.loc_link:
-                prefix = str(street_block.loc_link).ljust(10, '0')
-            else:
-                prefix = str(street_block.codloc20).ljust(10, '0')
-            street_block.nomencla = prefix + subfix
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        offset = 0
+        total = ctx.session.query(Cuadras).count()
+        pbar = tqdm(total=total, desc="Cambiando identificador de calles...")
+        while True:
+            street_blocks = ctx.session.query(Cuadras).offset(offset).limit(bulk_size).all()
+            if not street_blocks:
+                break
 
-        ctx.session.commit()
+            for street_block in street_blocks:
+                subfix = street_block.nomencla[8:]
+                if street_block.loc_link:
+                    prefix = str(street_block.loc_link).ljust(10, '0')
+                else:
+                    prefix = str(street_block.codloc20).ljust(10, '0')
+                street_block.nomencla = prefix + subfix
+                pbar.update(1)
+
+            ctx.session.commit()
+            offset += bulk_size
+
+        pbar.close()
 
         if loc_error_msg:
             message = 'Existen {}/{} polígonos sin identificar.'.format(
