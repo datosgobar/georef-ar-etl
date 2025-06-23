@@ -319,6 +319,37 @@ class InNullableLocalGovernmentMixin:
 
         return session.query(LocalGovernment).get(self.gobierno_local_id).nombre
 
+class InSettlementMixin:
+    """Define atributos y funciones de entidades que están contenidas dentro de
+    un asentamiento, o pertenecen a uno.
+
+    Attributes:
+        departamento_id (str): ID del asentamiento referenciado.
+
+    """
+
+    @declared_attr
+    def asentamiento_id(cls):
+        return Column(
+            String,
+            ForeignKey(constants.SETTLEMENTS_ETL_TABLE + '.id',
+                       ondelete='cascade'),
+            nullable=False
+        )
+
+    def asentamiento_nombre(self, session):
+        """Retorna el nombre del asentamiento al cual pertenece la entidad.
+        El nombre de método está en castellano para mantener consistencia con
+        los demás campos de los modelos.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            str: Nombre del asentamiento.
+
+        """
+        return session.query(Settlement).get(self.asentamiento_id).nombre
 
 class InCensusLocalityMixin:
     """Define atributos y funciones de entidades que pertececen a una localidad
@@ -1361,4 +1392,70 @@ class Intersection(Base):
             'calle_b': street_b_dict,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
+        }
+
+class EducationalInstitution(Base, EntityMixin,
+                             InProvinceMixin, InDepartmentMixin, InNullableLocalGovernmentMixin, InSettlementMixin):
+    """Modelo utilizado para representar establecimientos educativos.
+
+    Attributes:
+        __tablename__ (str): Nombre de la tabla.
+        _id_len (int): Longitud de los IDs.
+        geometría (geoalchemy2.Geometry): Geometría del establecimiento educativo.
+
+    """
+
+    __tablename__ = constants.EDUCATIONAL_INSTITUTIONS_ETL_TABLE
+    _id_len = constants.EDUCATIONAL_INSTITUTION_ID_LEN
+
+    domicilio = Column(String, nullable=False)
+    gestion = Column(String, nullable=False)
+    niveles = Column(String, nullable=False)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    geometria = Column(Geometry('MULTIPOINT', srid=SRID), nullable=False)
+
+    def to_dict(self, session):
+        """Retorna una representación de la entidad como diccionario 'dict'.
+        Los campos compuestos (que contienen varios valores) se representan
+        también como diccionarios de varios valores. El resultado puede ser
+        utilizado para serializar fácilmente la entidad a formatos como JSON.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            dict: Entidad en forma de diccionario.
+
+        """
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'categoria': self.categoria,
+            'domicilio': self.domicilio,
+            'gestion': self.gestion,
+            'niveles': self.niveles,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON())),
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session)
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+            'gobierno_local': {
+                'id': self.gobierno_local_id,
+                'nombre': self.gobierno_local_nombre(session)
+            },
+            'asentamiento': {
+                'id': self.asentamiento_id,
+                'nombre': self.asentamiento_nombre(session)
+            },
         }
