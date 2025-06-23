@@ -9,3 +9,4 @@ shapely==2.0.7
 responses==0.10.6
 urllib3==1.26.18
 six==1.16.0
+RapidFuzz==3.12.1
