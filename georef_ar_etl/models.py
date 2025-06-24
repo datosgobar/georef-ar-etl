@@ -1394,8 +1394,7 @@ class Intersection(Base):
                 self.geometria.ST_AsGeoJSON()))
         }
 
-class EducationalInstitution(Base, EntityMixin,
-                             InProvinceMixin, InDepartmentMixin, InNullableLocalGovernmentMixin, InSettlementMixin):
+class EducationalInstitution(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
     """Modelo utilizado para representar establecimientos educativos.
 
     Attributes:
@@ -1409,6 +1408,7 @@ class EducationalInstitution(Base, EntityMixin,
     _id_len = constants.EDUCATIONAL_INSTITUTION_ID_LEN
 
     domicilio = Column(String, nullable=False)
+    localidad = Column(String, nullable=True)
     gestion = Column(String, nullable=False)
     niveles = Column(String, nullable=False)
     lon = Column(Float, nullable=False)
@@ -1434,6 +1434,7 @@ class EducationalInstitution(Base, EntityMixin,
             'fuente': self.fuente,
             'categoria': self.categoria,
             'domicilio': self.domicilio,
+            'localidad': self.localidad,
             'gestion': self.gestion,
             'niveles': self.niveles,
             'centroide': {
@@ -1449,13 +1450,5 @@ class EducationalInstitution(Base, EntityMixin,
             'departamento': {
                 'id': self.departamento_id,
                 'nombre': self.departamento_nombre(session)
-            },
-            'gobierno_local': {
-                'id': self.gobierno_local_id,
-                'nombre': self.gobierno_local_nombre(session)
-            },
-            'asentamiento': {
-                'id': self.asentamiento_id,
-                'nombre': self.asentamiento_nombre(session)
             },
         }
