@@ -62,15 +62,18 @@ class UniversityInstitutionsExtractionStep(transformers.EntitiesExtractionStep):
     def _process_entity(self, institution, cached_session, ctx):
 
         cue = institution.cue
-        unidad_academica = institution.unidad_aca
-        if not unidad_academica:
+
+        if not institution.unidad_aca:
             raise ValidationException(
                 'No se pudo determinar la unidad academica de la institución con CUE {}'.format(cue))
-        universidad = institution.universida
-        if not universidad:
+        unidad_academica = str(institution.unidad_aca).strip()
+
+        if not institution.universida:
             raise ValidationException(
                 'No se pudo determinar la universidad de la institución con CUE {}'.format(cue))
-        nomencla = unidad_academica + universidad
+        universidad = str(institution.universida).strip()
+
+        nomencla = " - ".join([unidad_academica, universidad])
 
         fuente = ""
         categoria = ""
