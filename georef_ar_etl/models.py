@@ -1452,3 +1452,66 @@ class EducationalInstitution(Base, EntityMixin, InProvinceMixin, InDepartmentMix
                 'nombre': self.departamento_nombre(session)
             },
         }
+
+class UniversityInstitution(Base, EntityMixin, InProvinceMixin, InDepartmentMixin):
+    """Modelo utilizado para representar establecimientos educativos.
+
+    Attributes:
+        __tablename__ (str): Nombre de la tabla.
+        _id_len (int): Longitud de los IDs.
+        geometría (geoalchemy2.Geometry): Geometría del establecimiento educativo.
+
+    """
+
+    __tablename__ = constants.UNIVERSITY_INSTITUTIONS_ETL_TABLE
+    _id_len = constants.UNIVERSITY_INSTITUTIONS_ID_LEN
+
+    domicilio = Column(String, nullable=False)
+    localidad = Column(String, nullable=True)
+    gestion = Column(String, nullable=False)
+    niveles = Column(String, nullable=False)
+    universidad = Column(String, nullable=False)
+    unidad_academica = Column(String, nullable=False)
+    lon = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    geometria = Column(Geometry('MULTIPOINT', srid=SRID), nullable=False)
+
+    def to_dict(self, session):
+        """Retorna una representación de la entidad como diccionario 'dict'.
+        Los campos compuestos (que contienen varios valores) se representan
+        también como diccionarios de varios valores. El resultado puede ser
+        utilizado para serializar fácilmente la entidad a formatos como JSON.
+
+        Args:
+            session (sqlalchemy.orm.session.Session): Sesión de base de datos.
+
+        Returns:
+            dict: Entidad en forma de diccionario.
+
+        """
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'fuente': self.fuente,
+            'categoria': self.categoria,
+            'domicilio': self.domicilio,
+            'localidad': self.localidad,
+            'gestion': self.gestion,
+            'niveles': self.niveles,
+            'universidad': self.universidad,
+            'unidad_academica': self.unidad_academica,
+            'centroide': {
+                'lon': self.lon,
+                'lat': self.lat
+            },
+            'geometria': json.loads(session.scalar(
+                self.geometria.ST_AsGeoJSON())),
+            'provincia': {
+                'id': self.provincia_id,
+                'nombre': self.provincia_nombre(session)
+            },
+            'departamento': {
+                'id': self.departamento_id,
+                'nombre': self.departamento_nombre(session)
+            },
+        }

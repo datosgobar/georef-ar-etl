@@ -5,7 +5,7 @@ from fs import osfs
 from .exceptions import ProcessException
 from .context import Context, Report, RUN_MODES, get_mail_groups
 from . import read_config, get_logger, create_engine, constants, models, agglomerations, census_tracts, census_blocks, \
-    educational_institutions
+    educational_institutions, university_institutions
 from . import provinces, departments, local_governments
 from . import settlements, localities, census_localities
 from . import streets, intersections, street_blocks
@@ -25,6 +25,7 @@ PROCESSES = [
     constants.INTERSECTIONS,
     constants.STREET_BLOCKS,
     constants.EDUCATIONAL_INSTITUTIONS,
+    constants.UNIVERSITY_INSTITUTIONS,
     constants.SYNONYMS,
     constants.EXCLUDING_TERMS
 ]
@@ -43,6 +44,7 @@ MODULES = [
     intersections,
     street_blocks,
     educational_institutions,
+    university_institutions,
     synonyms,
     excluding_terms
 ]

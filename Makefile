@@ -70,6 +70,10 @@ cuadras:
 establecimientos_educativos:
 	$(ETL_COMMAND) -p establecimientos_educativos
 
+# Ejecuta el proceso de instituciones universitarias
+instituciones_universitarias:
+	$(ETL_COMMAND) -p instituciones_universitarias
+
 # Ejecuta todos los procesos, pero solo la parte de generación de archivos
 files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail
@@ -81,6 +85,7 @@ files:
 	$(ETL_COMMAND) -p calles --start 5 --no-mail
 	$(ETL_COMMAND) -p intersecciones --start 4 --no-mail
 	$(ETL_COMMAND) -p establecimientos_educativos --start 4 --no-mail
+	$(ETL_COMMAND) -p instituciones_universitarias --start 8 --no-mail
 	$(ETL_COMMAND) -p cuadras --start 6 --no-mail
 	$(ETL_COMMAND) -p sinonimos -p terminos_excluyentes --no-mail
 
