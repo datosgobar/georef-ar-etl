@@ -559,8 +559,8 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         return Street(
             id=street_id,
-            nombre=utils.clean_string(street.nombre),
-            categoria=utils.clean_string(street.tipo),
+            nombre=utils.clean_string(street.nombre or ''),
+            categoria=utils.clean_string(street.tipo or ''),
             fuente=constants.STREETS_SOURCE,
             inicio_derecha=street.desded or 0,
             fin_derecha=street.hastad or 0,
