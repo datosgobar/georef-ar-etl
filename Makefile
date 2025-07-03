@@ -31,6 +31,10 @@ departamentos:
 	$(ETL_COMMAND) -p departamentos
 
 # Ejecuta el proceso de aglomerados
+gobiernos_locales:
+	$(ETL_COMMAND) -p gobiernos_locales
+
+# Ejecuta el proceso de aglomerados
 aglomerados:
 	$(ETL_COMMAND) -p aglomerados
 
