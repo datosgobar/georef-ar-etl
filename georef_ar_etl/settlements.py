@@ -273,6 +273,23 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         for expression in expressions:
             patch.apply_fn(tmp_entities, update_commune_id, ctx, expression)
 
+        def fix_department(row):
+            department = (
+                ctx.session.query(Department)
+                .filter(
+                    Department.provincia_id == '94',
+                    func.ST_Intersects(Department.geometria, row.geom)
+                )
+                .one_or_none()
+            )
+
+            if department:
+                codigo_ase = department.id + row.codigo_ase[5:]
+                row.codigo_ase = codigo_ase
+
+        patch.apply_fn(tmp_entities, fix_department, ctx, tmp_entities.codigo_ase.like("94007%"))
+        patch.apply_fn(tmp_entities, fix_department, ctx, tmp_entities.codigo_ase.like("94014%"))
+
     def _run_internal(self, tmp_settlements, ctx):
         tmp_settlements_merged = self._merge_tmp_settlements(tmp_settlements, ctx)
         return super()._run_internal(tmp_settlements_merged, ctx)
