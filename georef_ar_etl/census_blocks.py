@@ -82,6 +82,12 @@ class CensusBlocksExtractionStep(transformers.EntitiesExtractionStep):
         patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_indec='221470304')
         patch.apply_fn(tmp_entities, make_valid_geom, ctx, cod_indec='221402201')
 
+        def fix_cde(row):
+            row.cde = row.cpr + row.cde
+
+        patch.apply_fn(tmp_entities, fix_cde, ctx, cpr='22', cde='140')
+        patch.apply_fn(tmp_entities, fix_cde, ctx, cpr='66', cde='105')
+
 
     def _process_entity(self, tmp_entity, cached_session, ctx):
         lon, lat = geometry.get_centroid_coordinates(tmp_entity.geom,
