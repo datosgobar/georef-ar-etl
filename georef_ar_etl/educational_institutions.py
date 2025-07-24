@@ -105,6 +105,8 @@ class EducationalInstitutionsExtractionStep(transformers.EntitiesExtractionStep)
 
         patch.apply_fn(tmp_entities, fix_source, ctx, tmp_entities.sag.like("%? DIE"))
 
+        patch.update_field(tmp_entities, "gna", "", ctx, gna=None)
+
     def mix_sources(self, tmp_educational_institutions, tmp_educational_institutions_mi, ctx):
         # Agregar columnas loc_link y loc_nombre a la tabla si no existen
         with ctx.engine.begin() as connection:
@@ -131,11 +133,6 @@ class EducationalInstitutionsExtractionStep(transformers.EntitiesExtractionStep)
     def _process_entity(self, institution, cached_session, ctx):
 
         cue = institution.cue
-
-        categoria = institution.gna
-        if not categoria:
-            raise ValidationException(
-                'No se pudo determinar la categoria de la institución con CUE {}'.format(cue))
 
         gestion = institution.ges
         if not gestion:
@@ -179,7 +176,7 @@ class EducationalInstitutionsExtractionStep(transformers.EntitiesExtractionStep)
             id=cue,
             nombre=institution.fna,
             fuente=institution.sag,
-            categoria=categoria,
+            categoria=institution.gna,
             domicilio=domicilio,
             localidad=localidad,
             gestion=gestion,
