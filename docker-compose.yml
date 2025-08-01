@@ -2,7 +2,7 @@ version: '3.9'
 services:
   db:
     build:
-      context: docker
+      context: .
       dockerfile: docker/Dockerfile_db
     image: datosgobar/georef-etl_db
     container_name: georef-etl_db
@@ -19,7 +19,7 @@ services:
       - geonet
   db-test:
     build:
-      context: docker
+      context: .
       dockerfile: docker/Dockerfile_db
     image: datosgobar/georef-etl_db_test
     profiles: ["test"]
@@ -42,9 +42,9 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ../config:/opt/app-root/src/georef-ar-etl/config:ro
-      - ../files:/opt/app-root/src/georef-ar-etl/files
-      - ../reports:/opt/app-root/src/georef-ar-etl/reports
+      - ./config:/opt/app-root/src/georef-ar-etl/config:ro
+      - ./files:/opt/app-root/src/georef-ar-etl/files
+      - ./reports:/opt/app-root/src/georef-ar-etl/reports
     networks:
       - geonet
 volumes:
