@@ -429,6 +429,8 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         patch.delete(tmp_street_blocks, ctx, tipo='')
 
+        patch.update_field(tmp_street_blocks, 'tipo', 'PASAJE', ctx, tipo='PJE')
+
         patch.delete(tmp_street_blocks, ctx, nombre='')
 
         # Una cuadra de la calle "064414417007012" no contiene geometría
