@@ -82,13 +82,13 @@ instituciones_universitarias:
 files:
 	$(ETL_COMMAND) -p provincias --start 8 --no-mail
 	$(ETL_COMMAND) -p departamentos --start 9 --no-mail
-	$(ETL_COMMAND) -p gobiernos_locales --start 7 --no-mail
-	$(ETL_COMMAND) -p localidades_censales --start 7 --no-mail
-	$(ETL_COMMAND) -p asentamientos --start 8 --no-mail
+	$(ETL_COMMAND) -p gobiernos_locales --start 9 --no-mail
+	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
+	$(ETL_COMMAND) -p asentamientos --start 5 --no-mail
 	$(ETL_COMMAND) -p localidades --start 6 --no-mail
 	$(ETL_COMMAND) -p calles --start 5 --no-mail
 	$(ETL_COMMAND) -p intersecciones --start 4 --no-mail
-	$(ETL_COMMAND) -p establecimientos_educativos --start 4 --no-mail
+	$(ETL_COMMAND) -p establecimientos_educativos --start 5 --no-mail
 	$(ETL_COMMAND) -p instituciones_universitarias --start 8 --no-mail
 	$(ETL_COMMAND) -p cuadras --start 6 --no-mail
 	$(ETL_COMMAND) -p sinonimos -p terminos_excluyentes --no-mail
@@ -151,8 +151,8 @@ create_test_files:
 	$(ETL_COMMAND) -p departamentos --end 4
 	$(ETL_COMMAND) -p gobiernos_locales --end 4
 	$(ETL_COMMAND) -p localidades_censales --end 4
-	$(ETL_COMMAND) -p asentamientos --end 4
-	$(ETL_COMMAND) -p calles --end 3
+	$(ETL_COMMAND) -p asentamientos --end 2
+	$(ETL_COMMAND) -p calles --end 2
 
 	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_provincias \
@@ -173,7 +173,7 @@ create_test_files:
 	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_gobiernos_locales \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
-		-sql "select * from tmp_gobiernos_locales where in1 like '$(TEST_PROVINCE)%'" \
+		-sql "select * from tmp_gobiernos_locales where cmu like '$(TEST_PROVINCE)%'" \
 		-nln "test_gobiernos_locales" \
 		-lco "ENCODING=utf-8" \
 		-overwrite
@@ -181,7 +181,7 @@ create_test_files:
 	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_asentamientos \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
-		-sql "select * from tmp_asentamientos where cod_bahra like '$(TEST_PROVINCE)%'" \
+		-sql "select * from tmp_asentamientos where codigo_ase like '$(TEST_PROVINCE)%'" \
 		-nln "test_asentamientos" \
 		-lco "ENCODING=utf-8" \
 		-overwrite
@@ -189,7 +189,7 @@ create_test_files:
 	ogr2ogr -f "ESRI Shapefile" \
 		tests/test_files/test_localidades_censales \
 		"PG:host=$$DB_HOST dbname=$$DB_NAME user=$$DB_USER password=$$DB_PASS" \
-		-sql "select * from tmp_localidades_censales where link like '$(TEST_PROVINCE)%'" \
+		-sql "select * from tmp_localidades_censales where clc like '$(TEST_PROVINCE)%'" \
 		-nln "test_localidades_censales" \
 		-lco "ENCODING=utf-8" \
 		-t_srs "EPSG:4326" \
