@@ -1,6 +1,6 @@
 from georef_ar_etl.models import Province
 from georef_ar_etl.provinces import ProvincesExtractionStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestProvincesExtractionStep(ETLTestCase):

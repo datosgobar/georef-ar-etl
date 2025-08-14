@@ -1,7 +1,7 @@
 import json
 from georef_ar_etl.models import Province
 from georef_ar_etl.loaders import CreateGeoJSONFileStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestCreateGeoJSONFileStep(ETLTestCase):

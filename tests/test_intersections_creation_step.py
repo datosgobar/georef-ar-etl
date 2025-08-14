@@ -1,6 +1,6 @@
 from georef_ar_etl.models import Intersection, Street
 from georef_ar_etl.intersections import IntersectionsCreationStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 SAN_JUAN_INTERSECTIONS_COUNT = 1578
 

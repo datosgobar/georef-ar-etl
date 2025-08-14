@@ -1,7 +1,7 @@
 import json
 from georef_ar_etl.json_stream_writer import JSONStreamWriter, \
     JSONArrayPlaceholder
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestJSONStreamWriter(ETLTestCase):

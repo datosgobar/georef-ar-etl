@@ -1,6 +1,6 @@
 from georef_ar_etl.process import CompositeStep
-from . import ETLTestCase
-from .test_process import get_mock_step
+from tests import ETLTestCase
+from tests.test_process import get_mock_step
 
 
 class TestCompositeStep(ETLTestCase):

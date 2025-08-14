@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 from georef_ar_etl.utils import FunctionStep, FirstResultStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestFunctionStep(ETLTestCase):

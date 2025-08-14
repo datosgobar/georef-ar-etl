@@ -1,7 +1,7 @@
 import os
 from georef_ar_etl.exceptions import ProcessException
 from georef_ar_etl.transformers import ExtractZipStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestExtractZipStep(ETLTestCase):

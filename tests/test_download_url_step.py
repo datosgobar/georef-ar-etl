@@ -2,7 +2,7 @@ import hashlib
 import responses
 from georef_ar_etl.extractors import DownloadURLStep
 from georef_ar_etl.exceptions import ProcessException
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 # pylint: disable=no-member

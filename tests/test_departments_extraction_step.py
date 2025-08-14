@@ -1,6 +1,6 @@
 from georef_ar_etl.models import Department
 from georef_ar_etl.departments import DepartmentsExtractionStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 SAN_JUAN_DEPT_COUNT = 19
 

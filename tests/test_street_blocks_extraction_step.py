@@ -2,7 +2,7 @@ import random
 from georef_ar_etl import constants
 from georef_ar_etl.models import StreetBlock, Street
 from georef_ar_etl.street_blocks import StreetBlocksExtractionStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 SAN_JUAN_BLOCKS_COUNT = 3203
 

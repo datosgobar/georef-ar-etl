@@ -2,8 +2,8 @@ import csv
 import random
 from georef_ar_etl.models import Department
 from georef_ar_etl.loaders import CreateCSVFileStep
-from . import ETLTestCase
-from .test_departments_extraction_step import SAN_JUAN_DEPT_COUNT
+from tests import ETLTestCase
+from tests.test_departments_extraction_step import SAN_JUAN_DEPT_COUNT
 
 
 class TestCreateGeoJSONFileStep(ETLTestCase):

@@ -1,7 +1,7 @@
 from georef_ar_etl.models import LocalGovernment
 from georef_ar_etl.exceptions import ValidationException
-from georef_ar_etl.local_governments import MunicipalitiesExtractionStep
-from . import ETLTestCase
+from georef_ar_etl.local_governments import LocalGovernmentsExtractionStep
+from tests import ETLTestCase
 
 SAN_JUAN_MUNI_COUNT = 19
 
@@ -26,7 +26,7 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
         """Los municipios deberían poder ser procesados desde la tabla
         tmp_municipios e insertados en la tabla correspondiente
         georef_municipios."""
-        step = MunicipalitiesExtractionStep()
+        step = LocalGovernmentsExtractionStep()
         municipalities = step.run(self._tmp_municipalities, self._ctx)
 
         self.assertEqual(self._ctx.session.query(municipalities).count(),
@@ -41,7 +41,7 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
         extracción el campo nuevo debería figurar en georef_municipios."""
         # Ejecutar la extracción por primera vez
         muni_id = '700133'
-        step = MunicipalitiesExtractionStep()
+        step = LocalGovernmentsExtractionStep()
         step.run(self._tmp_municipalities, self._ctx)
 
         self._ctx.session.query(self._tmp_municipalities).\
@@ -59,7 +59,7 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
         municipio con el ID antiguo y se debería generar uno nuevo en la
         tabla georef_municipios."""
         # Ejecutar la extracción por primera vez
-        step = MunicipalitiesExtractionStep()
+        step = LocalGovernmentsExtractionStep()
         step.run(self._tmp_municipalities, self._ctx)
 
         # Modificar el ID de un municipio
@@ -79,7 +79,7 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
             filter_by(in1='700133').\
             update({'nam': '  Zonda   \n\n'})
 
-        step = MunicipalitiesExtractionStep()
+        step = LocalGovernmentsExtractionStep()
         municipalities = step.run(self._tmp_municipalities, self._ctx)
         name = self._ctx.session.query(municipalities).\
             filter_by(id='700133').\
@@ -89,7 +89,7 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
     def test_id_length(self):
         """No se debería poder crear un municipio con longitud de ID
         inválida."""
-        step = MunicipalitiesExtractionStep()
+        step = LocalGovernmentsExtractionStep()
         municipality = self._ctx.session.query(self._tmp_municipalities).\
             filter_by(in1='700133').one()
 
@@ -109,7 +109,7 @@ class TestMunicipalitiesExtractionStep(ETLTestCase):
             filter_by(in1='700133').\
             update({'in1': new_id})
 
-        step = MunicipalitiesExtractionStep()
+        step = LocalGovernmentsExtractionStep()
         municipalities = step.run(self._tmp_municipalities, self._ctx)
         query = self._ctx.session.query(municipalities).filter_by(id=new_id)
         self.assertEqual(query.count(), 0)

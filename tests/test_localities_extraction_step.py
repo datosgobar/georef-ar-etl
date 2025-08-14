@@ -2,8 +2,8 @@ from georef_ar_etl.models import Locality, CensusLocality, Province
 from georef_ar_etl.exceptions import ValidationException
 from georef_ar_etl.settlements import SettlementsExtractionStep
 from georef_ar_etl.localities import LocalitiesExtractionStep
-from . import ETLTestCase
-from .test_geometry import TEST_MULTIPOLYGON, TEST_POINT
+from tests import ETLTestCase
+from tests.test_geometry import TEST_MULTIPOLYGON, TEST_POINT
 
 SAN_JUAN_LOCALITIES_COUNT = 99
 TEST_MULTIPOINT = 'SRID=4326;MULTIPOINT((10 40))'

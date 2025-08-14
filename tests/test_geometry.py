@@ -1,7 +1,7 @@
 from sqlalchemy.sql import sqltypes
 from geoalchemy2.types import Geometry
 from georef_ar_etl import geometry
-from . import ETLTestCase
+from tests import ETLTestCase
 
 TEST_MULTIPOLYGON = 'SRID=4326;MULTIPOLYGON(((0 0, 0 10, 10 10, 10 0, 0 0)))'
 TEST_MULTIPOLYGON_B = 'SRID=4326;MULTIPOLYGON(((0 0, 0 5, 5 5, 5 0, 0 0)))'

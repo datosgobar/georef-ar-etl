@@ -1,7 +1,7 @@
 from sqlalchemy.sql import sqltypes
 from georef_ar_etl.utils import ValidateTableSizeStep
 from georef_ar_etl.exceptions import ProcessException
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestValidateTableSizeStep(ETLTestCase):

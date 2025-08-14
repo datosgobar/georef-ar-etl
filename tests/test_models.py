@@ -1,6 +1,6 @@
 from georef_ar_etl.models import Province, Department
-from . import ETLTestCase
-from .test_departments_extraction_step import SAN_JUAN_DEPT_COUNT
+from tests import ETLTestCase
+from tests.test_departments_extraction_step import SAN_JUAN_DEPT_COUNT
 
 
 class TestModels(ETLTestCase):

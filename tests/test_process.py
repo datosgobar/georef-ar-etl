@@ -1,7 +1,7 @@
 from unittest import mock
 from georef_ar_etl.process import Process, Step
 from georef_ar_etl.exceptions import ProcessException
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 def get_mock_step(return_value=None, raises_exception=False, reads_input=True):

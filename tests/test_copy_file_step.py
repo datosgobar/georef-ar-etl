@@ -1,5 +1,5 @@
 from georef_ar_etl.utils import CopyFileStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestCopyFileStep(ETLTestCase):

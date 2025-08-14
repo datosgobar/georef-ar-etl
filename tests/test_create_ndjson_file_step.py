@@ -2,7 +2,7 @@ import json
 from georef_ar_etl.models import Department
 from georef_ar_etl.constants import ETL_VERSION
 from georef_ar_etl.loaders import CreateNDJSONFileStep
-from . import ETLTestCase
+from tests import ETLTestCase
 
 
 class TestCreateNDJSONFileStep(ETLTestCase):
