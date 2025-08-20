@@ -79,7 +79,9 @@ class EntityMixin:
             str: Valor del campo validado.
 
         """
-        if len(value) != self._id_len:
+        valid_lengths = [self._id_len] if isinstance(self._id_len, int) else self._id_len
+
+        if len(value) not in valid_lengths:
             raise ValidationException(
                 'La longitud del ID debe ser {}.'.format(self._id_len))
 
@@ -808,10 +810,6 @@ class SettlementMixin(EntityMixin, InProvinceMixin, InNullableDepartmentMixin,
             'geometria': json.loads(session.scalar(
                 self.geometria.ST_AsGeoJSON()))
         }
-
-    def validate_id(self, _key, value):
-        # TODO: Verificar las consecuencias de sobreescribir esta validación
-        return value
 
 
 class Settlement(Base, SettlementMixin, InNullableCensusLocalityMixin):
