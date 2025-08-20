@@ -5,7 +5,7 @@ from sqlalchemy import insert, MetaData, Table, Column, String, inspect, func
 
 from .exceptions import ValidationException, ProcessException
 from .loaders import CompositeStepCopyFile, CompositeStepCreateFile
-from .process import Process, StepSequence, CompositeStep
+from .process import Process, StepSequence, CompositeStep, Step
 from .models import Province, Department, LocalGovernment, CensusLocality,\
     Settlement
 from . import extractors, transformers, loaders, geometry, utils, constants, patch
@@ -152,6 +152,7 @@ def create_process(config):
             antarctic_bases_sstep,
             entities_sstep
         ]),
+        SettlementsMergeStep('settlements_merge'),
         SettlementsExtractionStep(),
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'settlements_target_size'),
@@ -185,6 +186,91 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
     def __init__(self, name='settlements_extraction', entity_class=Settlement):
         super().__init__(name, entity_class, entity_class_pkey='id',
                          tmp_entity_class_pkey='codigo_ase')
+
+    def _patch_tmp_entities(self, tmp_entities, ctx):
+
+        # Se modifican los códigos de CABA.
+        def build_prefixes(codigos):
+            return ['02' + str(cod).rjust(3, '0') for cod in codigos]
+
+        expressions = [
+            # Primer paso: Liberamos dos llaves para evitar colisiones,
+            # ya que 02001 y 02002 pasarán a ser 02007 y 02014 respectivamente.
+            func.substr(tmp_entities.codigo_ase, 1, 5).in_(build_prefixes([7, 14])),
+
+            # Segundo paso: Aplicar transformación completa.
+            # En este momento 02007 y 02014 mutaron a 02049 y 02098 respectivamente.
+            func.substr(tmp_entities.codigo_ase, 1, 5).in_(build_prefixes(list(range(1, 16))))
+        ]
+
+        for expression in expressions:
+            patch.apply_fn(tmp_entities, update_commune_id, ctx, expression)
+
+        def fix_department(row):
+            department = (
+                ctx.session.query(Department)
+                .filter(
+                    Department.provincia_id == '94',
+                    func.ST_Intersects(Department.geometria, row.geom)
+                )
+                .one_or_none()
+            )
+
+            if department:
+                codigo_ase = department.id + row.codigo_ase[5:]
+                row.codigo_ase = codigo_ase
+
+        patch.apply_fn(tmp_entities, fix_department, ctx, tmp_entities.codigo_ase.like("94007%"))
+        patch.apply_fn(tmp_entities, fix_department, ctx, tmp_entities.codigo_ase.like("94014%"))
+
+    def _run_internal(self, tmp_settlements, ctx):
+        return super()._run_internal(tmp_settlements, ctx)
+
+    def _process_entity(self, tmp_settlement, cached_session, ctx):
+        lon, lat = geometry.get_centroid_coordinates(tmp_settlement.geom,
+                                                     ctx)
+        settlement_id = tmp_settlement.codigo_ase
+        prov_id = settlement_id[:constants.PROVINCE_ID_LEN]
+        dept_id = settlement_id[:constants.DEPARTMENT_ID_LEN]
+        census_loc_id = settlement_id[:constants.CENSUS_LOCALITY_ID_LEN]
+
+        province = cached_session.query(Province).get(prov_id)
+        if not province:
+            raise ValidationException(
+                'No existe la provincia con ID {}'.format(prov_id))
+
+        # El departamento '02000' tiene un significado especial; ver comentario
+        # en constants.py.
+        department = cached_session.query(Department).get(dept_id)
+        if not department and dept_id != constants.CABA_VIRTUAL_DEPARTMENT_ID:
+            raise ValidationException(
+                'No existe el departamento con ID {}'.format(dept_id))
+
+        local_governments = geometry.get_entity_at_point(LocalGovernment,
+                                                    tmp_settlement.geom, ctx)
+
+        if prov_id == constants.CABA_PROV_ID:
+            # Las calles de CABA pertenecen a la localidad censal 02000010,
+            # pero sus IDs *no* comienzan con ese código.
+            census_loc_id = constants.CABA_CENSUS_LOCALITY
+
+        census_loc = cached_session.query(CensusLocality).get(
+            census_loc_id)
+
+        return Settlement(
+            id=settlement_id,
+            nombre=utils.clean_string(tmp_settlement.nombre_geo),
+            categoria=utils.clean_string(tmp_settlement.tipo_asent),
+            lon=lon, lat=lat,
+            provincia_id=prov_id,
+            departamento_id=dept_id,
+            gobierno_local_id=local_governments.id if local_governments else None,
+            localidad_censal_id=census_loc.id if census_loc else None,
+            fuente=utils.clean_string(tmp_settlement.fuente_de_),
+            geometria=tmp_settlement.geom
+        )
+
+class SettlementsMergeStep(Step):
 
     def get_tmp_settlements_table(self, ctx):
 
@@ -254,86 +340,6 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
 
         return utils.automap_table(constants.SETTLEMENTS_TMP_TABLE, ctx)
 
-    def _patch_tmp_entities(self, tmp_entities, ctx):
-
-        # Se modifican los códigos de CABA.
-        def build_prefixes(codigos):
-            return ['02' + str(cod).rjust(3, '0') for cod in codigos]
-
-        expressions = [
-            # Primer paso: Liberamos dos llaves para evitar colisiones,
-            # ya que 02001 y 02002 pasarán a ser 02007 y 02014 respectivamente.
-            func.substr(tmp_entities.codigo_ase, 1, 5).in_(build_prefixes([7, 14])),
-
-            # Segundo paso: Aplicar transformación completa.
-            # En este momento 02007 y 02014 mutaron a 02049 y 02098 respectivamente.
-            func.substr(tmp_entities.codigo_ase, 1, 5).in_(build_prefixes(list(range(1, 16))))
-        ]
-
-        for expression in expressions:
-            patch.apply_fn(tmp_entities, update_commune_id, ctx, expression)
-
-        def fix_department(row):
-            department = (
-                ctx.session.query(Department)
-                .filter(
-                    Department.provincia_id == '94',
-                    func.ST_Intersects(Department.geometria, row.geom)
-                )
-                .one_or_none()
-            )
-
-            if department:
-                codigo_ase = department.id + row.codigo_ase[5:]
-                row.codigo_ase = codigo_ase
-
-        patch.apply_fn(tmp_entities, fix_department, ctx, tmp_entities.codigo_ase.like("94007%"))
-        patch.apply_fn(tmp_entities, fix_department, ctx, tmp_entities.codigo_ase.like("94014%"))
-
-    def _run_internal(self, tmp_settlements, ctx):
-        tmp_settlements_merged = self._merge_tmp_settlements(tmp_settlements, ctx)
-        return super()._run_internal(tmp_settlements_merged, ctx)
-
-    def _process_entity(self, tmp_settlement, cached_session, ctx):
-        lon, lat = geometry.get_centroid_coordinates(tmp_settlement.geom,
-                                                     ctx)
-        settlement_id = tmp_settlement.codigo_ase
-        prov_id = settlement_id[:constants.PROVINCE_ID_LEN]
-        dept_id = settlement_id[:constants.DEPARTMENT_ID_LEN]
-        census_loc_id = settlement_id[:constants.CENSUS_LOCALITY_ID_LEN]
-
-        province = cached_session.query(Province).get(prov_id)
-        if not province:
-            raise ValidationException(
-                'No existe la provincia con ID {}'.format(prov_id))
-
-        # El departamento '02000' tiene un significado especial; ver comentario
-        # en constants.py.
-        department = cached_session.query(Department).get(dept_id)
-        if not department and dept_id != constants.CABA_VIRTUAL_DEPARTMENT_ID:
-            raise ValidationException(
-                'No existe el departamento con ID {}'.format(dept_id))
-
-        local_governments = geometry.get_entity_at_point(LocalGovernment,
-                                                    tmp_settlement.geom, ctx)
-
-        if prov_id == constants.CABA_PROV_ID:
-            # Las calles de CABA pertenecen a la localidad censal 02000010,
-            # pero sus IDs *no* comienzan con ese código.
-            census_loc_id = constants.CABA_CENSUS_LOCALITY
-
-        census_loc = cached_session.query(CensusLocality).get(
-            census_loc_id)
-
-        return Settlement(
-            id=settlement_id,
-            nombre=utils.clean_string(tmp_settlement.nombre_geo),
-            categoria=utils.clean_string(tmp_settlement.tipo_asent),
-            lon=lon, lat=lat,
-            provincia_id=prov_id,
-            departamento_id=dept_id,
-            gobierno_local_id=local_governments.id if local_governments else None,
-            localidad_censal_id=census_loc.id if census_loc else None,
-            fuente=utils.clean_string(tmp_settlement.fuente_de_),
-            geometria=tmp_settlement.geom
-        )
+    def _run_internal(self, data, ctx):
+        tmp_settlements_merged = self._merge_tmp_settlements(data, ctx)
+        return tmp_settlements_merged
