@@ -234,6 +234,13 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         dept_id = settlement_id[:constants.DEPARTMENT_ID_LEN]
         census_loc_id = settlement_id[:constants.CENSUS_LOCALITY_ID_LEN]
 
+        if prov_id == '02' and dept_id not in [
+            '02' + str(val * 7).rjust(3, '0') for val in range(16)
+        ]:
+            raise ProcessException(
+                'Los asentamientos de CABA no pueden tener un ID de departamento '
+                'distinto a n * 7 para n entre 1 y 15: {}'.format(dept_id))
+
         province = cached_session.query(Province).get(prov_id)
         if not province:
             raise ValidationException(
@@ -249,13 +256,11 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
         local_governments = geometry.get_entity_at_point(LocalGovernment,
                                                     tmp_settlement.geom, ctx)
 
-        if prov_id == constants.CABA_PROV_ID:
-            # Las calles de CABA pertenecen a la localidad censal 02000010,
-            # pero sus IDs *no* comienzan con ese código.
-            census_loc_id = constants.CABA_CENSUS_LOCALITY
+        if tmp_settlement.tipo_asent not in constants.LOCALITY_TYPES or dept_id == constants.CABA_VIRTUAL_DEPARTMENT_ID:
+            census_loc_id = None
 
-        census_loc = cached_session.query(CensusLocality).get(
-            census_loc_id)
+        elif not cached_session.query(CensusLocality).get(census_loc_id) and dept_id != constants.CABA_VIRTUAL_DEPARTMENT_ID:
+            raise ValidationException('No existe la localidad censal con ID {}'.format(census_loc_id))
 
         return Settlement(
             id=settlement_id,
@@ -265,7 +270,7 @@ class SettlementsExtractionStep(transformers.EntitiesExtractionStep):
             provincia_id=prov_id,
             departamento_id=dept_id,
             gobierno_local_id=local_governments.id if local_governments else None,
-            localidad_censal_id=census_loc.id if census_loc else None,
+            localidad_censal_id=census_loc_id,
             fuente=utils.clean_string(tmp_settlement.fuente_de_),
             geometria=tmp_settlement.geom
         )
