@@ -8,6 +8,7 @@ from tests import ETLTestCase
 # pylint: disable=no-member
 class TestDownloadURLStep(ETLTestCase):
     _uses_db = False
+    _process_name = "example"
 
     @responses.activate
     def test_download(self):
@@ -18,7 +19,7 @@ class TestDownloadURLStep(ETLTestCase):
         body = 'foobar'
 
         responses.add(responses.GET, url, status=200, body=body, stream=True)
-        step = DownloadURLStep(filename, url)
+        step = DownloadURLStep(filename, url, self._process_name)
         path = step.run(None, self._ctx)
 
         self.assertEqual(len(responses.calls), 1)
@@ -36,7 +37,7 @@ class TestDownloadURLStep(ETLTestCase):
         url = 'https://example.com/file.txt'
 
         responses.add(responses.GET, url, status=404)
-        step = DownloadURLStep('foobar', url)
+        step = DownloadURLStep('foobar', url, self._process_name)
 
         with self.assertRaises(ProcessException):
             step.run(None, self._ctx)
@@ -49,10 +50,10 @@ class TestDownloadURLStep(ETLTestCase):
         body = 'testing de hash md5'
 
         responses.add(responses.GET, url, status=200, body=body, stream=True)
-        DownloadURLStep(filename, url).run(None, self._ctx)
+        DownloadURLStep(filename, url, self._process_name).run(None, self._ctx)
 
         md5 = hashlib.md5()
         md5.update(body.encode())
 
         report_data = self._ctx.report.get_data('download_url')
-        self.assertEqual(report_data[url], md5.hexdigest())
+        self.assertEqual(report_data[self._process_name][url], md5.hexdigest())

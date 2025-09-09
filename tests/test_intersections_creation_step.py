@@ -2,7 +2,7 @@ from georef_ar_etl.models import Intersection, Street
 from georef_ar_etl.intersections import IntersectionsCreationStep
 from tests import ETLTestCase
 
-SAN_JUAN_INTERSECTIONS_COUNT = 1578
+SAN_JUAN_INTERSECTIONS_COUNT = 18223
 
 
 class TestIntersectionsCreationStep(ETLTestCase):
@@ -40,25 +40,25 @@ class TestIntersectionsCreationStep(ETLTestCase):
         """Algunas intersecciones de calles deberían estar representadas por
         varios puntos, con el ID de cada uno siendo una secuencia 1, 2, etc."""
 
-        # Dos intersecciones de "ABERASTAIN" y "PJE S N" separadas por
+        # Dos intersecciones de "ABERASTAIN" y "CALLE S N" separadas por
         # aproximadamente 85 metros.
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7003501000045-7003501001120-02'))
+            '700350200000045-700350200000173-02'))
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7003501000045-7003501001120-01'))
+            '700350200000045-700350200000173-01'))
 
         # Las calles "ZAPATA" y "SAN JUAN" tienen dos intersecciones, pero
         # están tan cerca que son consideradas una.
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7005608000565-7005608000615-01'))
+            '700560800000565-700560800000615-01'))
         self.assertFalse(self._ctx.session.query(Intersection).get(
-            '7005608000565-7005608000615-02'))
+            '700560800000565-700560800000615-02'))
 
         # Intersección de "CALLE S N" y "CALLE S N" (un solo punto)
         self.assertTrue(self._ctx.session.query(Intersection).get(
-            '7003501000145-7003501000265-01'))
+            '700350100000100-700350100000105-01'))
         self.assertFalse(self._ctx.session.query(Intersection).get(
-            '7003501000145-7003501000265-02'))
+            '700350100000100-700350100000105-02'))
 
     def test_self_intersection(self):
         """Las calles no deberían intersectar con sí mismas."""

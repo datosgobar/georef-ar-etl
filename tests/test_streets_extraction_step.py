@@ -3,7 +3,7 @@ from georef_ar_etl.models import Street
 from georef_ar_etl.streets import StreetsExtractionStep
 from tests import ETLTestCase
 
-SAN_JUAN_STREETS_COUNT = 754
+SAN_JUAN_STREETS_COUNT = 7257
 TEST_MULTILINESTRING = 'SRID=4326;MULTILINESTRING((10 10, 20 20, 10 40),' + \
     '(40 40, 30 30, 40 20, 30 10))'
 
@@ -42,7 +42,7 @@ class TestStreetsExtractionStep(ETLTestCase):
     def test_clean_string(self):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
-        street_id = '7003501000900'
+        street_id = '700350200000900'
         self._ctx.session.query(self._tmp_blocks).\
             filter_by(nomencla=street_id).\
             update({'nombre': '  LAPRIDA   \n\nLAPRIDA\n'})
@@ -57,9 +57,9 @@ class TestStreetsExtractionStep(ETLTestCase):
     def test_invalid_province(self):
         """Si una cuadra hace referencia a una provincia inexistente, se
         debería reportar el error."""
-        new_id = '7703501000900'
+        new_id = '770350100000110'
         self._ctx.session.query(self._tmp_blocks).\
-            filter_by(nomencla='7003501000900').\
+            filter_by(nomencla='700350100000110').\
             update({'nomencla': new_id})
 
         step = StreetsExtractionStep()
@@ -73,9 +73,9 @@ class TestStreetsExtractionStep(ETLTestCase):
     def test_invalid_department(self):
         """Si una cuadra hace referencia a un departamento inexistente, se
         debería reportar el error."""
-        new_id = '7011101000900'
+        new_id = '701110100000110'
         self._ctx.session.query(self._tmp_blocks).\
-            filter_by(nomencla='7003501000900').\
+            filter_by(nomencla='700350100000110').\
             update({'nomencla': new_id})
 
         step = StreetsExtractionStep()
@@ -90,14 +90,14 @@ class TestStreetsExtractionStep(ETLTestCase):
         """La altura de una calle debería comenzar en la altura más baja de
         todas sus cuadras, y terminar el la mas alta de todas sus cuadras."""
         block_nums = [
-            ('7005604000000', '0', '100'),
-            ('7005604000000', '101', '200'),
-            ('7005604000001', '9', '200'),
-            ('7005604000001', '201', '1000')
+            ('700560400000000', '0', '100'),
+            ('700560400000000', '101', '200'),
+            ('700560400000001', '9', '200'),
+            ('700560400000001', '201', '1000')
         ]
 
         for i, block in enumerate(block_nums):
-            self._ctx.session.add(self._tmp_blocks(ogc_fid=9999 + i,
+            self._ctx.session.add(self._tmp_blocks(ogc_fid=99999 + i,
                                                    nomencla=block[0],
                                                    desdei=block[1],
                                                    hastad=block[2],
@@ -109,8 +109,8 @@ class TestStreetsExtractionStep(ETLTestCase):
         step = StreetsExtractionStep()
         streets = step.run((self._tmp_blocks, None), self._ctx)
 
-        street1 = self._ctx.session.query(streets).get('7005604000000')
-        street2 = self._ctx.session.query(streets).get('7005604000001')
+        street1 = self._ctx.session.query(streets).get('700560400000000')
+        street2 = self._ctx.session.query(streets).get('700560400000001')
 
         self.assertEqual(street1.inicio_izquierda, 0)
         self.assertEqual(street1.fin_derecha, 200)

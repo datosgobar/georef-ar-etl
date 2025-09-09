@@ -86,7 +86,7 @@ files:
 	$(ETL_COMMAND) -p localidades_censales --start 9 --no-mail
 	$(ETL_COMMAND) -p asentamientos --start 5 --no-mail
 	$(ETL_COMMAND) -p localidades --start 6 --no-mail
-	$(ETL_COMMAND) -p calles --start 5 --no-mail
+	$(ETL_COMMAND) -p calles --start 6 --no-mail
 	$(ETL_COMMAND) -p intersecciones --start 4 --no-mail
 	$(ETL_COMMAND) -p establecimientos_educativos --start 5 --no-mail
 	$(ETL_COMMAND) -p instituciones_universitarias --start 8 --no-mail

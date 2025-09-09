@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from .exceptions import ValidationException
 from .loaders import CompositeStepCreateFile, CompositeStepCopyFile
-from .process import Process, CompositeStep, StepSequence
+from .process import Process, CompositeStep, StepSequence, Step
 from .models import Province, Department, CensusLocality, Street
 from . import extractors, loaders, utils, constants, patch, transformers
 from .utils import FunctionStep
@@ -16,6 +16,8 @@ from .utils import FunctionStep
 
 ThirdResultStep = FunctionStep(fn=lambda results: results[2],
                                name='third_result')
+
+INVALID_BLOCKS_CENSUS_LOCALITIES = []
 
 locality_names = {
     "Villa Otuzar": "Villa Ortúzar",
@@ -149,7 +151,43 @@ def create_process(config):
                 })
             ], name='load_tmp_street_blocks')
 
-    # Pasos para la incorporación de localidades a las calles provisoriamente desde una fuente parcial
+    # CALLES (Se mantiene por ahora para compatibilidad de los test y por si hace falta en el futuro)
+    url_template_streets = config.get('etl', 'streets_url_template')
+    download_streets_cstep = CompositeStep([
+        extractors.DownloadURLStep(
+            '{}_{}.geojson'.format(constants.STREETS, province_id),
+            url_template_streets.format(province_id),
+            constants.STREETS
+        ) for province_id in constants.PROVINCE_IDS
+    ], name='download_cstep')
+    ogr2ogr_cstep = CompositeStep([
+                                      loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                                                          geom_type='MultiLineString',
+                                                          source_epsg='EPSG:4326')
+                                  ] + [
+                                      loaders.Ogr2ogrStep(table_name=constants.STREETS_TMP_TABLE,
+                                                          geom_type='MultiLineString', overwrite=False,
+                                                          source_epsg='EPSG:4326')
+                                  ] * (len(download_street_blocks_cstep) - 1), name='ogr2ogr_cstep')
+    streets_sstep = StepSequence([
+        download_streets_cstep,
+        ogr2ogr_cstep,
+        utils.FirstResultStep,
+        utils.ValidateTableSchemaStep({
+            'id': 'integer',
+            'nomencla': 'varchar',
+            'tipo': 'varchar',
+            'nombre': 'varchar',
+            'desdei': 'varchar',
+            'desded': 'varchar',
+            'hastad': 'varchar',
+            'hastai': 'varchar',
+            'codloc': 'varchar',
+            'geom': 'geometry'
+        })
+    ], name='load_tmp_street_blocks')
+
+    # POLÍGONOS DE LOCALIDADES
     url_template_localities = config.get('etl', 'localities_url')
     download_sstep_localities = StepSequence([
                 extractors.DownloadURLStep('entidades_RMBA.zip',
@@ -195,8 +233,10 @@ def create_process(config):
         utils.CheckDependenciesStep([Province, Department, CensusLocality]),
         CompositeStep([
             street_blocks_sstep,
-            localities_sstep,
+            streets_sstep,
+            localities_sstep
         ]),
+        StreetLocalitiesIntersectionStep('streets_localities_intersection'),
         StreetsExtractionStep(),
         utils.ValidateTableSizeStep(
             target_size=config.getint('etl', 'streets_target_size'),
@@ -257,11 +297,147 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
         super().__init__('streets_extraction', Street,
                          entity_class_pkey='id',
                          tmp_entity_class_pkey='nomencla')
-        self._tmp_localities = None
-        self._polygons_errors = []
+
+    def _patch_tmp_entities(self, tmp_street_blocks, ctx):
+
+        patch.delete(tmp_street_blocks, ctx, tipo='')
+
+        patch.update_field(tmp_street_blocks, 'tipo', 'PASAJE', ctx, tipo='PJE')
+
+        patch.delete(tmp_street_blocks, ctx, nombre='')
+
+        # Una cuadra de la calle "064414417007012" no contiene geometría
+        patch.delete(tmp_street_blocks, ctx, geom=None)
+
+        def change_clc(row):
+            new_clc = CLC_OLD_NEW_MAP[row.codloc20]
+            row.codloc20 = new_clc
+            row.nomencla = new_clc + row.nomencla[8:]
+
+        for old_clc, new_clc in CLC_OLD_NEW_MAP.items():
+            patch.apply_fn(tmp_street_blocks, change_clc, ctx, codloc20=old_clc)
+
+        ctx.session.commit()
+
+    def _entities_query_count(self, tmp_street_blocks, ctx):
+        return ctx.session.query(tmp_street_blocks).\
+            filter(tmp_street_blocks.tipo != constants.STREET_TYPE_OTHER).\
+            distinct(tmp_street_blocks.nomencla).\
+            count()
+
+    def _build_entities_query(self, tmp_street_blocks, ctx):
+
+        fields = [
+            func.min(tmp_street_blocks.id).label('id'),
+            tmp_street_blocks.nomencla,
+            func.min(tmp_street_blocks.loc_link).label('loc_link'),
+            func.min(tmp_street_blocks.loc_nombre).label('loc_nombre'),
+            func.min(tmp_street_blocks.nombre).label('nombre'),
+            func.min(tmp_street_blocks.tipo).label('tipo'),
+            func.min(tmp_street_blocks.desdei.cast(Integer)).label('desdei'),
+            func.min(tmp_street_blocks.desded.cast(Integer)).label('desded'),
+            func.max(tmp_street_blocks.hastai.cast(Integer)).label('hastai'),
+            func.max(tmp_street_blocks.hastad.cast(Integer)).label('hastad'),
+            func.ST_Multi(tmp_street_blocks.geom.ST_Union()).label('geom')
+        ]
+
+        statement = select(fields).\
+            group_by(tmp_street_blocks.nomencla).\
+            where(tmp_street_blocks.tipo != constants.STREET_TYPE_OTHER)
+
+        return ctx.engine.execute(statement)
+
+    def _copy_tmp_streets(self, tmp_blocks, tmp_streets, ctx):
+        bulk_size = ctx.config.getint('etl', 'bulk_size')
+        ctx.report.info(
+            'Copiando calles de localidades con cuadras inválidas...')
+
+        blocks = []
+        for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:
+            ctx.report.info('Localidad Censal ID {}'.format(
+                census_locality_id))
+
+            query = ctx.session.query(tmp_streets).\
+                filter_by(codloc=census_locality_id).\
+                yield_per(bulk_size)
+
+            for tmp_street in query:
+                blocks.append(tmp_blocks(
+                    geom=tmp_street.geom,
+                    codloc20=tmp_street.codloc,
+                    nomencla=tmp_street.nomencla,
+                    nombre=tmp_street.nombre,
+                    tipo=tmp_street.tipo,
+                    desded=int(tmp_street.desded),
+                    desdei=int(tmp_street.desdei),
+                    hastad=int(tmp_street.hastad),
+                    hastai=int(tmp_street.hastai)
+                ))
+
+        ctx.session.add_all(blocks)
+        ctx.session.commit()
+        ctx.report.info('Terminado.\n')
+
+    def _run_internal(self, data, ctx):
+        tmp_blocks, tmp_streets = data
+
+        if tmp_streets:
+            for census_locality_id in INVALID_BLOCKS_CENSUS_LOCALITIES:
+                patch.delete(tmp_blocks, ctx, codloc20=census_locality_id)
+
+            self._copy_tmp_streets(tmp_blocks, tmp_streets, ctx)
+
+        return super()._run_internal(tmp_blocks, ctx)
+
+    def _process_entity(self, street, cached_session, ctx):
+        street_id = street.nomencla
+        prov_id = street_id[:constants.PROVINCE_ID_LEN]
+        dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
+        census_loc_id = street_id[:constants.CENSUS_LOCALITY_ID_LEN]
+        loc_id = street.loc_link
+
+        province = cached_session.query(Province).get(prov_id)
+        if not province:
+            raise ValidationException(
+                'No existe la provincia con ID {}'.format(prov_id))
+
+        department = cached_session.query(Department).get(dept_id)
+        if not department:
+            raise ValidationException(
+                'No existe el departamento con ID {}'.format(dept_id))
+
+        census_locality = cached_session.query(CensusLocality).get(
+            census_loc_id)
+        if not census_locality:
+            raise ValidationException(
+                'No existe la localidad censal con ID {}'.format(
+                    census_loc_id))
+
+        return Street(
+            id=street_id,
+            nombre=utils.clean_string(street.nombre or ''),
+            categoria=utils.clean_string(street.tipo or ''),
+            fuente=constants.STREETS_SOURCE,
+            inicio_derecha=street.desded or 0,
+            fin_derecha=street.hastad or 0,
+            inicio_izquierda=street.desdei or 0,
+            fin_izquierda=street.hastai or 0,
+            geometria=street.geom,
+            provincia_id=prov_id,
+            departamento_id=dept_id,
+            localidad_censal_id=census_loc_id,
+            localidad_id=loc_id
+        )
+
+
+class StreetLocalitiesIntersectionStep(Step):
+
+    def __init__(self, name, reads_input=True):
+        super().__init__(name, reads_input)
+        self._total_polygons = 0
         self._loc_error_msg = []
         self._loc_warning_msg = []
-        self._total_polygons = 0
+        self._polygons_errors = []
 
     def _add_locality_to_street_blocks(self, tmp_street_blocks, ctx):
 
@@ -426,102 +602,13 @@ class StreetsExtractionStep(transformers.EntitiesExtractionStep):
 
         return tmp_street_blocks
 
-    def _patch_tmp_entities(self, tmp_street_blocks, ctx):
-
-        patch.delete(tmp_street_blocks, ctx, tipo='')
-
-        patch.update_field(tmp_street_blocks, 'tipo', 'PASAJE', ctx, tipo='PJE')
-
-        patch.delete(tmp_street_blocks, ctx, nombre='')
-
-        # Una cuadra de la calle "064414417007012" no contiene geometría
-        patch.delete(tmp_street_blocks, ctx, geom=None)
-
-        def change_clc(row):
-            new_clc = CLC_OLD_NEW_MAP[row.codloc20]
-            row.codloc20 = new_clc
-            row.nomencla = new_clc + row.nomencla[8:]
-
-        for old_clc, new_clc in CLC_OLD_NEW_MAP.items():
-            patch.apply_fn(tmp_street_blocks, change_clc, ctx, codloc20=old_clc)
-
-        ctx.session.commit()
-
-    def _entities_query_count(self, tmp_street_blocks, ctx):
-        return ctx.session.query(tmp_street_blocks).\
-            filter(tmp_street_blocks.tipo != constants.STREET_TYPE_OTHER).\
-            distinct(tmp_street_blocks.nomencla).\
-            count()
-
-    def _build_entities_query(self, tmp_street_blocks, ctx):
-
-        fields = [
-            func.min(tmp_street_blocks.id).label('id'),
-            tmp_street_blocks.nomencla,
-            func.min(tmp_street_blocks.loc_link).label('loc_link'),
-            func.min(tmp_street_blocks.loc_nombre).label('loc_nombre'),
-            func.min(tmp_street_blocks.nombre).label('nombre'),
-            func.min(tmp_street_blocks.tipo).label('tipo'),
-            func.min(tmp_street_blocks.desdei.cast(Integer)).label('desdei'),
-            func.min(tmp_street_blocks.desded.cast(Integer)).label('desded'),
-            func.max(tmp_street_blocks.hastai.cast(Integer)).label('hastai'),
-            func.max(tmp_street_blocks.hastad.cast(Integer)).label('hastad'),
-            func.ST_Multi(tmp_street_blocks.geom.ST_Union()).label('geom')
-        ]
-
-        statement = select(fields).\
-            group_by(tmp_street_blocks.nomencla).\
-            where(tmp_street_blocks.tipo != constants.STREET_TYPE_OTHER)
-
-        return ctx.engine.execute(statement)
-
     def _run_internal(self, data, ctx):
-        tmp_street_blocks, self._tmp_localities = data
+        tmp_street_blocks, tmp_streets, tmp_localities = data
 
         tmp_street_blocks = report_street_block_number_state(tmp_street_blocks, ctx, self.name)
         tmp_street_blocks = self._add_locality_to_street_blocks(tmp_street_blocks, ctx)
-        tmp_street_blocks = self._change_street_block_id(tmp_street_blocks, ctx)
+        self._change_street_block_id(tmp_street_blocks, ctx)
 
-        result = super()._run_internal(tmp_street_blocks, ctx)
-        ctx.report.get_data(self.name)['errors'].extend(self._polygons_errors)
-        return result
+        ctx.report.get_data(self.name).setdefault('errors', []).extend(self._polygons_errors)
 
-    def _process_entity(self, street, cached_session, ctx):
-        street_id = street.nomencla
-        prov_id = street_id[:constants.PROVINCE_ID_LEN]
-        dept_id = street_id[:constants.DEPARTMENT_ID_LEN]
-        census_loc_id = street_id[:constants.CENSUS_LOCALITY_ID_LEN]
-        loc_id = street.loc_link
-
-        province = cached_session.query(Province).get(prov_id)
-        if not province:
-            raise ValidationException(
-                'No existe la provincia con ID {}'.format(prov_id))
-
-        department = cached_session.query(Department).get(dept_id)
-        if not department:
-            raise ValidationException(
-                'No existe el departamento con ID {}'.format(dept_id))
-
-        census_locality = cached_session.query(CensusLocality).get(
-            census_loc_id)
-        if not census_locality:
-            raise ValidationException(
-                'No existe la localidad censal con ID {}'.format(
-                    census_loc_id))
-
-        return Street(
-            id=street_id,
-            nombre=utils.clean_string(street.nombre or ''),
-            categoria=utils.clean_string(street.tipo or ''),
-            fuente=constants.STREETS_SOURCE,
-            inicio_derecha=street.desded or 0,
-            fin_derecha=street.hastad or 0,
-            inicio_izquierda=street.desdei or 0,
-            fin_izquierda=street.hastai or 0,
-            geometria=street.geom,
-            provincia_id=prov_id,
-            departamento_id=dept_id,
-            localidad_censal_id=census_loc_id,
-            localidad_id=loc_id
-        )
+        return [utils.automap_table(constants.STREET_BLOCKS_TMP_TABLE, ctx), tmp_streets]

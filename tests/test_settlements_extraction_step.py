@@ -4,7 +4,7 @@ from georef_ar_etl.settlements import SettlementsExtractionStep
 from tests import ETLTestCase
 from tests.test_geometry import TEST_MULTIPOLYGON
 
-SAN_JUAN_SETTLEMENTS_COUNT = 216
+SAN_JUAN_SETTLEMENTS_COUNT = 277
 TEST_MULTIPOINT = 'SRID=4326;MULTIPOINT((10 40))'
 
 
@@ -44,13 +44,13 @@ class TestSettlementsExtractionStep(ETLTestCase):
         """Si se modifica un campo de un asentamiento (no el ID), luego de la
         extracción el campo nuevo debería figurar en georef_asentamientos."""
         # Ejecutar la extracción por primera vez
-        settlement_id = '70056000081'
+        settlement_id = '70056A16'
         step = SettlementsExtractionStep()
         step.run(self._tmp_settlements, self._ctx)
 
         self._ctx.session.query(self._tmp_settlements).\
-            filter_by(cod_bahra=settlement_id).\
-            update({'nombre_bah': 'LAS LAS AGUADITAS'})
+            filter_by(codigo_ase=settlement_id).\
+            update({'nombre_geo': 'LAS LAS AGUADITAS'})
 
         settlements = step.run(self._tmp_settlements, self._ctx)
         name = self._ctx.session.query(settlements).\
@@ -68,22 +68,22 @@ class TestSettlementsExtractionStep(ETLTestCase):
 
         # Modificar el ID de un asentamiento
         self._ctx.session.query(self._tmp_settlements).\
-            filter_by(cod_bahra='70056000081').\
-            update({'cod_bahra': '70056000099'})
+            filter_by(codigo_ase='7005606003').\
+            update({'codigo_ase': '7005606009'})
 
         step.run(self._tmp_settlements, self._ctx)
         report_data = self._ctx.report.get_data('settlements_extraction')
-        self.assertListEqual(report_data['new_entities_ids'], ['70056000099'])
+        self.assertListEqual(report_data['new_entities_ids'], ['7005606009'])
         self.assertListEqual(report_data['deleted_entities_ids'],
-                             ['70056000081'])
+                             ['7005606003'])
 
     def test_clean_string(self):
         """Los campos de texto deberían ser normalizados en el proceso de
         normalización."""
-        settlement_id = '70056000081'
+        settlement_id = '70056A16'
         self._ctx.session.query(self._tmp_settlements).\
-            filter_by(cod_bahra=settlement_id).\
-            update({'nombre_bah': 'LAS AGUADITAS    '})
+            filter_by(codigo_ase=settlement_id).\
+            update({'nombre_geo': 'LAS AGUADITAS    '})
 
         step = SettlementsExtractionStep()
         settlements = step.run(self._tmp_settlements, self._ctx)
@@ -97,10 +97,10 @@ class TestSettlementsExtractionStep(ETLTestCase):
         inválida."""
         step = SettlementsExtractionStep()
         settlement = self._ctx.session.query(self._tmp_settlements).\
-            filter_by(cod_bahra='70056000081').one()
+            filter_by(codigo_ase='7005606003').one()
 
         self._ctx.session.expunge(settlement)
-        settlement.cod_bahra = '70056000'
+        settlement.codigo_ase = '700560600'
 
         # pylint: disable=protected-access
         with self.assertRaises(ValidationException):
@@ -112,8 +112,8 @@ class TestSettlementsExtractionStep(ETLTestCase):
         debería reportar el error."""
         new_id = '11056000081'
         self._ctx.session.query(self._tmp_settlements).\
-            filter_by(cod_bahra='70056000081').\
-            update({'cod_bahra': new_id})
+            filter_by(codigo_ase='7005606003').\
+            update({'codigo_ase': new_id})
 
         step = SettlementsExtractionStep()
         settlements = step.run(self._tmp_settlements, self._ctx)
@@ -121,17 +121,19 @@ class TestSettlementsExtractionStep(ETLTestCase):
         self.assertEqual(query.count(), 0)
 
         report_data = self._ctx.report.get_data('settlements_extraction')
-        self.assertEqual(len(report_data['errors']), 1)
-        self.assertEqual(len(report_data['new_entities_ids']),
-                         SAN_JUAN_SETTLEMENTS_COUNT - 1)
+        self.assertEqual(
+            'No existe la provincia con ID {}'.format(new_id[:2]),
+            [error[1] for error in report_data['errors'] if error[0] == new_id][0]
+        )
+        self.assertEqual(len(report_data['new_entities_ids']), SAN_JUAN_SETTLEMENTS_COUNT - 1)
 
     def test_invalid_department(self):
         """Si un asentamiento hace referencia a un departamento inexistente, se
         debería reportar el error."""
         new_id = '70123000081'
         self._ctx.session.query(self._tmp_settlements).\
-            filter_by(cod_bahra='70056000081').\
-            update({'cod_bahra': new_id})
+            filter_by(codigo_ase='7005606003').\
+            update({'codigo_ase': new_id})
 
         step = SettlementsExtractionStep()
         settlements = step.run(self._tmp_settlements, self._ctx)
@@ -139,9 +141,11 @@ class TestSettlementsExtractionStep(ETLTestCase):
         self.assertEqual(query.count(), 0)
 
         report_data = self._ctx.report.get_data('settlements_extraction')
-        self.assertEqual(len(report_data['errors']), 1)
-        self.assertEqual(len(report_data['new_entities_ids']),
-                         SAN_JUAN_SETTLEMENTS_COUNT - 1)
+        self.assertEqual(
+            'No existe el departamento con ID {}'.format(new_id[:5]),
+            [error[1] for error in report_data['errors'] if error[0] == new_id][0]
+        )
+        self.assertEqual(SAN_JUAN_SETTLEMENTS_COUNT - 1, len(report_data['new_entities_ids']))
 
     def test_caba_virtual_department(self):
         """Un asentamiento debería poder pertenecer al departamento '02000',
@@ -161,10 +165,10 @@ class TestSettlementsExtractionStep(ETLTestCase):
         self._ctx.session.add(prov)
 
         new_settlement = self._tmp_settlements(
-            cod_bahra='02000010000',
-            nombre_bah='test',
-            tipo_bahra='LS',
-            fuente_ubi='test',
+            codigo_ase='0200001000',
+            nombre_geo='test',
+            tipo_asent='Localidad simple',
+            fuente_de_='test',
             geom=TEST_MULTIPOINT
         )
         self._ctx.session.add(new_settlement)
@@ -173,7 +177,7 @@ class TestSettlementsExtractionStep(ETLTestCase):
         step = SettlementsExtractionStep()
         settlements = step.run(self._tmp_settlements, self._ctx)
 
-        loc = self._ctx.session.query(settlements).get('02000010000')
+        loc = self._ctx.session.query(settlements).get('0200001000')
         self.assertTrue(loc.departamento_id is None)
 
     def test_local_government(self):
@@ -183,14 +187,17 @@ class TestSettlementsExtractionStep(ETLTestCase):
         step = SettlementsExtractionStep()
         settlements = step.run(self._tmp_settlements, self._ctx)
 
-        settlement = self._ctx.session.query(settlements).get('70056000081')
+        settlement = self._ctx.session.query(settlements).get('7005606003')
         self.assertEqual(settlement.gobierno_local_id, '700056')
 
     def test_invalid_commune(self):
         """Si un asentamiento de CABA tiene un ID de departamento mayor a 15,
         debería generarse un error. Ver comentario en constants.py para más
         información."""
-        self._ctx.session.add(self._tmp_settlements(cod_bahra='02016000081'))
+        self._ctx.session.add(self._tmp_settlements(
+            codigo_ase='0201600008',
+            geom=TEST_MULTIPOINT,
+        ))
         step = SettlementsExtractionStep()
 
         with self.assertRaises(ProcessException):

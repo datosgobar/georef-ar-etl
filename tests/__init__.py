@@ -132,7 +132,7 @@ class ETLTestCase(TestCase):
 
         loader = Ogr2ogrStep(table_name='tmp_gobiernos_locales',
                              geom_type='MultiPolygon',
-                             env={'SHAPE_ENCODING': 'utf-8'},
+                             env={'SHAPE_ENCODING': 'ISO-8859-1'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
@@ -174,8 +174,8 @@ class ETLTestCase(TestCase):
             'test_localidades_censales/test_localidades_censales.prj')
 
         loader = Ogr2ogrStep(table_name='tmp_localidades_censales',
-                             geom_type='Point',
-                             env={'SHAPE_ENCODING': 'utf-8'},
+                             geom_type='Multipolygon',
+                             env={'SHAPE_ENCODING': 'ISO-8859-1'},
                              metadata=cls._metadata,
                              db_config=cls._ctx.config['test_db'])
 
