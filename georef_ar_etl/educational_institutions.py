@@ -26,6 +26,7 @@ def create_process(config):
         ),
         utils.ValidateTableSchemaStep({
             'ogc_fid': 'integer',
+            'gid': 'numeric',
             'fna': 'varchar',
             'gna': 'varchar',
             'nam': 'varchar',
